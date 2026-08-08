@@ -154,7 +154,7 @@ void hivesplitter::detail::CausalCluster::insertActiveHit(const AbsHit &h) {
   sync_time = std::max(sync_time, h.GetTime());
   ++active_doms[h.GetDOMIndex()];
   
-  //take care about the first hit-time of any each dom, if this option is enabled
+  //take care about the first hit-time of any each DOM, if this option is enabled
   DOMHitTimes::iterator it= firstHitTimes.find(h.GetDOMIndex());
   if (it==firstHitTimes.end()) //its the first hit on the dom, take its time
     firstHitTimes[h.GetDOMIndex()]=h.GetTime();
@@ -254,7 +254,7 @@ bool hivesplitter::detail::CausalCluster::isSubsetOf(
 {
   if (c2.active_hits.size()<this->active_hits.size())
     return(false);
-  //use the fact that strict timeorder is enforced in the .active_hits
+  //use the fact that strict timeorder is enforced on the active_hits
   AbsHitSet::const_iterator it1=this->active_hits.begin();
   AbsHitSet::const_iterator end1=this->active_hits.end();
   AbsHitSet::const_iterator it2=c2.active_hits.begin();
@@ -280,37 +280,38 @@ void hivesplitter::detail::CausalCluster::advanceInTime (
   const Time time) 
 {
   while (!active_hits.empty()) {
-    const AbsHitSet::const_iterator h=active_hits.begin();
-    if (time > h->GetTime()+ params->multiplicityTimeWindow) {// TODO watch out; this is outside info
+    const auto ah_iter = active_hits.begin();
+    if (time > ah_iter->GetTime() + params->multiplicityTimeWindow) {// TODO watch out; this is outside info
       //the hit is no longer active, thus
       //decrement the number of hits on the DOM where h occurred
-      if ((--active_doms[h->GetDOMIndex()])<=0) //NOTE TODO do we need to bother with this after the cluster is established, and this is probably not checked anymore?
-        active_doms.erase(h->GetDOMIndex());
+      if ((--active_doms[ah_iter->GetDOMIndex()])<=0) //NOTE TODO do we need to bother with this after the cluster is established, and this is probably not checked anymore?
+        active_doms.erase(ah_iter->GetDOMIndex());
 
       //if the multiplicity threshold was met include h in the finished cluster
       if (established) {
         //insert the hit
-        concluded_hits.insert(concluded_hits.end(),*h);
+        concluded_hits.insert(concluded_hits.end(),*ah_iter);
       }
       else { //hit is about to be discarded
         //sync up the firsthit-time map
-        if (!active_doms.count(h->GetDOMIndex()))
-          firstHitTimes.erase(h->GetDOMIndex());
+        if (!active_doms.count(ah_iter->GetDOMIndex()))
+          firstHitTimes.erase(ah_iter->GetDOMIndex());
         else {
           //check for the next hit on the same DOM which is still active and take its time instead
           BOOST_FOREACH(const AbsHit& hh, active_hits) {
-            if (h->GetDOMIndex() == hh.GetDOMIndex())
-              firstHitTimes[h->GetDOMIndex()] = hh.GetTime();
+            if (ah_iter->GetDOMIndex() == hh.GetDOMIndex())
+              firstHitTimes[ah_iter->GetDOMIndex()] = hh.GetTime();
           }
-          //NOTE by this shift some inconsitency is introduced of the connections between hits in the cluster
+          //NOTE by this shift some inconsistency is introduced of the connections between hits in the cluster
           //however the merging of Clusters in the HiveSplitter will bring this all in sync again
         }
       }
-      active_hits.erase(h);
+      active_hits.erase(ah_iter);
     }
     else
       break;
   }
+
   //the cluster is now synced to this time
   sync_time=time;
 }
@@ -337,7 +338,7 @@ HiveSplitter::HiveSplitter (const hivesplitter::HiveSplitter_ParameterSet& param
   
   if (! params_.connectorBlock)
     log_error("No ConnectionBlock defined!");
-  //TODO check integrety of connectorBlock
+  //TODO check integrity of connectorBlock
   
   if (params_.mergeOverlap==0)
     log_warn("RequiredDOMOverlap configured with 0, everything will be merged");
@@ -369,7 +370,13 @@ AbsHitSetSequence HiveSplitter::Split<AbsHitSet> (const AbsHitSet& inhits) {
 };
 
 void HiveSplitter::AddHit (const AbsHit& h) {
+  /// =======================================
+  ///
+  ///
+  ///
+  ///
   log_debug("Entering AddHit()");
+
   newClusters_.clear();
 
   bool addedToCluster = false; //keep track of whether h has been added to any cluster
@@ -572,16 +579,16 @@ void HiveSplitter::AddSubEvent(AbsHitSet newSet) {
   log_debug("Entering AddSubEvent()");
   //find any existing subevents which overlap the new one, and merge them into it
   
-  AbsHitSetList::iterator set =partialSubEvents_.begin();
-  while (set != partialSubEvents_.end()) {
+  auto pse_iter =partialSubEvents_.begin();
+  while (pse_iter != partialSubEvents_.end()) {
     //determine if the overlap is sufficient: common hits on 'params.mergeOverlap' DOMs within the time-window
-    const bool sufficent_overlap = CausallyOverlaps(newSet, *set, params_.mergeOverlap, params_.multiplicityTimeWindow);
+    const bool sufficent_overlap = CausallyOverlaps(newSet, *pse_iter, params_.mergeOverlap, params_.multiplicityTimeWindow);
     if (sufficent_overlap) {
-      newSet.insert(set->begin(),set->end());
-      set = partialSubEvents_.erase(set);
+      newSet.insert(pse_iter->begin(),pse_iter->end());
+      pse_iter = partialSubEvents_.erase(pse_iter);
     }
     else
-      ++set;
+      ++pse_iter;
   }
   
   partialSubEvents_.push_back(newSet);
@@ -595,16 +602,16 @@ void HiveSplitter::AddSubEvent(AbsHitSet newSet) {
   //any partial subevent whose last hit time is before the earliest time found above
   //cannot be merged again, and so is complete
   if (earliestUpcomingTime!=std::numeric_limits<Time>::infinity()) {
-    AbsHitSetList::iterator hset=partialSubEvents_.begin();
-    while (hset != partialSubEvents_.end()) {
-      if (hset->rbegin()->GetTime() < earliestUpcomingTime) {
+    auto pse_iter=partialSubEvents_.begin();
+    while (pse_iter != partialSubEvents_.end()) {
+      if (pse_iter->rbegin()->GetTime() < earliestUpcomingTime) {
         //copy the contents of this subevent to a new subevent with ordering suitable
         //for retrieval of the actual hits and file it under the time of its first hit
-        subEvents_.insert(subEvents_.end(),*hset);
-        hset = partialSubEvents_.erase(hset);
+        subEvents_.insert(subEvents_.end(), *pse_iter);
+        pse_iter = partialSubEvents_.erase(pse_iter);
       }
       else
-        ++hset;
+        ++pse_iter;
     }
   }
 }
@@ -614,19 +621,24 @@ void HiveSplitter::FinalizeSubEvents() {
   log_debug("Entering FinalizeSubEvents()");
   //dump all hits out of the clusters in progress
   
-  CausalClusterList::iterator cluster = clusters_.begin();
-  while (cluster!=clusters_.end()) {
-    cluster->advanceInTime(std::numeric_limits<Time>::infinity());
-    if (cluster->isEstablished())
-      AddSubEvent(cluster->getConcludedHits());
-    cluster = clusters_.erase(cluster);
+  auto c_iter = clusters_.begin();
+  while (c_iter != clusters_.end()) {
+    c_iter->advanceInTime(std::numeric_limits<Time>::infinity());
+    if (c_iter->isEstablished())
+      AddSubEvent(c_iter->getConcludedHits());
+    c_iter = clusters_.erase(c_iter);
   }
-    
-  //clusters_.clear(); //should already be empty
-  //collect all leftover subevents
-  BOOST_FOREACH(AbsHitSet &set, partialSubEvents_)
-    subEvents_.insert(subEvents_.end(), set);
-  partialSubEvents_.clear();
+
+  //collect all leftover partial subevents
+  auto pse_iter = partialSubEvents_.begin();
+  while (pse_iter != partialSubEvents_.end()) {
+    subEvents_.insert(subEvents_.end(), pse_iter);
+    pse_iter = partialSubEvents_.erase(pse_iter);
+  }
+
+  assert(newCluster_.empty());
+  assert(clusters_.empty());
+  assert(partialSubEvents_.empty());
 };
 
 
