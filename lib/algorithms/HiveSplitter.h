@@ -54,7 +54,7 @@ namespace hivesplitter {
 //======================================
 namespace detail {
   
-  ///enforces timeorder in hits, which is important [h1 should be earlier than h2]
+  ///enforces time-order in hits, which is important [h1 should be earlier than h2]
   bool CausallyConnected(
     const AbsHit& h1,
     const AbsHit& h2,
@@ -75,7 +75,7 @@ namespace detail {
     const HiveSplitter_ParameterSet* params;
     
   private: //properties
-    ///the latest time to which this cluster is syncronized
+    ///the latest time to which this cluster is synchronized
     Time sync_time;
     ///The ordered queue of hits within this cluster which are still within the time window of the current time
     AbsHitSet active_hits;
@@ -111,13 +111,14 @@ namespace detail {
     const DOMHitTimes& getFirstHitTimes() const;
     ///get the latest hit, i.e. the most recently added hit
     const AbsHit& getLatestActiveHit() const;
-    ///get the CausalClaster of all active hits within this cluster which can be considered connected
+    ///get the CausalCluster of all active hits within this cluster which can be considered connected
     ///\param h the Hit to check against
     CausalCluster getSubCluster(const AbsHit &h) const;
     ///Move this cluster forward in time to t, dropping hits which are no longer within the time window,
     ///the request to merge clusters is accounted for
     ///\param time The current time to which the cluster should be moved
     void advanceInTime(const Time time);
+
     ///Finds the time of the earliest hit in this cluster
     ///\return The earliest hit time or infinity if the cluster is empty
     Time getEarliestTime() const;
@@ -126,7 +127,7 @@ namespace detail {
     Time getLatestTime() const;
     ///is this cluster still active; thus can there still be found connected hits?
     bool isActive() const;
-    ///is this cluster still active; thus can there still be found connected hits?
+    ///is this cluster established; thus have enough hits been found?
     bool isEstablished() const;
     ///Test whether the hits in sub are a subset of super
     ///\param super cluster with a series of hits which might be a superset
@@ -177,13 +178,13 @@ public: //interface
    * Save the SplitCount also if that is wanted,
    * Push everything back into te pipeline.
    * Clean-up the memory.
-   * @param hits the hits to process
-   * @return a series of hits, which are the subevents (timeorder in sequence and in hit-order)
+   * @param inhits the hits to process
+   * @return a series of hits, which are the subevents (time-order in sequence and in hit-order)
    */
   template <class AbsHitContainer>
   AbsHitSetSequence Split (const AbsHitContainer& inhits);
   
-  /// Get the time until which the result is static and no active hits are perculating in the algorithm/clusters
+  /// Get the time until which the result is static and no active hits are percolating in the algorithm/clusters
    hivesplitter::Time FinalizedUntil() const;
 
 private: // --- THE REAL MACHINERY ---

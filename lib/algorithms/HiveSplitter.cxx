@@ -113,16 +113,17 @@ Time hivesplitter::detail::CausalCluster::getLatestTime() const{
 
 
 bool hivesplitter::detail::CausalCluster::connectsTo(const AbsHit &h) const {
-  if (firstHitTimes.count(h.GetDOMIndex())
-    && (firstHitTimes.at(h.GetDOMIndex())-h.GetTime() < params->acceptTimeWindow) 
-    && (firstHitTimes.at(h.GetDOMIndex())-h.GetTime() < params->rejectTimeWindow))
-  {
-    return true;
+  // if the DOM has been hit before, there might be automated inclusion of hits
+  const auto hDomIndex = h.GetDOMIndex();
+  if (firstHitTimes.count(hDomIndex)) {
+    const auto time_diff = firstHitTimes.at(hDomIndex)-h.GetTime();
+    if (time_diff < params->acceptTimeWindow && time_diff < params->rejectTimeWindow)
+      return true;
   }
-  
+
   //more elaborate: determine if enough DOMs or all active hits currently in the cluster are connected
   std::set<CompactHash> connectedDOMs; //
-  bool allConnected=true;
+  bool allConnected = true;
   for (AbsHitSet::reverse_iterator it=active_hits.rbegin(), end=active_hits.rend(); it!=end; ++it) {
     if (it->GetDOMIndex() == h.GetDOMIndex()) {
       //the DOM of h itself is never to be considered connected
@@ -131,7 +132,7 @@ bool hivesplitter::detail::CausalCluster::connectsTo(const AbsHit &h) const {
         continue;
       }
       if (dt > params->rejectTimeWindow // it rejects h, so not connected
-        || ! CausallyConnected(*it, h, params->connectorBlock)) // it cannnot even connect to h
+        || ! CausallyConnected(*it, h, params->connectorBlock)) // it cannot even connect to h
       {
         allConnected = false;
       }
@@ -163,7 +164,7 @@ void hivesplitter::detail::CausalCluster::insertActiveHit(const AbsHit &h) {
   active_hits.insert(active_hits.end(), h);
   //if the total number of DOMs meets the multiplicity threshold, make note,
   //and also record that this is the last known hit within the cluster contributing
-  if (active_doms.size()>=params->multiplicity) {
+  if (active_doms.size()>=params->multiplicity) {  // TODO watch out; this is outside info
     established=true;
   }
 }
@@ -174,28 +175,28 @@ hivesplitter::detail::CausalCluster::getSubCluster(const AbsHit &h) const {
   CausalCluster newSubCluster(params);
   
   if (! firstHitTimes.count(h.GetDOMIndex())) { //FAST short-cut
-    //never seen this DOM being hit before; insert them all as long as they are causally conneted
+    //never seen this DOM being hit before; insert them all as long as they are causally connected
     for (AbsHitSet::iterator it=active_hits.begin(), end=active_hits.end(); it!=end; ++it) {
       if (CausallyConnected(*it, h, params->connectorBlock))
         newSubCluster.insertActiveHit(*it);
     }
+    return newSubCluster;
   }
-  else { //SLOW
-    //else: the iteration need to include the check for the accept and rejectTimeWindow
-    for (AbsHitSet::iterator it=active_hits.begin(), end=active_hits.end(); it!=end; ++it) {
-      if (it->GetDOMIndex() == h.GetDOMIndex()) {
-        //check the acceptanceTimeWindow condition
-        const Time dt = h.GetTime() - it->GetTime(); //positive if 'it' earlier than 'h' (the anticipated case)
-        if (dt > params->rejectTimeWindow)
-          continue;
-        if (dt >=0 && dt <= params->acceptTimeWindow) {
-          newSubCluster.insertActiveHit(*it);
-          continue;
-        }
-      }
-      if (CausallyConnected(*it, h, params->connectorBlock))
+
+  //else: the iteration need to include the check for the accept and rejectTimeWindow
+  for (AbsHitSet::iterator it=active_hits.begin(), end=active_hits.end(); it!=end; ++it) {
+    if (it->GetDOMIndex() == h.GetDOMIndex()) {
+      //check the acceptanceTimeWindow condition
+      const Time dt = h.GetTime() - it->GetTime(); //positive if 'it' earlier than 'h' (the anticipated case)
+      if (dt > params->rejectTimeWindow)
+        continue;
+      if (dt >=0 && dt <= params->acceptTimeWindow) {
         newSubCluster.insertActiveHit(*it);
+        continue;
+      }
     }
+    if (CausallyConnected(*it, h, params->connectorBlock))
+      newSubCluster.insertActiveHit(*it);
   }
   return newSubCluster;
 }
@@ -229,20 +230,18 @@ const AbsHit& hivesplitter::detail::CausalCluster::getLatestActiveHit() const{
 bool hivesplitter::detail::CausalCluster::isActive() const {
   if (!active_hits.empty())
     return true;
-  else {
-    if (params->acceptTimeWindow<=params->multiplicityTimeWindow) {
-      //then only active hits can accept more hits
-      return false;
-    } 
-    else {
-      //need to look into the firsthit-times if any DOM can still accept a new hit within the acceptanceTimeWindow
-      BOOST_FOREACH (const DOMHitTimes::value_type& fht, firstHitTimes) {
-        if (fht.second > sync_time-params->acceptTimeWindow)
-          return true;
-      }
-    }
+
+  if (params->acceptTimeWindow <= params->multiplicityTimeWindow) { // TODO watch out; this is outside info
+    //then only active hits can accept more hits
     return false;
   }
+  //need to look into the time of every first hit on any each DOM if further hits can be accepted
+  const auto latest_accept_time = sync_time - params->acceptTimeWindow; // TODO watch out; this is outside info
+  BOOST_FOREACH (const DOMHitTimes::value_type& fht, firstHitTimes) {
+    if (fht.second > latest_accept_time)
+      return true;
+  }
+  return false;
 }
 
 inline
@@ -282,13 +281,13 @@ void hivesplitter::detail::CausalCluster::advanceInTime (
 {
   while (!active_hits.empty()) {
     const AbsHitSet::const_iterator h=active_hits.begin();
-    if (time > h->GetTime()+ params->multiplicityTimeWindow) {//the hit is no longer active
-
+    if (time > h->GetTime()+ params->multiplicityTimeWindow) {// TODO watch out; this is outside info
+      //the hit is no longer active, thus
       //decrement the number of hits on the DOM where h occurred
       if ((--active_doms[h->GetDOMIndex()])<=0) //NOTE TODO do we need to bother with this after the cluster is established, and this is probably not checked anymore?
         active_doms.erase(h->GetDOMIndex());
 
-      //if the mutiplicity threshold was met include h in the finished cluster
+      //if the multiplicity threshold was met include h in the finished cluster
       if (established) {
         //insert the hit
         concluded_hits.insert(concluded_hits.end(),*h);
@@ -372,91 +371,106 @@ AbsHitSetSequence HiveSplitter::Split<AbsHitSet> (const AbsHitSet& inhits) {
 void HiveSplitter::AddHit (const AbsHit& h) {
   log_debug("Entering AddHit()");
   newClusters_.clear();
-  bool addedToCluster=false; //keep track of whether h has been added to any cluster
 
-  CausalClusterList::iterator cluster=clusters_.begin();
-  while (cluster != clusters_.end()) {
+  bool addedToCluster = false; //keep track of whether h has been added to any cluster
+
+  auto c_iter=clusters_.begin();
+  while (c_iter != clusters_.end()) {
     //each cluster is advanced in time:
     //removing all too old/expired hits, which cannot make any connections any more;
     //concluded clusters, which do not have any connecting hits left, become 'Inactive' and are put to the garbage
     //if the cluster is still active, try to add the Hit to the cluster
-    cluster->advanceInTime(h.GetTime());
-    
-    if (cluster->isEstablished() && !cluster->isActive()) {
-      AddSubEvent(cluster->getConcludedHits());
+    c_iter->advanceInTime(h.GetTime());
+
+    // if the cluster is still active try to add the hit, generating partial subclusters (newClusters_) on the fly
+    if (c_iter->isActive()) {
+      addedToCluster |= AddHitToCluster(*c_iter, h);
+      ++c_iter;
+      continue;
     }
-    if (cluster->isActive()) {
-      addedToCluster |= AddHitToCluster(*cluster, h);
-      ++cluster;
+
+    //if the cluster is no longer active but established, put its hits to the (output) subevents
+    if (c_iter->isEstablished()) {
+      AddSubEvent(c_iter->getConcludedHits());
     }
-    else //concluded clusters are killed off
-      cluster = clusters_.erase(cluster);    
+    c_iter = clusters_.erase(c_iter);
   }
 
-  //Move all newly generated clusters into the main cluster list,
+  //Move all newly generated clusters (newClusters_) into the main cluster list,
   //eliminating clusters which are subsets of other clusters
-  for (CausalClusterList::iterator newCluster=newClusters_.begin(), nend=newClusters_.end(); newCluster!=nend; newCluster++) {
-    bool add=true;
 
-    cluster=clusters_.begin();
-    while (cluster != clusters_.end()) {
-      //check whether the new cluster is a subset of the old cluster
+
+  auto nc_iter=newClusters_.begin();
+  while (nc_iter != newClusters_.end()) {
+    bool add = true;
+
+    auto c_iter = clusters_.begin();
+    while (c_iter != clusters_.end()) {
+      //check whether the new cluster is a subset of an old cluster
       //if the old cluster does not contain h, it cannot be a superset of the new cluster which does,
       //and if the old cluster contains h, it will be the last hit in that cluster
-      if (cluster->getLatestActiveHit()==h){
-        if (newCluster->isSubsetOf(*cluster)) {
+      if (h == c_iter->getLatestActiveHit()) { // FIXME this might break because of the sorting if two hits have the exact same hit-time but DOM-index forces a strict ordering (EDGECASE)
+        if (nc_iter->isSubsetOf(*c_iter)) {
           add=false;
           break;
         }
-        ++cluster;
+        ++c_iter;
       }
       //otherwise, the new cluster may still be a superset of the old cluster
-      else if (cluster->isSubsetOf(*newCluster)) {
+      else if (c_iter->isSubsetOf(*nc_iter)) {
         //if replacing, make sure not to lose any hits already shifted to the old cluster's concluded_hits list
-        newCluster->takeConcludedHits(*cluster);
-        cluster = clusters_.erase(cluster);
+        nc_iter->takeConcludedHits(*c_iter);
+        c_iter = clusters_.erase(c_iter);
       }
       else
-        ++cluster;
+        ++c_iter;
     }
     if (add)
-      clusters_.push_back(*newCluster);
+      clusters_.push_back(*nc_iter);
+
+    nc_iter++;
   }
-  newClusters_.clear();
 
   //if h was not added to any cluster, put it in a cluster by itself
   if (!addedToCluster) {
     clusters_.push_back(CausalCluster(&params_));
     clusters_.back().insertActiveHit(h);
   }
+
   log_debug("Leaving AddHit()");
 }
 
 
 bool HiveSplitter::AddHitToCluster (
   CausalCluster& c,
-  const AbsHit& h)
-{
-  log_debug("Entering AddhitToCluster()");
-  if (c.getFirstHitTimes().count(h.GetDOMIndex())
-    && (c.getFirstHitTimes().at(h.GetDOMIndex())-h.GetTime() < params_.acceptTimeWindow) 
-    && (c.getFirstHitTimes().at(h.GetDOMIndex())-h.GetTime() < params_.rejectTimeWindow))
-  {
-    c.insertActiveHit(h);
-    return true;
+  const AbsHit& h) {
+  log_debug("Entering AddHitToCluster()");
+
+  const auto hDomIndex = h.GetDOMIndex();
+  const auto hTime = h.GetTime();
+
+  // if the same DOM has been hit before, just check the accept and reject Time Window of the first hit
+  if (c.getFirstHitTimes().count(hDomIndex)) {
+    const auto dt = c.getFirstHitTimes().at(hDomIndex)-hTime;
+    if ( dt < params_.acceptTimeWindow && dt < params_.rejectTimeWindow ) {
+      c.insertActiveHit(h);
+      return true;
+    }
   }
   
-  
-  //more elaborate: determine if enough DOMs or all active hits currently in the cluster are connected
+  //more elaborate: determine if enough DOMs or all active hits cluster are connected
   std::set<CompactHash> connectedDOMs;
   AbsHitSet connectedHits;
-  bool allConnected=true;
+  bool allConnected = true;
   
   AbsHitSet::const_reverse_iterator it=c.getActiveHits().rbegin();
   const AbsHitSet::const_reverse_iterator end=c.getActiveHits().rend();
-  
+
+
+  // NOTE fast evaluation possible if DOM has never been hit before
   if (! c.getFirstHitTimes().count(h.GetDOMIndex())) { //FAST
-    //never seen the DOM of h being hit before; check just causallyConnected
+    //never seen the DOM of h being hit before; check just causallyConnected for all active hits
+    // if multiplicity of connected DOMs is met : add hit and exit
     for (; it!=end; ++it) {
       if (CausallyConnected(*it, h, params_.connectorBlock)) {
         connectedDOMs.insert(it->GetDOMIndex());
@@ -468,15 +482,15 @@ bool HiveSplitter::AddHitToCluster (
         }
       }
       else {
-        allConnected=false;
+        allConnected = false;
       }
     }
   }
   else {//SLOW
-    //need to check the conditions of accept/reject on same DOM
+    //DOM has been hit before, with all active hits check the conditions of accept/reject // FIXME this might be a double evaluation
     for (; it!=end; ++it) {
       if (it->GetDOMIndex() == h.GetDOMIndex()) {
-        //the DOM of h itself is never to be considered connected
+        //evaluate the accept/reject time window condition
         const Time dt = h.GetTime() - it->GetTime();
         //assert(dt >=0); //h should always be the latest hit
         if (dt <= params_.acceptTimeWindow) { // it and h connected
@@ -492,7 +506,7 @@ bool HiveSplitter::AddHitToCluster (
         if ( CausallyConnected(*it, h, params_.connectorBlock))
           connectedHits.insert(connectedHits.begin(), *it);
         else
-          allConnected=false;
+          allConnected = false;
       }
       else {
         //not on the same DOM
@@ -513,7 +527,7 @@ bool HiveSplitter::AddHitToCluster (
   }
   
   if (allConnected) {
-    //when all hits, when all hits which are in the cluster are connecting, thats also OKay
+    // when all hits which are in the cluster are connecting, that is also OKay
     c.insertActiveHit(h);
     return true;
   }
@@ -522,19 +536,26 @@ bool HiveSplitter::AddHitToCluster (
     //no overlap at all
     return false;    
   }
-  
+
+
+  //we found connected hits, however the multiplicity has not been met:
+  // create a new CausalCluster from the connected Hits and the hit itself
+
   CausalCluster newSubCluster(&params_);
   BOOST_FOREACH(const AbsHit& connectedHit, connectedHits)
     newSubCluster.insertActiveHit(connectedHit);
   newSubCluster.insertActiveHit(h); //insert the hit itself now
-  
-  bool keep=true;
+
+  // eval if the new subcluster is already contained as part of an already previously found subcluster
+  // if so only keep the bigger superset
+
+  bool keep = true;
   CausalClusterList::iterator iter=newClusters_.begin();
   while (iter != newClusters_.end()) {
     if (iter->isSubsetOf(newSubCluster))
       iter = newClusters_.erase(iter); //remove a redundant, existing cluster
     else if (newSubCluster.isSubsetOf(*iter)) {
-      keep=false; //this cluster is redundant, so abort adding it
+      keep = false; //this cluster is redundant, so abort adding it
       break;
     }
     else
@@ -553,7 +574,7 @@ void HiveSplitter::AddSubEvent(AbsHitSet newSet) {
   
   AbsHitSetList::iterator set =partialSubEvents_.begin();
   while (set != partialSubEvents_.end()) {
-    //determine if the overlap sufficent: common hits on 'params.mergeOverlap' DOMs within the time-window
+    //determine if the overlap is sufficient: common hits on 'params.mergeOverlap' DOMs within the time-window
     const bool sufficent_overlap = CausallyOverlaps(newSet, *set, params_.mergeOverlap, params_.multiplicityTimeWindow);
     if (sufficent_overlap) {
       newSet.insert(set->begin(),set->end());
@@ -604,7 +625,7 @@ void HiveSplitter::FinalizeSubEvents() {
   //clusters_.clear(); //should already be empty
   //collect all leftover subevents
   BOOST_FOREACH(AbsHitSet &set, partialSubEvents_)
-    subEvents_.insert(subEvents_.end(),set);
+    subEvents_.insert(subEvents_.end(), set);
   partialSubEvents_.clear();
 };
 

@@ -19,83 +19,77 @@
 #include <fstream>
 
 namespace configfileinterfaces {
-//----------------------------
-template<class T>
-void 
-WriteToConfigFile(
-  const T& t,
-  const std::string &filename);
+    //----------------------------
+    template<class T>
+    void
+    WriteToConfigFile(
+        const T &t,
+        const std::string &filename);
 
-template<class T>
-void 
-ReadFromConfigFile(
-  T& t,
-  const std::string &filename);
+    template<class T>
+    void
+    ReadFromConfigFile(
+        T &t,
+        const std::string &filename);
 
-template<class T>
-void
-ReadFromConfigFile(
-  T*& t,
-  const std::string &filename);
-
-
+    template<class T>
+    void
+    ReadFromConfigFile(
+        T *&t,
+        const std::string &filename);
 }; //fileinterfaces
 
 //============================================================
-//=========================== IMPLEMETATIONS =================  
+//=========================== IMPLEMENTATIONS =================
 //============================================================
 
 //============== from/to config files ================
 
 template<class T>
-void 
+void
 configfileinterfaces::WriteToConfigFile(
-  const T& t,
-  const std::string &filename)
-{
-  log_info_stream("Writing ConnectorBlock to config-file: "<<filename);
+    const T &t,
+    const std::string &filename) {
+    log_info_stream("Writing ConnectorBlock to config-file: " << filename);
 
-  std::ofstream ofs(filename.c_str());
-  if (!ofs.is_open())
-    log_fatal_stream("problems opening file " << filename.c_str());
-  ofs << t.Dump();
-  ofs.close();  
+    std::ofstream ofs(filename.c_str());
+    if (!ofs.is_open())
+        log_fatal_stream("problems opening file " << filename.c_str());
+    ofs << t.Dump();
+    ofs.close();
 };
 
 template<class T>
 void
 configfileinterfaces::ReadFromConfigFile(
-  T& t,
-  const std::string &filename)
-{
-  log_info_stream("Reading HiveTopology from config-file: "<<filename);
-  
-  std::ifstream ifs(filename.c_str());
-  if (!ifs.is_open())
-    log_fatal_stream(filename.c_str()<< " not found");
-  
-  t = T::FromDump(ifs);
-  ifs.close();
+    T &t,
+    const std::string &filename) {
+    log_info_stream("Reading HiveTopology from config-file: " << filename);
+
+    std::ifstream ifs(filename.c_str());
+    if (!ifs.is_open())
+        log_fatal_stream(filename.c_str() << " not found");
+
+    t = T::FromDump(ifs);
+    ifs.close();
 };
 
 //ptr types
 template<class T>
 void
 configfileinterfaces::ReadFromConfigFile(
-  T*& t,
-  const std::string &filename)
-{
-  log_info_stream("Reading HiveTopology from config-file: "<<filename);
-  
-  std::ifstream ifs(filename.c_str());
-  if (!ifs.is_open())
-    log_fatal_stream(filename.c_str()<< " not found");
-  
-//   ::new(t)T::FromDump(ifs);
-  t = new T(T::FromDump(ifs));
-  ifs.close();
-};
+    T *&t,
+    const std::string &filename) {
+    log_info_stream("Reading HiveTopology from config-file: " << filename);
 
+    std::ifstream ifs(filename.c_str());
+    if (!ifs.is_open())
+        log_fatal_stream(filename.c_str() << " not found");
+
+    //   ::new(t)T::FromDump(ifs);
+    t = new T(T::FromDump(ifs));
+    ifs.close();
+};
 
 
 #endif //CONFIGINTERFACES_H

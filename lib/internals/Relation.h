@@ -132,7 +132,7 @@ public: //methods
   bool AreRelated(
     const OMKey& a,
     const OMKey& b) const;
-  ///get set the relation for thess DOMs
+  ///get set the relation for these DOMs
   void SetRelated(
     const OMKey& a,
     const OMKey& b,
@@ -142,7 +142,7 @@ public: //methods
   ///set all OMKeys to be related
   void SetNoneRelated();
   ///set the relation by predication;
-  ///NOTE assums function like object supports signature 'bool operator()(OMKey, OMKey)'
+  ///NOTE assumes function like object supports signature 'bool operator()(OMKey, OMKey)'
   void PredicateRelated(const boost::function<bool (const OMKey&, const OMKey&)>& callobj);
 };
 

@@ -12,6 +12,7 @@
 #ifndef CONNECTOR_H
 #define CONNECTOR_H
 
+#include "Relation.h"
 #include "IceHiveZ/__SERIALIZATION.h"
 
 static const unsigned connector_version_ = 0;
@@ -92,14 +93,18 @@ private:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int file_version);
 #endif //SERIALIZATION_ENABLED  
-private:
+private: // params
   ///a unique name for this service
   const std::string name_;
   ///pointer the OMKeyHasher
   const HashedGeometryConstPtr hashedGeo_;
-  ///the connector for this service
+  /** the connector for this service
+   * This is a functional object, comparing causal relation
+   */
   const ConnectionPtr connection_;
-  ///the Relation for this Service
+  /** The Relation for this Service
+   * This is a functional object, comparing spatial relation
+   */
   const RelationPtr relation_;
   
 public:
@@ -109,13 +114,18 @@ public:
     const HashedGeometryConstPtr& hashedGeo,
     const ConnectionPtr& connection, 
     const RelationPtr& relation);
-  
+
+public: //methods
   std::string GetName() const;
   CompactOMKeyHashServiceConstPtr GetHashService() const;
   ConnectionPtr GetConnection() const;
   RelationPtr GetRelation() const;
     
-  /// Are Hits h1 and h2 connected by being related and connected to each other?
+  /** Are Hits h1 and h2 connected by being spatially and causally connected to each other?
+  * @param h1
+  * @param h2
+  * @return true if hits are connected
+  */
   template <class Hitclass>
   bool Connected (const Hitclass& h1, const Hitclass& h2) const;
 };
@@ -129,7 +139,7 @@ typedef boost::shared_ptr<const Connector> ConnectorConstPtr;
 
 //============ CLASS ConnectorBlock ===========
 
-///Holds a number of Connectors and and neccessary Services; is explicitly serializable
+///Holds a number of Connectors and and necessary Services; is explicitly serializable
 class ConnectorBlock {
 #if SERIALIZATION_ENABLED  
   friend class SERIALIZATION_NS::access;
@@ -155,13 +165,13 @@ public:
 private: //property
   ///pointer the OMKeyHasher
   const HashedGeometryConstPtr hashedGeo_;
-  ///list of connectors, which are 
+  ///list of all connectors
   ConnectorList connectorlist_;
-  ///the cumulative of all the Connectors of the connectorlist
+  ///the cumulative of all the Connectors of the connectorlist : this is a speedup
   const RelationPtr cumulativeRel_;
   
 public: //constructors
-  /// blank constructor (need to fill this with AddConnector() calls)
+  /// constructor purely with a geometry and no Connectors, which need to be added through `AddConnector` calls
   ConnectorBlock(
     const HashedGeometryConstPtr& hashedGeo);
 
@@ -170,18 +180,19 @@ public: //methods
   void AddConnector (
     const ConnectorPtr& connector);
   
-  ///check if to Hits are connected by the any of the connection services
+  ///check if to Hits are connected by any of the Connectors
   template <class Hitclass>
   bool Connected(
     const Hitclass& h1,
     const Hitclass& h2) const;
   
-  ///diagnose the connections for these hits
+  ///diagnose the connection for these hits, as by which connector they are voted as connected
   template <class Hitclass>
   void DiagnoseConnected(
     const Hitclass& h1,
     const Hitclass& h2) const;  
-  
+
+  //=== getters ===
   ///pass Pointer to CompactOMKeyHasher to external
   CompactOMKeyHashServiceConstPtr GetHashService() const;
   ///retrieve a connector from the ConnectorList; 0 will pass the cumulative one
