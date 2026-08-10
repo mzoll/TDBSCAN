@@ -9,6 +9,7 @@
 #include "absblib.h"
 
 #include <list>
+#include <string>
 
 //======================= Connector ============
 namespace tdbscan {
@@ -22,14 +23,15 @@ protected: // params
 protected: //constructor
   Connector(const std::string& name);
 public: //methods
-  std::string GetName() const;
+  [[nodiscard]] std::string GetName() const;
 
     /** Are Hits h1 and h2 connected by being spatially and causally connected to each other?
   * @param h1
   * @param h2
   * @return true if hits are connected
   */
-  bool Eval (const AbsBlib& h1, const AbsBlib& h2) const;
+  template <class Position_t>
+  bool Eval (const AbsBlib<Position_t>& h1, const AbsBlib<Position_t>& h2) const;
 };
 
 
