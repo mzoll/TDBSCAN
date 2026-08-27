@@ -1,6 +1,11 @@
-include(cmake/StandardProjectSettings.cmake)
-
 cmake_minimum_required (VERSION 3.6)
+
+#include(cmake/StandardProjectSettings.cmake)
+
+# User-configurable options
+option(BUILD_EXAMPLES "Build example applications" ON)
+option(BUILD_STATIC_LIB "Build static library only" OFF)
+option(ENABLE_TIME_TRACE "Add -ftime-trace to Clang builds" OFF)
 
 project (TDBSCAN
     VERSION 0.0.1

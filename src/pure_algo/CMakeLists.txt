@@ -22,6 +22,10 @@ set_target_properties(hello_world PROPERTIES
         CXX_EXTENSIONS OFF
 )
 
+# /// IDEA ///
+# https://dev.to/pigeoncodeur/cmake-for-complex-projects-part-1-building-a-c-game-engine-from-scratch-for-desktop-and-ied
+# Modern CMake magic - precompiled headers for faster builds
+# target_precompile_headers(ColumbaEngine PUBLIC src/Engine/stdafx.h)
 
 target_sources(pure_algo
         PUBLIC
