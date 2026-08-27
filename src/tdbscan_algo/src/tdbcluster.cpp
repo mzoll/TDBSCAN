@@ -3,7 +3,7 @@
 //
 
 
-#include "../include/tdbcluster.h"
+#include "tdbscan_algo/tdbcluster.h"
 
 #include <limits>
 

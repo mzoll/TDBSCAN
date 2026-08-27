@@ -1,12 +1,10 @@
-include(cmake/StandardProjectSettings.cmake)
-
-add_subdirectory(pure_algo)
+add_subdirectory(tdbscan_algo)
 
 add_executable(hello_world)
 
 target_sources(hello_world
         PRIVATE
-        src/TDBSCAN.cpp)
+        TDBSCAN.cpp)
 
 target_compile_features(hello_world PUBLIC cxx_std_17)
 

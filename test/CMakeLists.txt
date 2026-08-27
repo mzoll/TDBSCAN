@@ -37,5 +37,5 @@ set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${
 #
 #target_sources(Testsuite
 #    PRIVATE
-#    test/pure_algo/test_absblib.cpp
+#    test/tdbscan_algo/test_absblib.cpp
 #)

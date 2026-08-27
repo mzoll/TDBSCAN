@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "base_defs.h"
+#include "tdbscan_algo/base_defs.h"
 
 namespace tdbscan {
   /**

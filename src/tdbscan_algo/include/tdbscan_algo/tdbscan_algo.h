@@ -223,6 +223,6 @@ namespace tdbscan {
   }
 };
 
-#include "tdbscan_algo.hh"
+#include "../tdbscan_algo.hh"
 
 #endif //TDBSCAN_TDBSCAN_ALGO_H
