@@ -7,9 +7,8 @@
 
 #include <limits>
 #include <list>
-#include <map>
 #include <set>
-#include <deque>
+#include <cstdint>
 
 #include "absblib.h"
 #include "connector.h"
@@ -112,10 +111,13 @@ namespace detail {
     /// @return true, if this is a subset of super
     [[nodiscard]] bool isSubsetOf(const CausalCluster& super) const;
 
-    [[nodiscard]] bool empty() const {return hits.empty();}
+    [[nodiscard]]
+    inline
+    bool empty() const;
 
-    [[nodiscard]] size_t count() const {return hits.count();}
-
+    [[nodiscard]]
+    inline
+    uint64_t count() const;
   };
 
 
