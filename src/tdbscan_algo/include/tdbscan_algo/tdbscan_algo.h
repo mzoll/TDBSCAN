@@ -35,6 +35,8 @@ namespace tdbscan {
    */
   template <class tBlib>
   class TDBScan_Algo {
+
+    //some internal definitions and shorthands
     //  SET_LOGGER("HiveSplitter");
 
     typedef std::set<tBlib> BlibSet;
@@ -48,6 +50,10 @@ namespace tdbscan {
     typedef std::set<BlibSet, BlibSetTimeOrder> BlibSetSequence;
 
 
+    typedef Connector<tBlib> Connector_t;
+    typedef CausalCluster<tBlib> CausalCluster_t;
+
+
   private: // internal state
     //==================
     // Properties
@@ -57,9 +63,9 @@ namespace tdbscan {
     Time_t sync_time;
 
     /// all in-progress causal clusters
-    CausalClusterList<tBlib> active_Clusters_;
+    std::list<CausalCluster_t> active_clusters_;
     /// all concluded clusters
-    CausalClusterList<tBlib> clusters_;
+    std::list<CausalCluster_t> clusters_;
 
   private: //parameters
     //========================
@@ -68,7 +74,7 @@ namespace tdbscan {
     /// PARAM: A parameter-set to run on
     TDBScan_ParameterSet params_;
     /// PARAM: this defines the 'physics' at play
-    ConnectorPtr connector_;
+    Connector<tBlib>* connector_;
 
   public: //interface
     /**
@@ -78,7 +84,7 @@ namespace tdbscan {
      */
     TDBScan_Algo(
       const TDBScan_ParameterSet& params,
-      const ConnectorPtr& connector);
+      const Connector_t* connector);
 
     /** @brief ACTION
      * Perform the Splitting feeding it a series of Hits
@@ -140,82 +146,17 @@ namespace tdbscan {
      * \param h the Hit to check against
      */
     [[nodiscard]]
-    CausalCluster<tBlib> getConnectedSubCluster(const tBlib &h, const CausalCluster<tBlib>& c1) const;
+    CausalCluster<tBlib> getConnectedSubCluster(
+      const tBlib &h, const CausalCluster<tBlib>& c1) const;
 
     ///insert an hit and advance the cluster
     void insertActiveHit(const tBlib &h, CausalCluster<tBlib>& c) {
       c.insertActiveHit(h);
-      if (c.active_doms.size()>=params_->multiplicity) {
+      if (c.active_doms.size()>=params_.multiplicity) {
         c.established=true;
       }
     }
-
-    ///check if this cluster is still active
-    bool isActive(const CausalCluster<tBlib>& c) const {
-      if (c.hasActiveHits())
-        return true;
-
-      if (params_.acceptTimeWindow <= params_.multiplicityTimeWindow) {
-        //then only active hits can accept more hits
-        return false;
-      }
-      //need to look into the time of every first hit on any each DOM if further hits can be accepted
-      const auto latest_accept_time = c.sync_time - params_.acceptTimeWindow;
-      for (const auto& fht, firstHitTimes) {
-        if (fht.second > latest_accept_time)
-          return true;
-      }
-      return false;
-    }
-
-    ///Move this cluster forward in time to t, dropping hits which are no longer within the time window,
-    ///\param time The current time to which the cluster should be moved
-    void advanceInTime(const CausalCluster& c, const Time_t time) {
-      while (c.hasActiveHits()) {
-        const auto h = c.active_hits.begin();
-        if (time > h->GetTime()+ params_.multiplicityTimeWindow) {
-          //the hit is no longer active, thus
-          //decrement the number of hits on the DOM where h occurred
-          if ((--c.active_doms[h->GetDOMIndex()])<=0) //NOTE TODO do we need to bother with this after the cluster is established, and this is probably not checked anymore?
-            c.active_doms.erase(h->GetDOMIndex());
-
-          //if the multiplicity threshold was met include h in the finished cluster
-          if (c.established) {
-            //insert the hit
-            c.concluded_hits.insert(c.concluded_hits.end(),*h);
-          }
-          else { //hit is about to be discarded
-            //sync up the firsthit-time map
-            if (!c.active_doms.count(h->GetDOMIndex()))
-              c.firstHitTimes.erase(h->GetDOMIndex());
-            else {
-              //check for the next hit on the same DOM which is still active and take its time instead
-              BOOST_FOREACH(const AbsHit& hh, c.active_hits) {
-                if (h->GetDOMIndex() == hh.GetDOMIndex())
-                  c.firstHitTimes[h->GetDOMIndex()] = hh.GetTime();
-              }
-              //NOTE by this shift some inconsitency is introduced of the connections between hits in the cluster
-              //however the merging of Clusters in the HiveSplitter will bring this all in sync again
-            }
-          }
-          c.active_hits.erase(h);
-        }
-        else
-          break;
-      }
-      //the cluster is now synced to this time
-      c.sync_time=time;
-    }
-
-  };
-
-  ///specialization for already (time-)sorted hits
-  template <>
-  AbsHitSetSequence HiveSplitter::Split (const AbsHitSet& inhits);
-
-
-
-}
+};
 
 #include "tdbscan_algo.hh"
 

@@ -1,23 +1,12 @@
-//
-// Created by netsu on 08/08/2026.
-//
 /**
- * \file HiveSplitter.cxx
+ * \file tdbscan_algo.hh
  *
- * (c) 2012 the IceCube Collaboration
+ * (c) 2026
  *
- * $Id: HiveSplitter.cxx 153493 2017-02-23 17:13:21Z mzoll $
- * \version $Revision: 153493 $
- * \date $Date: 2017-02-23 18:13:21 +0100 (Thu, 23 Feb 2017) $
- * \author Marcel Zoll <marcel.zoll@fysik.su.se>
+ * \author Marcel Zoll <marcel.zoll.physics@gmail.com>
  */
 
-/**
- * =================== IMPLEMENTATIONS
- */
-
-
-#include "tdbscan_algo.h"
+#pragma once
 
 #include <algorithm>
 #include <math.h>
@@ -31,14 +20,11 @@ namespace tdbsscan {
 
 //=============== namespace tdbsscan::details =================
 
-
-
-
-//=============== class HiveSplitter_ParameterSet =================
+//=============== class TDBScan_ParameterSet =================
 
 TDBScan_ParameterSet::TDBScan_ParameterSet():
   multiplicity(3),
-  multiplicityTimeWindow(1000.*I3Units::ns)
+  multiplicityTimeWindow( Timediff_t(1000.))
 {};
 
 

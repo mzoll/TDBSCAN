@@ -22,12 +22,7 @@
 namespace tdbscan {
 
 namespace detail {
-  ///enforces time-order in hits, which is important [h1 should be earlier than h2]
-  template <class tPosition>
-  bool CausallyConnected(
-    const AbsBlib<tPosition>& h1,
-    const AbsBlib<tPosition>& h2,
-    const ConnectorConstPtr& connectorBlock);
+
 
   ///sufficient overlap in set1 and set2 by hits on 'multiplicity' many DOMs with 'multiplicityTimeWindow'
   //(agnostic)

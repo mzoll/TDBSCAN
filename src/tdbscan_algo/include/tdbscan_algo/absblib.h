@@ -31,7 +31,7 @@ namespace tdbscan {
     [[nodiscard]] virtual Distance_t GetDistance(const AbsBlib& rhs) const = 0;
 
     /// get the time difference to rhs
-    [[nodiscard]] virtual Time_t TimeDiff(const AbsBlib& rhs) const = 0;
+    [[nodiscard]] virtual Timediff_t TimeDiff(const AbsBlib& rhs) const = 0;
   };
 
   template <typename tPosition>

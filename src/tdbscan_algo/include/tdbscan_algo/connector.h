@@ -14,96 +14,86 @@
 
 //======================= Connector ============
 namespace tdbscan {
-
 template<class Blib_t>
 class Connector {
 
+  public:
+  virtual ~Connector() = default;
 
-    /** Are Hits h1 and h2 connected by being spatially and causally connected to each other?
-  * @param h1
-  * @param h2
-  * @return true if hits are connected
-  */
-  [[nodiscard]]
-  virtual bool eval(const Blib_t& h1, const Blib_t& h2) const = 0;
-};
+  /** Are Hits h1 and h2 connected by being spatially and causally connected to each other?
+    * @param h1
+    * @param h2
+    * @return true if hits are connected
+    */
+    [[nodiscard]]
+    virtual bool eval(const Blib_t& h1, const Blib_t& h2) const = 0;
+  };
 
-//============ CLASS ConnectorSingle ===========
-/**
- * A service which tells you if hits are (causally and topologically) connected
- */
-template<class Blib_t>
-class ConnectorSingle : public Connector<Blib_t> {
-protected: // params
-  ///a unique name for this service
-  const std::string name_; //className constructed
-protected: //constructor
-  ConnectorSingle(const std::string& name) : name_(name) {};
-public: //methods
-  [[nodiscard]]
-  std::string getName() const {return name_;};
-};
+  //============ CLASS ConnectorSingle ===========
+  /**
+   * A service which tells you if hits are (causally and topologically) connected
+   */
+  template<class Blib_t>
+  class ConnectorSingle : public Connector<Blib_t> {
+  protected: // params
+    ///a unique name for this service
+    const std::string name_; //className constructed
+  protected: //constructor
+    ConnectorSingle(const std::string& name) : name_(name) {};
+  public: //methods
+    [[nodiscard]]
+    std::string getName() const {return name_;};
+  };
 
 
-//============ CLASS ConnectorBlock ===========
-/**
- * A collection of Connectors, which can be evaluated en-block.
- */
+  //============ CLASS ConnectorBlock ===========
+  /**
+   * A collection of Connectors, which can be evaluated en-block.
+   */
   template <class tBlib>
 class ConnectorBlock : public Connector<tBlib> {
-public:
-  ///list of connectors
-  typedef std::list< ConnectorSingle<tBlib>* > ConnectorList;
-private: //property
-  ///list of all connectors
-  ConnectorList connectorlist_;
+  public:
+    ///list of connectors
+    typedef std::list< ConnectorSingle<tBlib>* > ConnectorList;
+  private: //property
+    ///list of all connectors
+    ConnectorList connectorlist_;
 
-public: //constructors
-  /// constructor purely with a geometry and no Connectors
-  ConnectorBlock(
-    const ConnectorList cons = ConnectorList()
-  );
+  public: //constructors
+    /// constructor purely with a geometry and no Connectors
+    ConnectorBlock(
+      const ConnectorList cons = ConnectorList()
+    );
 
-public: //methods
-  /// Add a Connector to the list of to be evaluated Connectors
-  void addConnector (
-    const ConnectorSingle<tBlib>* connector_ptr);
+  public: //methods
+    /// Add a Connector to the list of to be evaluated Connectors
+    void addConnector (
+      const ConnectorSingle<tBlib>* connector_ptr);
 
-  ///check if to Hits are connected by any of the Connectors
-  [[implemented]]
-  bool eval(const tBlib& h1, const tBlib& h2) const;
+    ///check if to Hits are connected by any of the Connectors
+    [[implemented]]
+    bool eval(const tBlib& h1, const tBlib& h2) const;
 
-  /**
-   * diagnose the connection for these hits, as by which connector they are voted as connected
-   * @tparam HitClass
-   * @param h1
-   * @param h2
-   * @return the names of the Connectors that see these Hits as connected
-   */
-  template <class Hitclass>
-  std::list<std::string> diagnose(
-    const Hitclass& h1,
-    const Hitclass& h2) const;
+    /**
+     * diagnose the connection for these hits, as by which connector they are voted as connected
+     * @tparam HitClass
+     * @param h1
+     * @param h2
+     * @return the names of the Connectors that see these Hits as connected
+     */
+    std::list<std::string> diagnose(
+      const tBlib& h1,
+      const tBlib& h2) const;
 
-  //=== getters ===
-  ///retrieve a connector from the ConnectorList; 0 will pass the cumulative one
-  ConnectorSingle<tBlib>* GetConnector (const int index) const;
-  ///Get the complete list of Relations
-  ConnectorList GetConnectorList() const;
-};
+    //=== getters ===
+    ///retrieve a connector from the ConnectorList; 0 will pass the cumulative one
+    ConnectorSingle<tBlib>* getConnector (const int index) const;
+    ///Get the complete list of Relations
+    ConnectorList getConnectorList() const;
+  };
+}
 
 
-namespace detail {
-  /// Causal connection is a special case where time order in hits is enforced
-  template <class tBlib>
-  bool CausallyConnected(
-    const tBlib& h1,
-    const tBlib& h2,
-    const Connector<tBlib>& connector);
-};
-
-};
-
-#include <tdbscan_algo/connector.hh>
+#include "tdbscan_algo/connector.hh"
 
 #endif //TDBSCAN_CONNECTOR_H

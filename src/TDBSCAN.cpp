@@ -1,5 +1,6 @@
 #include <iostream>
 #include <math.h>
+#include <cstdlib>
 
 #include "tdbscan_algo/tdbscan_algo.h"
 
@@ -36,10 +37,13 @@ public: //comparators
 
 	/// get the time difference to rhs
 	[[nodiscard]] virtual Timediff_t TimeDiff(const Blib4d& rhs) const {return time - rhs.time;};
+
+	///constructor
+	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
 };
 
 // having implemented all this stuff, lets whip up a connector, which is just an distance connector
-class DistanceLimiter : public ConnectorSingle<Blib4d> {
+class DistanceLimiter final : public ConnectorSingle<Blib4d> {
 public:
 	Distance_t maxDist_;
 	DistanceLimiter(const Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
@@ -48,7 +52,7 @@ public:
 };
 
 // make one connector which just connects to max time-diff
-class TimeLimiter : public ConnectorSingle<Blib4d> {
+class TimeLimiter final : public ConnectorSingle<Blib4d> {
 public:
 	Timediff_t maxTimediff_;
 	explicit TimeLimiter(const Timediff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
@@ -57,30 +61,42 @@ public:
 };
 
 // combine the Connectors into a ConnectorBlock
-class LimitingConnector : public ConnectorBlock<Blib4d> {
-	DistanceLimiter distLimiter_{20.};
-	TimeLimiter timeLimiter_{20.};
-
-	LimitingConnector() {
-		addConnector(&distLimiter_);
-		addConnector(&timeLimiter_);
-	};
+class LimitingConnector final : public ConnectorBlock<Blib4d> {
 };
 
 
 void construct_algo() {
-	LimitingConnector* limcon = new LimitingConnector();
+
+	auto distLimiter_ = new DistanceLimiter(20.);
+	auto timeLimiter_ = new TimeLimiter(20.);
+	auto limcon = new LimitingConnector();
+	limcon->addConnector(distLimiter_);
+	limcon->addConnector(timeLimiter_);
+
 
 	TDBScan_ParameterSet params;
 
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=20;
 
-	TDBScan_Algo<Blib4d> my_algo(params, &limcon)
+	TDBScan_Algo<Blib4d> my_algo(params, limcon);
+}
+
+
+double rand_ord() {return rand() * 100-50.;};
+Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord())};
+Time_t rand_time() {return Time_t(rand() % 10000);};
+
+void construct_blibs() {
+
+
+	std::set<Blib4d> blibs;
+	for (int i = 0; i < 10; i++) {
+		blibs.insert(Blib4d(rand_pos(), rand_time()));
+	}
 
 
 }
-
 
 
 
