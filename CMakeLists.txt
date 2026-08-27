@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.6)
+cmake_minimum_required (VERSION 3.11)
 
 #include(cmake/StandardProjectSettings.cmake)
 
@@ -15,7 +15,24 @@ project (TDBSCAN
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
-add_subdirectory(src)
+# setup testing
+include(CTest)
+enable_testing()
+
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
+include(FetchContent)
+
+include_directories("${gtest_SOURCE_DIR}/include"
+        "${PROJECT_SOURCE_DIR}/include"
+)
+
+
+#add_subdirectory(src)
 
 add_subdirectory(test)
