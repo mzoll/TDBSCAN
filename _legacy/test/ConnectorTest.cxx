@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 TEST_GROUP(Connector);
 

@@ -21,7 +21,7 @@
 #include "dataclasses/I3Constants.h"
 #include <sstream>
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 TEST_GROUP(ConnectorOLD);
 

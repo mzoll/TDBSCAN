@@ -22,7 +22,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 using namespace std;
 using namespace boost;

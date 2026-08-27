@@ -15,7 +15,7 @@
 
 #include "IceHiveZ/internals/Hive.h"
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 #include <boost/make_shared.hpp>
 

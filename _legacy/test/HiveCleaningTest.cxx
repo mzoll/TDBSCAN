@@ -13,7 +13,7 @@
 
 #include "ToolZ/IC86Topology.h"
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 #include "dataclasses/I3Constants.h"
 #include "icetray/I3Units.h"
 

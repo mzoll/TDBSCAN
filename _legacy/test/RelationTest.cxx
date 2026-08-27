@@ -17,7 +17,7 @@
 
 #include "ToolZ/IC86Topology.h"
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 TEST_GROUP(Relation);
 

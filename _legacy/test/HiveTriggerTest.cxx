@@ -16,7 +16,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 #include "ToolZ/IC86Topology.h"
 

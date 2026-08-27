@@ -7,7 +7,7 @@
  * A Unit test which generates some artificial test cases and let the Cleaning gnaw on them;
  */
 
-#include "TestHelpers.h"
+#include "../../test/TestHelpers.h"
 
 #include <gsl/gsl_rng.h>
 
