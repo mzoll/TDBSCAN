@@ -11,10 +11,12 @@ namespace tdbscan {
     */
     typedef double Time_t;
 
-    /// forward declare of o Positional value
-    class Position_t;
+    /// forward declare of Positional value Prototype
+    class Position_t {};
 
     typedef double Distance_t;
+
+    typedef double Timediff_t;
 
 
 }

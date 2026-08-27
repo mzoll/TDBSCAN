@@ -21,8 +21,7 @@
 
 #include <algorithm>
 #include <math.h>
-#include <boost/foreach.hpp>
-#include <logging>
+// #include <logging>
 
 //===========================================
 //============== IMPLEMENTATION =============
@@ -32,17 +31,7 @@ namespace tdbsscan {
 
 //=============== namespace tdbsscan::details =================
 
-inline
-template <class TBlib>
-bool tdbsscan::detail::CausallyConnected(
-  const tBlib& h1,
-  const tBlib& h2,
-  const ConnectorBlockConstPtr<TBlib>& connectorBlock)
-{
-  if (h1.GetTime() > h2.GetTime())
-    return CausallyConnected(h2, h1, connectorBlock); //recursive call to enforce time-order at this point
-  return connectorBlock->Connected(h1, h2);
-}
+
 
 
 //=============== class HiveSplitter_ParameterSet =================

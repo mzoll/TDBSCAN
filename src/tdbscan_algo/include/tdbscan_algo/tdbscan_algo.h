@@ -29,7 +29,10 @@ namespace tdbscan {
   };
 
 
-  ///The main splitter module
+  /**
+   * The main algorithm class
+   * Needs to be configured with a connector and a parameter set then can be fed with a sequence of hits
+   */
   template <class tBlib>
   class TDBScan_Algo {
     //  SET_LOGGER("HiveSplitter");
@@ -53,10 +56,10 @@ namespace tdbscan {
     /// the time of the algo
     Time_t sync_time;
 
-    ///all in-progress causal clusters
-    tdbscan::CausalClusterList<tBlib> active_Clusters_;
+    /// all in-progress causal clusters
+    CausalClusterList<tBlib> active_Clusters_;
     /// all concluded clusters
-    tdbscan::CausalClusterList<tBlib> clusters_;
+    CausalClusterList<tBlib> clusters_;
 
   private: //parameters
     //========================
@@ -93,6 +96,7 @@ namespace tdbscan {
 
   public: // probe of internal state
     /// Get the time until which the result is static and no active hits are percolating in the algorithm/clusters
+    [[nodiscard]]
     Time_t FinalizedUntil() const;
 
   private: // --- THE REAL MACHINERY ---
@@ -122,19 +126,9 @@ namespace tdbscan {
       tdbscan::CausalCluster<tBlib>& c,
       const tBlib& h);  // This needs modification
 
-    /** Inserts a cluster of hits into the set of subevents, after merging it with any existing subevents
-     * with which it shares at least one hit
-     * This function also moves any subevents which can no longer grow into the finished subevent collection.
-     * @param newSet the set to add
-     */
-    void AddSubEvent(AbsHitSet newSet);
-
-    /** Pushes all hits through the clusters and completes all subevents,
-     * on the assumption that no more future hits will be added.
-     */
-    void FinalizeSubEvents();
-
   private: //things that work on the surface of Clusters, but do not change the internal state
+    /// Does Hit h connect to CausalCluster
+    [[nodiscard]]
     bool connectsTo(const tBlib& h, const CausalCluster<tBlib>& c1) const;
 
     void evalEstablished(CausalCluster<tBlib> c) const {
@@ -142,13 +136,14 @@ namespace tdbscan {
         c.established = true;
     }
 
-
-    ///get the CausalCluster of all active hits within this cluster which can be considered connected
-    ///\param h the Hit to check against
+    /** get the CausalCluster of all active hits within this cluster which can be considered connected
+     * \param h the Hit to check against
+     */
+    [[nodiscard]]
     CausalCluster<tBlib> getConnectedSubCluster(const tBlib &h, const CausalCluster<tBlib>& c1) const;
 
     ///insert an hit and advance the cluster
-    void insertActiveHit(const AbsHit &h, CausalCluster& c) {
+    void insertActiveHit(const tBlib &h, CausalCluster<tBlib>& c) {
       c.insertActiveHit(h);
       if (c.active_doms.size()>=params_->multiplicity) {
         c.established=true;
@@ -156,17 +151,17 @@ namespace tdbscan {
     }
 
     ///check if this cluster is still active
-    bool isActive(const CausalCluster& c) const {
+    bool isActive(const CausalCluster<tBlib>& c) const {
       if (c.hasActiveHits())
         return true;
 
-      if (params_->acceptTimeWindow <= params_->multiplicityTimeWindow) {
+      if (params_.acceptTimeWindow <= params_.multiplicityTimeWindow) {
         //then only active hits can accept more hits
         return false;
       }
       //need to look into the time of every first hit on any each DOM if further hits can be accepted
-      const auto latest_accept_time = c.sync_time - params_->acceptTimeWindow;
-      BOOST_FOREACH (const DOMHitTimes::value_type& fht, firstHitTimes) {
+      const auto latest_accept_time = c.sync_time - params_.acceptTimeWindow;
+      for (const auto& fht, firstHitTimes) {
         if (fht.second > latest_accept_time)
           return true;
       }
@@ -220,9 +215,8 @@ namespace tdbscan {
 
 
 
-  }
-};
+}
 
-#include "../tdbscan_algo.hh"
+#include "tdbscan_algo.hh"
 
 #endif //TDBSCAN_TDBSCAN_ALGO_H

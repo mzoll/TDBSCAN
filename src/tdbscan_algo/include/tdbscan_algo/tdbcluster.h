@@ -55,7 +55,7 @@ namespace detail {
   template <class tBlib>
   class CausalCluster{
   public:
-    friend class TDBScan_Algo;
+    //friend class TDBScan_Algo;  this is a forward declaration for friend access
 
     using BlibSet = std::set<tBlib>;
     using BlibList = std::list<tBlib>;

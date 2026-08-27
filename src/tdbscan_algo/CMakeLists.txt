@@ -1,4 +1,5 @@
-add_library(tdbscan_algo)
+add_library(tdbscan_algo
+        src/include_all.cpp)
 
 target_include_directories(tdbscan_algo
         PUBLIC include
@@ -27,7 +28,7 @@ set( header_files
 target_sources(tdbscan_algo
 #        PUBLIC ${header_files}
         PRIVATE
-        src/tdbcluster.cpp
+        include/tdbscan_algo/tdbcluster.hh
 )
 
 

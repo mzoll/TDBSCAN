@@ -11,6 +11,7 @@
 #define TDBSCAN_ABSBLIB_H
 
 
+#include <set>
 #include <vector>
 
 #include "tdbscan_algo/base_defs.h"
