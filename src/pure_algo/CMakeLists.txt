@@ -1,0 +1,42 @@
+include(cmake/StandardProjectSettings.cmake)
+
+cmake_minimum_required (VERSION 3.6)
+
+project (TDBSCAN
+    VERSION 0.0.1
+    LANGUAGES CXX
+)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_executable(hello_world)
+
+target_sources(hello_world
+        PRIVATE
+        src/TDBSCAN.cpp)
+
+target_compile_features(hello_world PUBLIC cxx_std_17)
+
+set_target_properties(hello_world PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+)
+
+
+target_sources(pure_algo
+        PUBLIC
+        src/pure_algo/include/tdbscan_algo.h
+        src/pure_algo/include/tdbcluster.h
+        src/pure_algo/include/base_defs.h
+        src/pure_algo/include/absblib.h
+        src/pure_algo/include/tdbscan_algo.hh
+        src/pure_algo/include/connector.h
+        PRIVATE
+        src/pure_algo/tdbcluster.cpp
+)
+
+
+target_sources(Testsuite
+    PRIVATE
+    test/pure_algo/test_absblib.cpp
+)

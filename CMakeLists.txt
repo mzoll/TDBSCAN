@@ -2,13 +2,15 @@ include(cmake/StandardProjectSettings.cmake)
 
 cmake_minimum_required (VERSION 3.6)
 
-project (TDBSCAN)
+project (TDBSCAN
+    VERSION 0.0.1
+    LANGUAGES CXX
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+)
 
-add_executable(TDBSCAN src/TDBSCAN.cpp
-        lib/pure_algo/include/tdbscan_algo.h
-        lib/pure_algo/include/tdbcluster.h
-        lib/pure_algo/include/base_defs.h
-        lib/pure_algo/include/absblib.h
-        lib/pure_algo/include/tdbscan_algo.hh
-        lib/pure_algo/include/connector.h
-        lib/pure_algo/tdbcluster.cpp)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_subdirectory(src)
+
+add_subdirectory(test)
