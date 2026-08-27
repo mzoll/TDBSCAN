@@ -6,19 +6,33 @@
 #define TDBSCAN_BASE_DEFS_H
 
 namespace tdbscan {
-    /** make a typedef for what is the notion of Time;
-    * On first principles time is a continuous monotonic increasing variable
-    */
+    typedef double Timediff_t;
     typedef double Time_t;
 
+    // /** make a typedef for what is the notion of Time;
+    // * On first principles time is a continuous monotonic increasing variable
+    // */
+    // class Time_t {
+    //     virtual
+    //     bool operator<(const Time_t &rhs) const = 0;
+    //     virtual
+    //     Timediff_t operator-(const Time_t &rhs) const = 0;
+    // };
+
+
     /// forward declare of Positional value Prototype
-    class Position_t {};
+    class Position_t {
+    public:
+        [[nodiscard]]
+        virtual
+        bool operator<(const Position_t& other) const = 0;
+
+        [[nodiscard]]
+        virtual
+        bool operator==(const Position_t& other) const = 0;
+    };
 
     typedef double Distance_t;
-
-    typedef double Timediff_t;
-
-
 }
 
 

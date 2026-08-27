@@ -10,13 +10,14 @@
 
 #include <algorithm>
 #include <math.h>
-// #include <logging>
+
+#include "tdbscan_algo/dummy_logging.h"
 
 //===========================================
 //============== IMPLEMENTATION =============
 //===========================================
 
-namespace tdbsscan {
+namespace tdbscan {
 
 //=============== namespace tdbsscan::details =================
 
@@ -34,9 +35,9 @@ TDBScan_ParameterSet::TDBScan_ParameterSet():
 template <class tBlib>
 TDBScan_Algo<tBlib>::TDBScan_Algo (
   const TDBScan_ParameterSet& params,
-  const ConnectorPtr& connector)) :
+  const Connector_t* connector) :
   params_(params),
-  connector_(connector),
+  connector_(connector)
 {
   if (params_.multiplicity<=0)
     log_fatal("Multiplicity should be greater than zero");
@@ -52,19 +53,17 @@ TDBScan_Algo<tBlib>::TDBScan_Algo (
   if (params_.rejectTimeWindow <= params_.acceptTimeWindow)
     log_fatal("RejectTimeWindow needs to be greater than AcceptTimeWindow");
 
-  if (! params_.connectorBlock)
+  if (! connector_)
     log_error("No ConnectionBlock defined!");
-  //TODO check integrety of connectorBlock
 
   log_info("This is TDBScan!");
   log_debug("Leaving Init()");
 };
 
 
-
-template <class tBlib, class AbsHitContainer>
-AbsHitSetSequence
-TDBScan_Algo<tBlib>::Process (const AbsHitContainer& inhits) {
+template <class tBlib, class tBlibContainer>
+typename TDBScan_Algo<tBlib>::BlibSetSequence
+TDBScan_Algo<tBlib>::Process (const tBlibContainer& inhits) {
   log_debug("Entering Process()");
   clusters_.clear();
   newClusters_.clear();
@@ -89,7 +88,8 @@ TDBScan_Algo<tBlib>::Process (const AbsHitContainer& inhits) {
 
 //specialize for AbsHitSet, which is already time-ordered
 template <>
-AbsHitSetSequence TDBScan_Algo::Process<AbsHitSet> (const AbsHitSet& inhits) {
+typename TDBScan_Algo<tBlib>::BlibSetSequence
+TDBScan_Algo::Process<AbsHitSet> (const AbsHitSet& inhits) {
   log_debug("Entering Process()");
   active_clusters.clear();
   clusters_.clear();

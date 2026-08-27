@@ -7,10 +7,30 @@
 using namespace std;
 using namespace tdbscan;
 
+// define time as a pure positive unit
+
+
+
+/** make a typedef for what is the notion of Time;
+* On first principles time is a continuous monotonic increasing variable
+*/
+class MyTime_t final {
+	double value_{0.};
+
+	bool operator<(const MyTime_t &rhs) const {return value_ < rhs.value_;};
+
+	inline
+	Timediff_t operator-(const MyTime_t &rhs) const {return value_ - rhs.value_;};
+
+
+};
+
+
+
 
 // make a definition of a Point in 3d space
 
-class Position3d : public Position_t {
+class Position3d final : public Position_t {
 public:
 	double xord, yord, zord;
 public:
@@ -20,6 +40,20 @@ public:
 	/// get the distance with a partner object
 	[[nodiscard]]
 	Distance_t distance(const Position3d& rhs) const { return sqrt(pow(xord - rhs.xord, 2) + pow(yord - rhs.yord, 2) + pow(zord - rhs.zord, 2));};
+
+	[[nodiscard]]
+	Distance_t magnitude() const {return sqrt(pow(xord, 2) + pow(yord, 2) + pow(zord,2));};
+
+	[[nodiscard]]
+	inline
+	Distance_t abs() const {return  this->magnitude();};
+
+
+	[[nodiscard]]
+	bool operator<(const Position3d& rhs) const {return magnitude() < rhs.magnitude() || xord < rhs.xord || yord < rhs.yord || zord < rhs.zord ;};
+
+	[[nodiscard]]
+	bool operator==(const Position3d& rhs) const {return xord == rhs.xord && yord == rhs.yord && zord == rhs.zord;};
 };
 
 
@@ -36,7 +70,16 @@ public: //comparators
 	[[nodiscard]] virtual Distance_t GetDistance(const Blib4d& rhs) const {return pos.distance(rhs.pos);};
 
 	/// get the time difference to rhs
-	[[nodiscard]] virtual Timediff_t TimeDiff(const Blib4d& rhs) const {return time - rhs.time;};
+	[[nodiscard]] virtual Timediff_t TimeDiff(const Blib4d& other) const {return time - other.time;};
+
+	/// define the lesser-operator
+	[[nodiscard]] virtual bool operator<(const Blib4d& other) const {
+		return time < other.time || pos < other.pos;
+	};
+
+	[[nodiscard]] virtual bool operator==(const Blib4d& other) const {
+		return time == other.time && pos == other.pos;
+	};
 
 	///constructor
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};

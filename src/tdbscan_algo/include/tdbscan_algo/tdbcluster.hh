@@ -9,7 +9,7 @@
 #include <limits>
 
 namespace tdbscan {
-  namespace detail {
+namespace detail {
 
 template <class tBlib>
 bool CausallyConnected(
@@ -21,9 +21,7 @@ bool CausallyConnected(
         return CausallyConnected(h2, h1, connector); //recursive call to enforce time-order at this point
       return connector.Connected(h1, h2);
     }
-
-
-  } // namespace tdbscan::detail
+} // namespace tdbscan::detail
 
 
 template <class tBlib> 

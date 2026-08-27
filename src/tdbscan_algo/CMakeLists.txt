@@ -1,5 +1,6 @@
 add_library(tdbscan_algo
-        src/include_all.cpp)
+        src/include_all.cpp
+        include/tdbscan_algo/dummy_logging.h)
 
 target_include_directories(tdbscan_algo
         PUBLIC include

@@ -28,10 +28,12 @@ namespace tdbscan {
 
     [[nodiscard]] virtual Time_t GetTime() const = 0;
   public: //comparators
-    [[nodiscard]] virtual Distance_t GetDistance(const AbsBlib& rhs) const = 0;
+    [[nodiscard]] virtual Distance_t GetDistance(const AbsBlib& other) const = 0;
 
     /// get the time difference to rhs
-    [[nodiscard]] virtual Timediff_t TimeDiff(const AbsBlib& rhs) const = 0;
+    [[nodiscard]] virtual Timediff_t TimeDiff(const AbsBlib& other) const = 0;
+
+    [[nodiscard]] virtual bool operator<(const AbsBlib& other) const = 0;
   };
 
   template <typename tPosition>
