@@ -65,16 +65,13 @@ public: //constructors
   );
 
 public: //methods
-  /// Add a Connector and add the Relation map to the cumRel Map
+  /// Add a Connector to the list of to be evaluated Connectors
   void addConnector (
     const ConnectorSingle<tBlib>* connector_ptr);
 
   ///check if to Hits are connected by any of the Connectors
-  template <class Hitclass>
   [[implemented]]
-  bool eval(
-    const Hitclass& h1,
-    const Hitclass& h2) const;
+  bool eval(const tBlib& h1, const tBlib& h2) const;
 
   /**
    * diagnose the connection for these hits, as by which connector they are voted as connected
@@ -84,7 +81,7 @@ public: //methods
    * @return the names of the Connectors that see these Hits as connected
    */
   template <class Hitclass>
-  std::list<std::string> DiagnoseConnected(
+  std::list<std::string> diagnose(
     const Hitclass& h1,
     const Hitclass& h2) const;
 
@@ -107,5 +104,6 @@ namespace detail {
 
 };
 
+#include <tdbscan_algo/connector.hh>
 
 #endif //TDBSCAN_CONNECTOR_H

@@ -51,7 +51,7 @@ public:
 class TimeLimiter : public ConnectorSingle<Blib4d> {
 public:
 	Timediff_t maxTimediff_;
-	TimeLimiter(const Timediff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
+	explicit TimeLimiter(const Timediff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
 	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return rhs.TimeDiff(lhs) <= maxTimediff_;};
 };
@@ -65,23 +65,33 @@ class LimitingConnector : public ConnectorBlock<Blib4d> {
 		addConnector(&distLimiter_);
 		addConnector(&timeLimiter_);
 	};
-
-
 };
 
 
+void construct_algo() {
+	LimitingConnector* limcon = new LimitingConnector();
+
+	TDBScan_ParameterSet params;
+
+	params.multiplicity=4;
+	params.multiplicityTimeWindow=20;
+
+	TDBScan_Algo<Blib4d> my_algo(params, &limcon)
+
+
+}
 
 
 
 
-};
 
 
-
-
+static void print_hello_world() {
+	cout << "Hello world";
+}
 
 
 int main(int argc, char **argv) {
-	cout << "Hello world";
+	print_hello_world();
 	return 0;
 }
