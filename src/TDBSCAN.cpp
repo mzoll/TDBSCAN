@@ -108,7 +108,7 @@ class LimitingConnector final : public ConnectorBlock<Blib4d> {
 };
 
 
-void construct_algo() {
+TDBScan_Algo<Blib4d> construct_algo() {
 
 	auto distLimiter_ = new DistanceLimiter(20.);
 	auto timeLimiter_ = new TimeLimiter(20.);
@@ -122,27 +122,24 @@ void construct_algo() {
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=20;
 
-	TDBScan_Algo<Blib4d> my_algo(params, limcon);
+	return TDBScan_Algo<Blib4d>(params, limcon);
 }
 
 
 double rand_ord() {return rand() * 100-50.;};
-Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord())};
+Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord());};
 Time_t rand_time() {return Time_t(rand() % 10000);};
 
-void construct_blibs() {
-
+std::set<Blib4d> construct_blibs() {
+	int many_blibs = 1000;
 
 	std::set<Blib4d> blibs;
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < many_blibs; i++) {
 		blibs.insert(Blib4d(rand_pos(), rand_time()));
 	}
 
-
+	return blibs;
 }
-
-
-
 
 
 static void print_hello_world() {
@@ -151,6 +148,11 @@ static void print_hello_world() {
 
 
 int main(int argc, char **argv) {
-	print_hello_world();
+	auto my_algo = construct_algo();
+
+	auto blibs = construct_blibs();
+
+	auto result = my_algo.Process(blibs);
+
 	return 0;
 }

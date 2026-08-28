@@ -131,12 +131,10 @@ bool CausalCluster<tBlib>::isConcruent(
   return true;
 }
 
-
 template <class tBlib>
 bool CausalCluster<tBlib>::empty() const {return blibs_.empty();}
 
 template <class tBlib>
 uint64_t CausalCluster<tBlib>::count() const {return blibs_.count();}
-
 
 };

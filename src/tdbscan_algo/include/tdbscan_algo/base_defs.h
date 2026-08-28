@@ -36,12 +36,10 @@ namespace tdbscan {
         virtual ~Position_t() = default;
 
         [[nodiscard]]
-        virtual
-        bool operator<(const Position_t& other) const = 0;
+        bool operator<(const Position_t& other) const;
 
         [[nodiscard]]
-        virtual
-        bool operator==(const Position_t& other) const = 0;
+        bool operator==(const Position_t& other) const;
     };
 
 }

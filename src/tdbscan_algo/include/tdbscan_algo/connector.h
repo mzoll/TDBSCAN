@@ -53,20 +53,16 @@ class Connector {
   template <class tBlib>
 class ConnectorBlock : public Connector<tBlib> {
   public:
-    typedef ConnectorSingle<tBlib> Connector_t;
-    typedef std::list< Connector_t* > ConnectorList;
+    typedef Connector<tBlib> Connector_t;
+    typedef std::list< Connector_t*> ConnectorList;
   private: //property
     ///list of all connectors
     ConnectorList connectorlist_;
 
-  public: //constructors
-    /// constructor purely with a geometry and no Connectors
-    ConnectorBlock();
-
   public: //methods
     /// Add a Connector to the list of to be evaluated Connectors
     void addConnector (
-      const ConnectorSingle<tBlib>* connector_ptr);
+      ConnectorSingle<tBlib> *connector_ptr);
 
     ///check if to Hits are connected by any of the Connectors
     bool eval(const tBlib& h1, const tBlib& h2) const;

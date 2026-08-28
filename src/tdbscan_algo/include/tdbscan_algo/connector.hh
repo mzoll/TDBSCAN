@@ -17,7 +17,7 @@
 namespace tdbscan {
 
 template <class tBlib>
-void ConnectorBlock<tBlib>::addConnector(const ConnectorSingle<tBlib>* connector_ptr) {
+void ConnectorBlock<tBlib>::addConnector(ConnectorSingle<tBlib>* connector_ptr) {
   connectorlist_.push_back(connector_ptr);
 };
 

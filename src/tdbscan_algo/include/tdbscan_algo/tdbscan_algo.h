@@ -22,7 +22,7 @@ bool CausallyConnected(
 {
   if (h1.GetTime() > h2.GetTime())
     return CausallyConnected(h2, h1, connector); //recursive call to enforce time-order at this point
-  return connector.Connected(h1, h2);
+  return connector.eval(h1, h2);
 }
 } // namespace tdbscan::detail
 
@@ -102,7 +102,7 @@ public: //interface
    */
   TDBScan_Algo(
     const TDBScan_ParameterSet& params,
-    const Connector_t* connector);
+    Connector_t* connector);
 
   /** @brief ACTION
    * Perform the Splitting feeding it a series of Hits

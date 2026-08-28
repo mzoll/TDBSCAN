@@ -24,16 +24,17 @@ namespace tdbscan {
   template <class tPosition, class tTime_t>  //tPosition adheres to Position_t
   class AbsBlib {
   public:  //methods
-    [[nodiscard]] virtual tPosition GetPosition() const = 0;
+    [[nodiscard]]
+    tPosition GetPosition() const;
 
-    [[nodiscard]] virtual tTime_t GetTime() const = 0;
+    [[nodiscard]] tTime_t GetTime() const;
   public: //comparators
-    [[nodiscard]] virtual Distance_t GetDistance(const AbsBlib& other) const = 0;
+    [[nodiscard]] Distance_t GetDistance(const AbsBlib& other) const;
 
     /// get the time difference to rhs
-    [[nodiscard]] virtual Timediff_t TimeDiff(const AbsBlib& other) const = 0;
+    [[nodiscard]] Timediff_t TimeDiff(const AbsBlib& other) const;
 
-    [[nodiscard]] virtual bool operator<(const AbsBlib& other) const = 0;
+    [[nodiscard]] bool operator<(const AbsBlib& other) const;
   };
 
   template <typename tPosition>

@@ -55,7 +55,7 @@ namespace detail {
     using BlibSet = std::set<tBlib>;
     using BlibList = std::list<tBlib>;
 
-  private: //properties
+  public: //properties
     ///the latest time to which this cluster is synchronized, i.e.
     Time_t sync_time = std::numeric_limits<Time_t>::min();
 
@@ -92,7 +92,7 @@ namespace detail {
     ///\param c the cluster to be merged
     void copyHits(const CausalCluster& c);
 
-  protected: //methods (inert)
+  public: //methods (inert)
     ///get  hits of this cluster
     [[nodiscard]] const BlibSet& getHits() const;
     ///Finds the time of the earliest hit in this cluster
@@ -142,6 +142,6 @@ namespace detail {
 
 }// namespace tdbscan
 
-
+#include "tdbcluster.hh"
 
 #endif //TDBSCAN_TDBCLUSTER_H
