@@ -67,6 +67,17 @@ namespace detail {
     // is the cluster concluded mark it
     bool concluded = false;
 
+    enum Status {
+      EMPTY = 0,
+      EMERGING = 10,
+      GROWING = 20,
+      DYING = 30,
+      CONCLUDED = 40,
+    };
+
+    Status status = EMPTY;
+
+
   public:
     // Constructor
     CausalCluster();

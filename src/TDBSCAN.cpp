@@ -21,15 +21,9 @@ class MyTime_t final {
 
 	inline
 	Timediff_t operator-(const MyTime_t &rhs) const {return value_ - rhs.value_;};
-
-
 };
 
-
-
-
 // make a definition of a Point in 3d space
-
 class Position3d final : public Position_t {
 public:
 	double xord, yord, zord;
