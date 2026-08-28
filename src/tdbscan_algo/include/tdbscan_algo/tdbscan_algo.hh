@@ -65,8 +65,9 @@ template <class tBlib> template<class tBlibContainer>
 typename TDBScan_Algo<tBlib>::BlibSetSequence
 TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
   log_debug("Entering Process()");
-  clusters_.clear();
+  concluded_clusters_.clear();
   active_clusters_.clear();
+  emerging_clusters_.clear();
 
   //enforce time-order be converting to an explicit time-ordered container
   BlibSet blibs_to; // time-order
@@ -82,7 +83,7 @@ TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
 
   //prepare output
   BlibSetSequence bss;
-  for (const auto& c : clusters_)
+  for (const auto& c : concluded_clusters_)
     bss.insert(BlibSet(c.hits.begin(), c.hits.end() ));
 
   log_debug("Leaving Process()");
@@ -108,8 +109,9 @@ template <class tBlib>
 typename TDBScan_Algo<tBlib>::BlibSetSequence
 TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
   log_debug("Entering Process()");
+  emerging_clusters_.clear();
   active_clusters_.clear();
-  clusters_.clear();
+  concluded_clusters_.clear();
 
   //process through machinery
   for (const auto& b: blibs){
@@ -122,7 +124,7 @@ TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
 
   //prepare output
   BlibSetSequence bss;
-  for (const auto& c : clusters_)
+  for (const auto& c : concluded_clusters_)
     bss.insert(BlibSet(c.hits.begin(), c.hits.end() ));
 
   log_debug("Leaving Process()");
@@ -139,62 +141,83 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib& b1, const tBlib& b2) co
 template <class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   log_debug("Entering NextBlib()");
-  //tracking
-  bool addedToCluster = false; //keep track of whether h has been added to any cluster
-
   const auto now = b.GetTime();
-
   // advance every each cluster in time and try to add the hit to it
+
+  // 10. go through all active clusters  and see if blibs have fallen out of the emergence time window and multiplicity cannot be fullfilled; mark them as 'dying'; if there is nothing left mark as 'concluded'
+  // 20. go through all emerging clusters and see if blibs have fallen out of the emergence time window, kill them off
+  // 30. try to add the hit to existing emerging clusters; if it was added put the emerging clusters on a new_established list;
+  // 40. try to add the hit to existing active clusters;
+  // 50. traverse the newly established list and try to merge clusters with the active clusters
+  // 9. put the hit on a newly created cluster by its own
+
+
+  // 20. go through all emerging clusters and see if blibs have fallen out of the emergence time window, if so kill the cluster off
+  // 21. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
+  std::list<CausalCluster<tBlib>> _newly_established_clusters;
+  auto ec_iter = emerging_clusters_.begin();
+  while (ec_iter != emerging_clusters_.end()) {
+    const auto _n_active = ec_iter->nHitsWithinTimeWindow(  now, std::numeric_limits<Time_t>::max());// TODO Time type needs proper numeric limits defined
+    if (_n_active < ec_iter->count()) {
+      ec_iter = emerging_clusters_.erase(ec_iter);
+    }
+
+    const auto success = TryInsertHit(&ec_iter, b);
+    if (success && ec_iter->count() == params_.multiplicity) {
+      _newly_established_clusters.push_back(&ec_iter);
+      ec_iter = emerging_clusters_.erase(&ec_iter);
+      continue;
+    }
+
+    ec_iter++;
+  }
+
+  // 10. go through all active clusters and see if blibs have fallen out of the emergence time window and multiplicity cannot be fullfilled; mark them as 'dying'; if there is nothing left mark as 'concluded'
 
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
-    //each cluster is advanced in time:
-    //removing all too old/expired hits, which cannot make any connections any more;
-    //concluded clusters, which do not have any connecting hits left, become 'Inactive' and are put to the garbage
-    //if the cluster is still active, try to add the Hit to the cluster
-
-    AdvanceInTime(*ac_iter, now); // check
-
-    if (ac_iter->isConcluded()) {
-      if (ac_iter->isEstablished()) {
-        clusters_.insert(clusters_.end(), *ac_iter);
-      }
-      active_clusters_.erase(ac_iter);
+    const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now, std::numeric_limits<Time_t>::max()); // TODO Time type needs proper numeric limits defined
+    if (_n_active == 0) {
+      ac_iter.status = CausalCluster<tBlib>::CONCLUDED;
+      concluded_clusters_.push_back(&ac_iter);
+      ac_iter = active_clusters_.erase(ac_iter);
+      continue;
+    }
+    if (_n_active < params_.multiplicity) {
+      ac_iter.status = CausalCluster<tBlib>::DYING; //this is a speedup but algorithmically has no effect
+    }
+    else {
+      const auto success = TryInsertHit(&ec_iter, b);
     }
     ac_iter++;
   }
 
-  //what remains in the active_cluster_ list are those that can in principle add the hit
+  // 50. traverse the newly established list and try to merge clusters with the active clusters
+  auto nec_iter = _newly_established_clusters.begin();
   ac_iter = active_clusters_.begin();
-  while (ac_iter != active_clusters_.end()) {
-    const auto n_overlap = ConnectsTo(*ac_iter, b); //TODO overload function with a fast break after multiplicity is met
-    // cluster is established and enough multiplicity -> Grow Cluster
-    if (ac_iter->isEstablished()) {
-      if (n_overlap >= params_.multiplicity) {
-        AddHitToCluster(*ac_iter, b); //<- this needs to internally evaluate (isEstablished)-condition and set it on the cluster
-        //else if (n_overlap > 0)
-        //  active_clusters_.insert(active_clusters_.end(), ::ConstructSubCluster(*ac_iter, b));
+  while (nec_iter != _newly_established_clusters.end()) {
+    while (ac_iter != active_clusters_.end()) {
+      if (nec_iter->isSubsetOf(&ac_iter)) {
+        nec_iter = _newly_established_clusters.erase(nec_iter);
+        ac_iter = active_clusters_.begin();
+        continue;
       }
+      ac_iter++;
     }
-    // cluster is not established yet, but there is some overlap but just not enough
-    //else if (!ac_iter.isEstablished()) {
-
-    if (ac_iter->GetCount() == n_overlap) {
-      AddHitToCluster(*ac_iter, b); //<- this needs to evaluate (isEstablished)-condition and set it on the cluster
-    }
-    else {
-      //subclusters of those hits overlapping need to be constructed and added to the active_clusters
-      active_clusters_.insert(active_clusters_.end(), ConstructSubCluster(*ac_iter, b));
-    }
+    //established cluster is a genuinely new cluster
+    nec_iter->status = CausalCluster<tBlib>::GROWING;
+    nec_iter++;
+    ac_iter = active_clusters_.begin();
   }
 
-  // at the very end place the hit in a cluster by its own
-  active_clusters_.insert(active_clusters_.end(), CausalCluster(b));
+  active_clusters_.push_back(_newly_established_clusters.begin(), _newly_established_clusters.end());
+  _newly_established_clusters.clear();
 
-  log_debug("Leaving AddHit()");
+  // 9. put the hit on a newly created cluster by its own
+  emerging_clusters_.insert(active_clusters_.end(), CausalCluster(b));
+
+  log_debug("Leaving NextHit()");
 }
-
-
 
 
 template <class tBlib>
@@ -203,76 +226,51 @@ bool TDBScan_Algo<tBlib>::TryInsertHit(
   const tBlib& b) {
   log_debug("Entering InsertHit()");
 
-  if (c.status == CausalCluster<tBlib>::CONCLUDED) {
-    log_error("cannot add to a concluded cluster")
-    return false;
-  }
+  switch (c.status()) {
+    case CausalCluster<tBlib>::CONCLUDED: {
+      log_debug("cannot add to a concluded cluster");
+      return false;
+    }
 
-  if (status == CausalCluster<tBlib>::DYING) {
-    // or something else
+    case CausalCluster<tBlib>::DYING: {
+      // or something else
+      log_debug("cannot add to a dying cluster");
+      return false;
+    }
 
-    log_error("cannot add to a dying cluster")
-    return false;
-  }
-
-
-  if (status == CausalCluster<tBlib>::EMERGING) {
-    int active_connectees = 0;
-    for (const auto& cb : c.hits)
-
-      if (cb.Timediff(b) >= params_.emergenceTimeWindow) {
-        /// we are past the timeframe;
-        return false;
+    case CausalCluster<tBlib>::EMERGING: {
+      int active_connectees = 0;
+      for (const auto& cb : c.hits) {
+        if (cb.Timediff(b) >= params_.emergenceTimeWindow) {
+          /// we are past the timeframe;
+          return false;
+        }
+        if (not CausallyConnected(cb, b))
+          return false;
       }
-      active_connectees += CausallyConnected(cb, b);
-    if (active_connectees == c.count())
-      // the hit can be added
-      return true;
-  }
+      break;
+    }
 
-  if (status == CausalCluster<tBlib>::GROWING) {
-    int active_connectees = 0;
-    for (const auto& cb : c.hits)
-      if (cb.Timediff(b); >= params_.multiplicityTimeWindow)
-        /// we are past the timeframe;
+    case CausalCluster<tBlib>::GROWING: {
+      int active_connectees = 0;
+      for (const auto& cb : c.hits) {
+        if (cb.Timediff(b) >= params_.multiplicityTimeWindow)
+          /// we are past the timeframe;
+            break;
+        active_connectees += CausallyConnected(cb, b);
+      }
+      if (active_connectees >= params_.multiplicity) {
+        // the hit can be added
         break;
-      active_connectees += CausallyConnected(cb, b);
-
-    }
-    if (active_connectees >= params_.multiplicity) {
-      // the hit can be added
-      return true;
+      }
     }
   }
+  c.hits.insert(b, c.hits.end());
 
-
-  if ()
-
-  if (status == Status::DYING) {
-    log_error("cannot add to a concluded cluster")
-    return;
-  }
-
-
-
-
-  log_debug("Leaving InsertHit()");
+  log_debug("Leaving TryInsertHit()"); //
   return true;
 };
 
 
-void TDBScan_Algo::AddSubEvent(AbsHitSet newSet) {
-  log_debug("Entering AddSubEvent()");
-  //find any existing subevents which overlap the new one, and merge them into it
-
-
-}
-
-
-
-
-Time TDBScan_Algo::FinalizedUntil() const {
-
-}
 
 } //namespace tdbscan

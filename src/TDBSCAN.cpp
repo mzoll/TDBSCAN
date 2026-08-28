@@ -16,11 +16,18 @@ using namespace tdbscan;
 */
 class MyTime_t final {
 	double value_{0.};
-
+public:
+	inline
 	bool operator<(const MyTime_t &rhs) const {return value_ < rhs.value_;};
 
 	inline
+	bool operator==(const MyTime_t &rhs) const {return value_ == rhs.value_;};
+
+	inline
 	Timediff_t operator-(const MyTime_t &rhs) const {return value_ - rhs.value_;};
+
+	static double min() {return std::numeric_limits<double>::min();};
+	static double max() {return std::numeric_limits<double>::max();};
 };
 
 // make a definition of a Point in 3d space
@@ -40,8 +47,7 @@ public:
 
 	[[nodiscard]]
 	inline
-	Distance_t abs() const {return  this->magnitude();};
-
+	Distance_t abs() const {return this->magnitude();};
 
 	[[nodiscard]]
 	bool operator<(const Position3d& rhs) const {return magnitude() < rhs.magnitude() || xord < rhs.xord || yord < rhs.yord || zord < rhs.zord ;};
@@ -52,7 +58,7 @@ public:
 
 
 	//make a declaration of the Blib
-class Blib4d : public AbsBlib<Position3d> {
+class Blib4d : public AbsBlib<Position3d, Time_t> {
 private:
 	Position3d pos;
 	Time_t time;

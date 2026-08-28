@@ -20,34 +20,49 @@ CausalCluster<tBlib>::CausalCluster() :
 
 template <class tBlib>
 Time_t CausalCluster<tBlib>::getEarliestTime() const {
-  if (!hits.empty())
-    return(hits.begin()->GetTime());
+  if (!blibs_.empty())
+    return(blibs_.begin()->GetTime());
   return(std::numeric_limits<Time_t>::infinity());
 }
 
 template <class tBlib>
 Time_t CausalCluster<tBlib>::getLatestTime() const{
-  if (!hits.empty())
-    return(hits.rbegin()->GetTime());
+  if (!blibs_.empty())
+    return(blibs_.rbegin()->GetTime());
   return(-std::numeric_limits<Time_t>::infinity());
 }
+
+
+template <class tBlib>
+uint64_t CausalCluster<tBlib>::nHitsWithinTimeWindow(
+  const Time_t earliest, const Time_t latest) const {
+  uint64_t _count = 0;
+  for (const auto& b : blibs_) {
+    if (earlies <= b.getTime() && b.getTime() >= latest)
+      _count++;
+  }
+  return _count;
+}
+
+
+
 
 template <class tBlib>
 void CausalCluster<tBlib>::insertBlib(const tBlib &h) {
   sync_time = std::max(sync_time, h.GetTime());
 
-  hits.insert(hits.end(), h);
+  blibs_.insert(blibs_.end(), h);
 }
 
 
 template <class tBlib>
 void CausalCluster<tBlib>::copyHits (const CausalCluster<tBlib>& c){
-  hits.insert(c.hits.begin(), c.hits.end());
+  blibs_.insert(c.hits.begin(), c.hits.end());
 }
 
 template <class tBlib>
 const typename CausalCluster<tBlib>::BlibSet& CausalCluster<tBlib>::getHits() const {
-  return hits;
+  return blibs_;
 }
 
 
@@ -60,14 +75,6 @@ template <class tBlib>
 bool CausalCluster<tBlib>::isConcluded() const {
   return concluded;
 }
-
-template <class tBlib>
-bool CausalCluster<tBlib>::empty() const {return hits.empty();}
-
-template <class tBlib>
-uint64_t CausalCluster<tBlib>::count() const {return hits.count();}
-
-
 
 template <class tBlib>
 bool CausalCluster<tBlib>::isSubsetOf(
@@ -95,5 +102,41 @@ bool CausalCluster<tBlib>::isSubsetOf(
   //but there are still items left in c1, c1 is not a subset
   return(!(it1!=end1 && it2==end2));
 }
+
+template <class tBlib>
+bool CausalCluster<tBlib>::isSupersetOf(
+  const CausalCluster& c2) const
+{
+  return c2.isSubsetOf(*this);
+}
+
+template <class tBlib>
+bool CausalCluster<tBlib>::isConcruent(
+  const CausalCluster& c2) const
+{
+  if (c2.hits.size() != this->hits.size())
+    return false;
+
+  // simultaneous step through all members and check they are equal
+  auto it1=this->hits.begin();
+  auto end1=this->hits.end();
+  auto it2=c2.hits.begin();
+  auto end2=c2.hits.end();
+  while (it1 != end1 && it2 != end2) {
+    if (it1 != it2)
+      return false;
+    ++it1;
+    ++it2;
+  }
+  return true;
+}
+
+
+template <class tBlib>
+bool CausalCluster<tBlib>::empty() const {return blibs_.empty();}
+
+template <class tBlib>
+uint64_t CausalCluster<tBlib>::count() const {return blibs_.count();}
+
 
 };

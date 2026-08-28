@@ -60,12 +60,8 @@ namespace detail {
     Time_t sync_time = std::numeric_limits<Time_t>::min();
 
     ///The ordered set of hits within this cluster
-    BlibSet hits;
+    BlibSet blibs_;
 
-    ///Whether the multiplicity condition was met at any time
-    bool established = false;
-    // is the cluster concluded mark it
-    bool concluded = false;
 
     enum Status {
       EMPTY = 0,
@@ -106,6 +102,9 @@ namespace detail {
     /// @return The latest hit time or infinity if the cluster is empty
     [[nodiscard]] Time_t getLatestTime() const;
 
+    [[nodiscard]] uint64_t nHitsWithinTimeWindow(const Time_t earliest, const Time_t latest) const;
+
+
     ///is this cluster established
     [[nodiscard]] bool isEstablished() const;
 
@@ -116,6 +115,15 @@ namespace detail {
     /// @param super cluster with a series of hits which might be a superset
     /// @return true, if this is a subset of super
     [[nodiscard]] bool isSubsetOf(const CausalCluster& super) const;
+
+    ///Test whether the hits in this are a subset those of super
+    /// @param sub cluster with a series of hits which might be a superset
+    /// @return true, if this is a subset of super
+    [[nodiscard]] bool isSupersetOf(const CausalCluster& sub) const;
+
+    /// Test whether two Clusters contain the same hits
+    [[nodiscard]] bool isConcruent(const CausalCluster& c2) const;
+
 
     [[nodiscard]]
     inline

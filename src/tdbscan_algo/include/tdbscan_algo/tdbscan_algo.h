@@ -78,10 +78,12 @@ private: // internal state
   /// the time of the algo
   Time_t sync_time;
 
+  /// all emerging-clusters
+  std::list<CausalCluster_t> emerging_clusters_;
   /// all in-progress causal clusters
   std::list<CausalCluster_t> active_clusters_;
   /// all concluded clusters
-  std::list<CausalCluster_t> clusters_;
+  std::list<CausalCluster_t> concluded_clusters_;
 
 private: //parameters
   //========================
@@ -152,14 +154,11 @@ private: //work on *clusters*
    * @param c the cluster to add to
    * @param b the blib to add
    */
-  void InsertHit(
+  bool TryInsertHit(
     tdbscan::CausalCluster<tBlib>& c,
     const tBlib& b);  // This needs modification
 
 private: //things that work on the surface of Clusters, but do not change the internal state
-  /// Does Hit h connect to CausalCluster
-  [[nodiscard]]
-  bool connectsTo(const tBlib& b, const CausalCluster<tBlib>& c1) const;
 
   void evalEstablished(CausalCluster<tBlib> c) const {
     if (c.count() >= params_.multiplicity)

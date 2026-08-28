@@ -21,12 +21,12 @@ namespace tdbscan {
    * copies needs to be lightweight.
    * @tparam tPosition
    */
-  template <class tPosition>  //tPosition adheres to Position_t
+  template <class tPosition, class tTime_t>  //tPosition adheres to Position_t
   class AbsBlib {
   public:  //methods
     [[nodiscard]] virtual tPosition GetPosition() const = 0;
 
-    [[nodiscard]] virtual Time_t GetTime() const = 0;
+    [[nodiscard]] virtual tTime_t GetTime() const = 0;
   public: //comparators
     [[nodiscard]] virtual Distance_t GetDistance(const AbsBlib& other) const = 0;
 
@@ -37,7 +37,7 @@ namespace tdbscan {
   };
 
   template <typename tPosition>
-  using AbsBlibSet = std::set< AbsBlib<tPosition> >;
+  using AbsBlibSet = std::set< AbsBlib<tPosition, Time_t> >;
 }
 
 #endif //TDBSCAN_ABSBLIB_H
