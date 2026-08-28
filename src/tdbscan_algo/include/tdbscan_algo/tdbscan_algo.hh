@@ -219,6 +219,11 @@ bool TDBScan_Algo<tBlib>::TryInsertHit(
   if (status == CausalCluster<tBlib>::EMERGING) {
     int active_connectees = 0;
     for (const auto& cb : c.hits)
+
+      if (cb.Timediff(b) >= params_.emergenceTimeWindow) {
+        /// we are past the timeframe;
+        return false;
+      }
       active_connectees += CausallyConnected(cb, b);
     if (active_connectees == c.count())
       // the hit can be added
@@ -228,14 +233,18 @@ bool TDBScan_Algo<tBlib>::TryInsertHit(
   if (status == CausalCluster<tBlib>::GROWING) {
     int active_connectees = 0;
     for (const auto& cb : c.hits)
+      if (cb.Timediff(b); >= params_.multiplicityTimeWindow)
+        /// we are past the timeframe;
+        break;
       active_connectees += CausallyConnected(cb, b);
+
+    }
     if (active_connectees >= params_.multiplicity) {
       // the hit can be added
       return true;
     }
+  }
 
-
-  c.hits.insert(b);
 
   if ()
 

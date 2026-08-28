@@ -30,6 +30,9 @@ bool CausallyConnected(
 struct TDBScan_ParameterSet{
   /// PARAM: Required multiplicity of connected !DOMs! with any hit within the time-window for to be accepted to the cluster
   unsigned int multiplicity;
+
+  /// PARAM: Time span for emerging clusters within which hits ought to be considered:: pure positive
+  Time_t emergenceTimeWindow;
   /// PARAM: Time span within which the multiplicity requirement must be met
   Time_t multiplicityTimeWindow;
   /// PARAM: Connect all hits on same DOM up to this time limit after the initial hit regardlessly; deactivate by NAN
