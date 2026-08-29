@@ -26,26 +26,6 @@ bool CausallyConnected(
 }
 } // namespace tdbscan::detail
 
-/// A set of parameters that steer HiveSplitter
-struct TDBScan_ParameterSet{
-  /// PARAM: Required multiplicity of connected !DOMs! with any hit within the time-window for to be accepted to the cluster
-  unsigned int multiplicity;
-
-  /// PARAM: Time span for emerging clusters within which hits ought to be considered:: pure positive
-  Time_t emergenceTimeWindow;
-  /// PARAM: Time span within which the multiplicity requirement must be met
-  Time_t multiplicityTimeWindow;
-  /// PARAM: Connect all hits on same DOM up to this time limit after the initial hit regardlessly; deactivate by NAN
-  Time_t acceptTimeWindow;
-  /// PARAM: Reject all hits on same DOM from to this time limit after the initial hit regardlessly; deactivate by INF
-  Time_t rejectTimeWindow;
-  /// PARAM: number of overlapping !DOMs! required for (partial)subevents to be merged into a super set
-  unsigned int mergeOverlap;
-
-  ///constructor
-  TDBScan_ParameterSet();
-};
-
 
 /**
  * The main algorithm class
@@ -53,11 +33,16 @@ struct TDBScan_ParameterSet{
  */
 template <class tBlib>
 class TDBScan_Algo {
-public: //typedefs: some internal definitions and shorthands
-  //  SET_LOGGER("HiveSplitter");
+public: //shorthands for types
+
+  using Time_t = typename tBlib::Time_t;
+  using TimeDiff_t = typename tBlib::Time_t::TimeDiff_t;
+
+  using Distance_t = typename tBlib::Ordinate_t::Distance_t;
+
 
   /// A set of hits, time-order is enforced automatically
-  typedef std::set<tBlib> BlibSet;
+  using BlibSet = std::set<tBlib> ;
 
   struct BlibSetTimeOrder {
     /// implement the order principle for sets of blibs; order them by the earliest time blib they contain
@@ -69,6 +54,34 @@ public: //typedefs: some internal definitions and shorthands
 
   typedef Connector<tBlib> Connector_t;
   typedef CausalCluster<tBlib> CausalCluster_t;
+
+
+public: //typedefs: some internal definitions and shorthands
+  //  SET_LOGGER("HiveSplitter");
+
+  /// A set of parameters that steer the algorithm behaviour
+  struct TDBScan_ParameterSet{
+    /// PARAM: Required multiplicity of connected !DOMs! with any hit within the time-window for to be accepted to the cluster
+    unsigned int multiplicity;
+
+    /// PARAM: Time span for emerging clusters within which hits ought to be considered:: pure positive
+    Time_t emergenceTimeWindow;
+    /// PARAM: Time span within which the multiplicity requirement must be met
+    Time_t multiplicityTimeWindow;
+    // /// PARAM: Connect all hits on same DOM up to this time limit after the initial hit regardlessly; deactivate by NAN
+    // Time_t acceptTimeWindow;
+    // /// PARAM: Reject all hits on same DOM from to this time limit after the initial hit regardlessly; deactivate by INF
+    // Time_t rejectTimeWindow;
+    // /// PARAM: number of overlapping !DOMs! required for (partial)subevents to be merged into a super set
+    // unsigned int mergeOverlap;
+
+    ///constructor
+    TDBScan_ParameterSet();
+  };
+
+
+
+
 
 private: // internal state
   //==================

@@ -6,42 +6,48 @@
 #define TDBSCAN_BASE_DEFS_H
 
 namespace tdbscan {
-    typedef double Timediff_t;
-    typedef double Time_t;
+    // typedef double Timediff_t;
+    // typedef double Time_t;
 
-    // /** make a typedef for what is the notion of Time;
-    // * On first principles time is a continuous monotonic increasing variable
-    // */
-    // class Time_t {
-    // public:
-    //     virtual
-    //     bool operator<(const Time_t &rhs) const = 0;
-    //     virtual
-    //     bool operator==(const Time_t &rhs) const = 0;
-    //     virtual
-    //     Timediff_t operator-(const Time_t &rhs) const = 0;
-    //
-    //     static double min();  //needs to be implemented by subclass
-    //
-    //     static double max();  //needs to be implemented by subclass
-    // };
+    /** Prototype for a time-like object
+    * On first principles time is a continuous monotonic increasing variable,
+    * that adheres a strict order principle
+    */
+    class Time_t {
+    public:
+        /// this needs to be defined by the Final Class!
+        typedef void* Timediff_t;
+    public:
+        virtual
+        bool operator<(const Time_t &rhs) const = 0;
+        virtual
+        bool operator==(const Time_t &rhs) const = 0;
+        virtual
+        Timediff_t operator-(const Time_t &rhs) const = 0;
+
+        static void* min();  //needs to be implemented by subclass
+
+        static void* max();  //needs to be implemented by subclass
+    };
 
 
     /// forward declare of Positional value Prototype
-
-    typedef double Distance_t;
-
-    class Position_t {
+    class Ordinate_t {
     public:
-        virtual ~Position_t() = default;
+        /// this needs to be defined by the Final Class!
+        typedef void* Distance_t;
+    public:
+        [[nodiscard]]
+        bool operator<(const Ordinate_t& rhs) const;
 
         [[nodiscard]]
-        bool operator<(const Position_t& other) const;
+        bool operator==(const Ordinate_t& rhs) const;
 
         [[nodiscard]]
-        bool operator==(const Position_t& other) const;
+        Distance_t magnitude() const;
+        [[nodiscard]]
+        Distance_t distance( const Ordinate_t& other) const;
     };
-
 }
 
 

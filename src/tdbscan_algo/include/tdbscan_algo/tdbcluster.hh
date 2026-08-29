@@ -28,23 +28,25 @@ CausalCluster<tBlib>::CausalCluster(const CausalCluster& cc)
 {blibs_.insert(cc.blibs_.cbegin(), cc.blibs_.cend());};
 
 template <class tBlib>
-Time_t CausalCluster<tBlib>::getEarliestTime() const {
+typename tBlib::Time_t
+CausalCluster<tBlib>::getEarliestTime() const {
   if (!blibs_.empty())
     return(blibs_.begin()->GetTime());
   return(std::numeric_limits<Time_t>::infinity());
 }
 
 template <class tBlib>
-Time_t CausalCluster<tBlib>::getLatestTime() const{
+typename tBlib::Time_t
+CausalCluster<tBlib>::getLatestTime() const{
   if (!blibs_.empty())
     return(blibs_.rbegin()->GetTime());
-  return(-std::numeric_limits<Time_t>::infinity());
+  return(tBlib::Time_t::max());
 }
 
 
 template <class tBlib>
 uint64_t CausalCluster<tBlib>::nHitsWithinTimeWindow(
-  const Time_t earliest, const Time_t latest) const {
+  const typename tBlib::Time_t earliest, const typename tBlib::Time_t latest) const {
   uint64_t _count = 0;
   for (const auto& b : blibs_) {
     if (earliest <= b.getTime() && b.getTime() >= latest)

@@ -91,12 +91,15 @@ namespace detail {
     [[nodiscard]] const BlibSet& getHits() const;
     ///Finds the time of the earliest hit in this cluster
     /// @return The earliest hit time or minus infinity if the cluster is empty
-    [[nodiscard]] Time_t getEarliestTime() const;
+    [[nodiscard]] typename tBlib::Time_t
+    getEarliestTime() const;
     ///Finds the time of the latest hit in this cluster
     /// @return The latest hit time or infinity if the cluster is empty
-    [[nodiscard]] Time_t getLatestTime() const;
+    [[nodiscard]] typename tBlib::Time_t
+    getLatestTime() const;
 
-    [[nodiscard]] uint64_t nHitsWithinTimeWindow(const Time_t earliest, const Time_t latest) const;
+    [[nodiscard]] uint64_t
+    nHitsWithinTimeWindow(const typename tBlib::Time_t earliest, const typename tBlib::Time_t latest) const;
 
 
     ///is this cluster established

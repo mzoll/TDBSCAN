@@ -24,10 +24,9 @@ namespace tdbscan {
 
 //=============== class TDBScan_ParameterSet =================
 
-TDBScan_ParameterSet::TDBScan_ParameterSet():
-  multiplicity(3),
-  multiplicityTimeWindow( Timediff_t(1000.))
-{};
+
+template <class tBlib>
+TDBScan_Algo<tBlib>::TDBScan_ParameterSet::TDBScan_ParameterSet() {};
 
 
 //=============== class TDBScan_Algo =================================
@@ -37,8 +36,6 @@ bool
 TDBScan_Algo<tBlib>::BlibSetTimeOrder::operator()(const BlibSet &lhs, const BlibSet &rhs) const {
   return lhs.cbegin()->getTime() < rhs.cbegin()->getTime();
 }
-
-
 
 template <class tBlib>
 TDBScan_Algo<tBlib>::TDBScan_Algo (
@@ -51,15 +48,15 @@ TDBScan_Algo<tBlib>::TDBScan_Algo (
     log_fatal("Multiplicity should be greater than zero");
   if (params_.multiplicityTimeWindow<=0.0)
     log_fatal("TimeWindow should be greater than zero");
-  if (params_.acceptTimeWindow<0.0)
-    log_fatal("AcceptTimeWindow cannot be negative");
-  if (params_.rejectTimeWindow<0.0)
-    log_fatal("RejectTimeWindow cannot be negative");
-  if (params_.mergeOverlap==0)
-    log_warn("RequiredDOMOverlap configured with 0, everything will be merged");
+//  if (params_.acceptTimeWindow<0.0)
+//    log_fatal("AcceptTimeWindow cannot be negative");
+//  if (params_.rejectTimeWindow<0.0)
+//    log_fatal("RejectTimeWindow cannot be negative");
+//  if (params_.mergeOverlap==0)
+//    log_warn("RequiredDOMOverlap configured with 0, everything will be merged");
 
-  if (params_.rejectTimeWindow <= params_.acceptTimeWindow)
-    log_fatal("RejectTimeWindow needs to be greater than AcceptTimeWindow");
+//  if (params_.rejectTimeWindow <= params_.acceptTimeWindow)
+//    log_fatal("RejectTimeWindow needs to be greater than AcceptTimeWindow");
 
   if (! connector_)
     log_error("No ConnectionBlock defined!");

@@ -10,23 +10,43 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+# ======================================================
+
+add_executable(test_basedefs
+        tdbscan_algo/test_basedefs.cpp)
+target_link_libraries(test_basedefs PRIVATE tdbscan_algo)
+
+# enable testing functionality
+enable_testing()
+
+# define tests
+add_test(
+        NAME test_basedefs
+        COMMAND $<TARGET_FILE:test_basedefs>
+)
 
 
 
-set(UNIT_TEST ${PROJECT_NAME}_tests)  #local alias
 
-add_executable(${UNIT_TEST} "test_${PROJECT_NAME}.cpp")
+# ======================================================
+#
+#
+#set(UNIT_TEST ${PROJECT_NAME}_tests)  #local alias
+#
+#add_executable(${UNIT_TEST} "test_${PROJECT_NAME}.cpp")
+#
+#target_compile_features(${UNIT_TEST} PRIVATE cxx_std_20)
+#
+#target_link_libraries(${UNIT_TEST} PRIVATE gtest_main)
+#
+#add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
+#
+#include_directories("${gtest_SOURCE_DIR}/include")
+#
+#set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures)
+#
 
-target_compile_features(${UNIT_TEST} PRIVATE cxx_std_20)
-
-target_link_libraries(${UNIT_TEST} PRIVATE gtest_main)
-
-add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
-
-include_directories("${gtest_SOURCE_DIR}/include")
-
-set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures)
-
+# ======================================================
 
 #
 #add_test(
