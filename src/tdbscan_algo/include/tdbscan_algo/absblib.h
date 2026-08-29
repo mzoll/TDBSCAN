@@ -19,22 +19,36 @@
 namespace tdbscan {
   /**
    * copies needs to be lightweight.
-   * @tparam tPosition
+   * @tparam tOrdinate_t an ordinate class, aka a position
+   * @tparam tTime_t a timelike class
    */
-  template <class tPosition, class tTime_t>  //tPosition adheres to Position_t
+  template <class tOrdinate_t, class tTime_t>  //tOrdinate adheres to Position_t
   class AbsBlib {
   public:  //methods
     [[nodiscard]]
-    tPosition GetPosition() const;
+    tOrdinate_t
+    getOrdinate() const;
 
-    [[nodiscard]] tTime_t GetTime() const;
+    [[nodiscard]]
+    tTime_t
+    getTime() const;
   public: //comparators
-    [[nodiscard]] Distance_t GetDistance(const AbsBlib& other) const;
+    [[nodiscard]]
+    Distance_t
+    distanceTo(const AbsBlib& other) const;
 
     /// get the time difference to rhs
-    [[nodiscard]] Timediff_t TimeDiff(const AbsBlib& other) const;
+    [[nodiscard]]
+    Timediff_t
+    timeDiff(const AbsBlib& other) const;
 
-    [[nodiscard]] bool operator<(const AbsBlib& other) const;
+    [[nodiscard]]
+    bool
+    operator<(const AbsBlib& other) const;
+
+    [[nodiscard]]
+    bool
+    operator==(const AbsBlib& other) const;
   };
 
   template <typename tPosition>

@@ -20,7 +20,7 @@ bool CausallyConnected(
   const tBlib& h2,
   const Connector<tBlib>& connector)
 {
-  if (h1.GetTime() > h2.GetTime())
+  if (h1.getTime() > h2.getTime())
     return CausallyConnected(h2, h1, connector); //recursive call to enforce time-order at this point
   return connector.eval(h1, h2);
 }
@@ -60,7 +60,7 @@ public: //typedefs: some internal definitions and shorthands
   typedef std::set<tBlib> BlibSet;
 
   struct BlibSetTimeOrder {
-    /// implement the order principle
+    /// implement the order principle for sets of blibs; order them by the earliest time blib they contain
     bool operator()(const BlibSet &lhs, const BlibSet &rhs) const;
   };
 

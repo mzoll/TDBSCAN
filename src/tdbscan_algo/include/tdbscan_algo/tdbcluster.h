@@ -56,12 +56,8 @@ namespace detail {
     using BlibList = std::list<tBlib>;
 
   public: //properties
-    ///the latest time to which this cluster is synchronized, i.e.
-    Time_t sync_time = std::numeric_limits<Time_t>::min();
-
     ///The ordered set of hits within this cluster
     BlibSet blibs_;
-
 
     enum Status {
       EMPTY = 0,
@@ -69,18 +65,16 @@ namespace detail {
       GROWING = 20,
       DYING = 30,
       CONCLUDED = 40,
-    };
-
-    Status status = EMPTY;
+    } status = EMPTY;
 
 
   public:
     // Constructor
     CausalCluster();
-    ///adhoc constructor from single hit
+    ///adhoc constructor from single blib
     CausalCluster(const tBlib &h );
     ///adhoc constructor series of hits
-    CausalCluster(const std::set<tBlib> &hset);
+    CausalCluster(const std::set<tBlib> &bset);
     /// this should be made in a proper copy constructor
     CausalCluster(const CausalCluster& cc);
 
@@ -88,12 +82,12 @@ namespace detail {
     ///Add a new hit to the cluster
     ///\param h The hit to add
     void insertBlib(const tBlib &h);
-    ///Take all hits in other's concluded_hits list and merge them into this cluster's concluded_hits list
-    ///\param c the cluster to be merged
+    /// Take all hits from the cluster and add them to its own
+    /// @param c the cluster to be merged
     void copyHits(const CausalCluster& c);
 
   public: //methods (inert)
-    ///get  hits of this cluster
+    /// get hits of this cluster
     [[nodiscard]] const BlibSet& getHits() const;
     ///Finds the time of the earliest hit in this cluster
     /// @return The earliest hit time or minus infinity if the cluster is empty

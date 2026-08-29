@@ -32,6 +32,13 @@ TDBScan_ParameterSet::TDBScan_ParameterSet():
 
 //=============== class TDBScan_Algo =================================
 
+template <class tBlib>
+bool
+TDBScan_Algo<tBlib>::BlibSetTimeOrder::operator()(const BlibSet &lhs, const BlibSet &rhs) const {
+  return lhs.cbegin()->getTime() < rhs.cbegin()->getTime();
+}
+
+
 
 template <class tBlib>
 TDBScan_Algo<tBlib>::TDBScan_Algo (
@@ -142,7 +149,7 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib& b1, const tBlib& b2) co
 template <class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   log_debug("Entering NextBlib()");
-  const auto now = b.GetTime();
+  const auto now = b.getTime();
   // advance every each cluster in time and try to add the hit to it
 
   // 10. go through all active clusters  and see if blibs have fallen out of the emergence time window and multiplicity cannot be fullfilled; mark them as 'dying'; if there is nothing left mark as 'concluded'
@@ -242,7 +249,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit(
     case CausalCluster<tBlib>::EMERGING: {
       int active_connectees = 0;
       for (const auto& cb : c.blibs_) {
-        if (cb.TimeDiff(b) >= params_.emergenceTimeWindow) {
+        if (cb.timeDiff(b) >= params_.emergenceTimeWindow) {
           /// we are past the timeframe;
           return false;
         }
@@ -255,7 +262,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit(
     case CausalCluster<tBlib>::GROWING: {
       int active_connectees = 0;
       for (const auto& cb : c.blibs_) {
-        if (cb.TimeDiff(b) >= params_.multiplicityTimeWindow)
+        if (cb.timeDiff(b) >= params_.multiplicityTimeWindow)
           /// we are past the timeframe;
             break;
         active_connectees += CausallyConnected(cb, b);

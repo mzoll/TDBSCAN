@@ -63,23 +63,31 @@ private:
 	Position3d pos;
 	Time_t time;
 public:
-	[[nodiscard]] virtual Position3d GetPosition() const {return pos;};
+	[[nodiscard]] Position3d
+	getOrdinate() const
+	{return pos;};
 
-	[[nodiscard]] virtual Time_t GetTime() const {return time;};
+	[[nodiscard]] Time_t
+	getTime() const
+		{return time;};
+
+	[[nodiscard]] Distance_t
+	getDistance(const Blib4d& rhs) const
+		{return pos.distance(rhs.pos);};
+
+	/// get the time difference
+	[[nodiscard]] Timediff_t
+	timeDiff(const Blib4d& other) const
+		{return time - other.time;};
 public: //comparators
-	[[nodiscard]] virtual Distance_t GetDistance(const Blib4d& rhs) const {return pos.distance(rhs.pos);};
-
-	/// get the time difference to rhs
-	[[nodiscard]] virtual Timediff_t TimeDiff(const Blib4d& other) const {return time - other.time;};
-
 	/// define the lesser-operator
-	[[nodiscard]] virtual bool operator<(const Blib4d& other) const {
-		return time < other.time || pos < other.pos;
-	};
+	[[nodiscard]] bool
+	operator<(const Blib4d& other) const
+		{ return time < other.time || pos < other.pos; };
 
-	[[nodiscard]] virtual bool operator==(const Blib4d& other) const {
-		return time == other.time && pos == other.pos;
-	};
+	[[nodiscard]] bool
+	operator==(const Blib4d& other) const
+		{ return time == other.time && pos == other.pos; };
 
 	///constructor
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
@@ -91,7 +99,7 @@ public:
 	Distance_t maxDist_;
 	DistanceLimiter(const Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return lhs.GetDistance(rhs) <= maxDist_;};
+	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
 };
 
 // make one connector which just connects to max time-diff
@@ -100,7 +108,7 @@ public:
 	Timediff_t maxTimediff_;
 	explicit TimeLimiter(const Timediff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return rhs.TimeDiff(lhs) <= maxTimediff_;};
+	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
 };
 
 // combine the Connectors into a ConnectorBlock

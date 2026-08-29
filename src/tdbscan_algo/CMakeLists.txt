@@ -17,12 +17,14 @@ target_link_libraries(tdbscan_algo
 # target_precompile_headers(ColumbaEngine PUBLIC src/Engine/stdafx.h)
 
 set( header_files
-        tdbscan_algo/tdbscan_algo.h
-        tdbscan_algo/tdbcluster.h
         tdbscan_algo/base_defs.h
         tdbscan_algo/absblib.h
-        tdbscan_algo/tdbscan_algo.hh
+        tdbscan_algo/tdbcluster.h
+        tdbscan_algo/tdbcluster.hh
         tdbscan_algo/connector.h
+        tdbscan_algo/connector.hh
+        tdbscan_algo/tdbscan_algo.h
+        tdbscan_algo/tdbscan_algo.hh
 )
 
 
