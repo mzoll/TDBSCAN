@@ -2,9 +2,12 @@
 // Created by netsu on 29/08/2026.
 //
 
-#include "tdbscan_algo/base_defs.h"
+#include <gtest/gtest.h>
 
-
-int main() {
-  return 0;
+// Demonstrate some basic assertions.
+TEST(OtherName, BasicAssertions) {
+  // Expect two strings not to be equal.
+  EXPECT_STRNE("hello", "world");
+  // Expect equality.
+  EXPECT_EQ(7 * 6, 42);
 }
