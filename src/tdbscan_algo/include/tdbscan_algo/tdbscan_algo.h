@@ -37,7 +37,6 @@ public: //shorthands for types
 
   using Time_t = typename tBlib::Time_t;
   using TimeDiff_t = typename tBlib::Time_t::TimeDiff_t;
-
   using Distance_t = typename tBlib::Ordinate_t::Distance_t;
 
 

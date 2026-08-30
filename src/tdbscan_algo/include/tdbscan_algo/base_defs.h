@@ -18,12 +18,9 @@ namespace tdbscan {
         /// this needs to be defined by the Final Class!
         typedef void* Timediff_t;
     public:
-        virtual
-        bool operator<(const Time_t &rhs) const = 0;
-        virtual
-        bool operator==(const Time_t &rhs) const = 0;
-        virtual
-        Timediff_t operator-(const Time_t &rhs) const = 0;
+        bool operator<(const Time_t &rhs) const;
+        bool operator==(const Time_t &rhs) const;
+        Timediff_t operator-(const Time_t &rhs) const;
 
         static void* min();  //needs to be implemented by subclass
 
