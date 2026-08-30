@@ -35,7 +35,7 @@ target_link_libraries(test_connector
         GTest::gtest_main
 )
 
-#gtest_discover_tests(test_basedefs)
+gtest_discover_tests(test_basedefs)
 gtest_discover_tests(test_connector)
 
 # --- adding test through cmake magic
