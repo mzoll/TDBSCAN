@@ -123,7 +123,13 @@ public: //comparators
 
 	///constructor
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
+
+	struct TimeOrder {
+		bool operator()(const Blib4d& lhs, const Blib4d& rhs) {return lhs.time < rhs.time || lhs.pos < rhs.pos;}
+	};
 };
+
+typedef std::set<Blib4d, Blib4d::TimeOrder> BlibSet;
 
 // having implemented all this stuff, lets whip up a connector, which is just an distance connector
 class DistanceLimiter final : public ConnectorSingle<Blib4d> {
@@ -170,6 +176,7 @@ double rand_ord() {return rand() * 100-50.;};
 Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord());};
 MyTime_t rand_time() {return MyTime_t(rand() % 10000);};
 
+// std::set<Blib4d, Blib4d::TimeOrder> construct_blibs() {
 std::set<Blib4d> construct_blibs() {
 	int many_blibs = 1000;
 

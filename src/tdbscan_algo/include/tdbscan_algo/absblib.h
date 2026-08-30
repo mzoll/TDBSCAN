@@ -45,6 +45,7 @@ namespace tdbscan {
     typename Time_t::TimeDiff_t
     timeDiff(const AbsBlib& other) const;
 
+    //maybe this should be replaced with something that explicitly names the time order
     [[nodiscard]]
     bool
     operator<(const AbsBlib& other) const;
@@ -52,10 +53,13 @@ namespace tdbscan {
     [[nodiscard]]
     bool
     operator==(const AbsBlib& other) const;
+
+    ///defines the timeorder of Blibs
+    struct TimeOrder;
   };
 
   template <typename tPosition>
-  using AbsBlibSet = std::set< AbsBlib<tPosition, Time_t> >;
+  using AbsBlibSet = std::set< AbsBlib<tPosition, Time_t>, typename AbsBlib<tPosition, Time_t>::TimeOrder >;
 }
 
 #endif //TDBSCAN_ABSBLIB_H
