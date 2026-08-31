@@ -75,6 +75,7 @@ TDBScan_Algo<SBlibWithTrace> construct_algo() {
 
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=2;
+	params.emergenceTimeWindow=2;
 	params.earlyMergeOverlapRatio= 1.;
 	params.lateMergeOverlapRatio= 1.;
 
