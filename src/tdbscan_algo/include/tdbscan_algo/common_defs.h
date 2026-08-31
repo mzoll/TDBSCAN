@@ -6,6 +6,8 @@
 #define TDBSCAN_COMMON_DEFS_H
 
 #include <cmath>
+#include <ostream>
+#include <format>
 #include "tdbscan_algo/base_defs.h"
 #include "tdbscan_algo/absblib.h"
 
@@ -48,6 +50,15 @@ public:
 
 	static double min() {return std::numeric_limits<double>::min();};
 	static double max() {return std::numeric_limits<double>::max();};
+
+private:
+	friend
+	std::ostream& operator<< ( std::ostream& outs, const ScalarTime_t & st);
+};
+
+
+std::ostream& operator<< ( std::ostream& os, const ScalarTime_t & st) {
+	return os << std::format("ScalarTime({})", st.value_);
 };
 
 
@@ -163,7 +174,7 @@ public: //comparators
 	/// define the lesser-operator
 	[[nodiscard]] bool
 	operator<(const Blib4d& other) const
-		{ return time < other.time || pos < other.pos; };
+		{ return time < other.time || time == other.time && pos < other.pos; };
 
 	[[nodiscard]] bool
 	operator==(const Blib4d& other) const
@@ -203,7 +214,7 @@ public: //comparators
 	/// define the lesser-operator
 	[[nodiscard]] bool
 	operator<(const ScalarBlib& other) const
-		{ return time < other.time || pos < other.pos; };
+		{ return time < other.time || time == other.time && pos < other.pos; };
 
 	[[nodiscard]] bool
 	operator==(const ScalarBlib& other) const
@@ -211,6 +222,20 @@ public: //comparators
 
 	///constructor
 	ScalarBlib(const Position1d pos, const Time_t time) : pos(pos), time(time) {};
+
+	struct TimeOrder {
+		bool operator()(const ScalarBlib& lhs, const ScalarBlib& rhs) const {return double(lhs.getTime()) < double(rhs.getTime());};
+
+	};
+
+private:
+	friend
+	std::ostream& operator<< ( std::ostream& outs, const ScalarBlib & sb);
+};
+
+
+std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
+	return os << std::format("ScalarBlib(ord: {}, time: {})", double(sb.getOrdinate()), double(sb.getTime()));
 };
 
 

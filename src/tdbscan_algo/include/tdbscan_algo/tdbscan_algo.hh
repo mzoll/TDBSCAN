@@ -179,7 +179,7 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib& b1, const tBlib& b2) co
 template <class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   log_debug("Entering NextBlib()");
-  log_debug(std::format("==========PROBE : {} {}", active_clusters_.size(), active_clusters_.begin() == active_clusters_.end()));
+  log_trace(std::format("==========PROBE : o:{} t:{}", double(b.getOrdinate()), double(b.getTime() )));
   const auto now = b.getTime();
   // advance every each cluster in time and try to add the hit to it
 
@@ -190,6 +190,11 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   // 50. traverse the newly established list and try to merge clusters with the active clusters
   // 9. put the hit on a newly created cluster by its own
 
+  if (emerging_clusters_.size()) {
+    log_debug(std::format("first cb: {} t{}", 0., double(emerging_clusters_.begin()->getHits().begin()->getTime())));
+
+  }
+
   log_debug("Eliminating emerging clusters, adding to emerging clusters");
   // 20. go through all emerging clusters and see if blibs have fallen out of the emergence time window, if so kill the cluster off
   // 21. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
@@ -199,6 +204,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     const auto _n_active = ec_iter->nHitsWithinTimeWindow(  now, Time_t::max());
     if (_n_active < ec_iter->count()) {
       ec_iter = emerging_clusters_.erase(ec_iter);
+      continue;
     }
 
     const auto success = TryInsertHit_Emergence(*ec_iter, b);
@@ -278,8 +284,6 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   log_debug(std::format("xxxxx PROBE : {} {}", active_clusters_.size(), active_clusters_.begin() == active_clusters_.end()));
   log_debug("Leaving NextHit()");
 }
-
-
 
 
 template <class tBlib>

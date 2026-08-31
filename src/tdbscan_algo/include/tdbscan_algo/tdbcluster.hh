@@ -46,7 +46,7 @@ uint64_t CausalCluster<tBlib>::nHitsWithinTimeWindow(
   const typename tBlib::Time_t earliest, const typename tBlib::Time_t latest) const {
   uint64_t _count = 0;
   for (const auto& b : blibs_) {
-    if (earliest <= b.getTime() && b.getTime() >= latest)
+    if (earliest <= b.getTime() && b.getTime() <= latest)
       _count++;
   }
   return _count;

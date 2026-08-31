@@ -16,6 +16,10 @@ TEST(CommonDefs, TimeAdheres) {
 
   EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(42.),0. );
   EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(0.),42. );
+
+  ASSERT_FALSE(ScalarTime_t(0.) < ScalarTime_t(0.) );
+  ASSERT_TRUE(ScalarTime_t(0.) < ScalarTime_t(0.1) );
+  ASSERT_FALSE(ScalarTime_t(0.1) < ScalarTime_t(0.) );
 }
 
 TEST(CommonDefs, Position3dAdheres) {

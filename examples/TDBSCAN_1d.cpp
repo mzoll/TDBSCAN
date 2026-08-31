@@ -22,30 +22,48 @@ double rand_double() {
 
 
 
-// define some Limiters
-class DistanceLimiter final : public ConnectorSingle<ScalarBlib> {
+class SBlibWithTrace final : public ScalarBlib {
 public:
-	ScalarBlib::Ordinate_t::Distance_t maxDist_;
-	DistanceLimiter(const ScalarBlib::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
+	enum Origin {
+		UNKNOWN = 0,
+		NOISE = 20,
+		SIGNAL =100,
+	} origin_{UNKNOWN};
 
-	bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
+	SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; }
+
+	SBlibWithTrace( const SBlibWithTrace::Ordinate_t& ord , const SBlibWithTrace::Time_t& t, const Origin o ) : ScalarBlib(ord, t) ,origin_(o) {};
+};
+
+
+
+// define some Limiters
+class DistanceLimiter final : public ConnectorSingle<SBlibWithTrace> {
+public:
+	SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
+	DistanceLimiter(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
+
+	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
 };
 
 // make one connector which just connects to max time-diff
-class TimeLimiter final : public ConnectorSingle<ScalarBlib> {
+class TimeLimiter final : public ConnectorSingle<SBlibWithTrace> {
 public:
-	ScalarBlib::Time_t::TimeDiff_t maxTimediff_;
-	explicit TimeLimiter(const ScalarBlib::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
+	SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
+	explicit TimeLimiter(const SBlibWithTrace::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-	bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
+	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
 };
 
 // combine the Connectors into a ConnectorBlock
-class LimitingConnector final : public ConnectorBlock<ScalarBlib> {
+class LimitingConnector final : public ConnectorBlock<SBlibWithTrace> {
 };
 
 
-TDBScan_Algo<ScalarBlib> construct_algo() {
+
+
+
+TDBScan_Algo<SBlibWithTrace> construct_algo() {
 
 	auto distLimiter_ = new DistanceLimiter(4.);
 	auto timeLimiter_ = new TimeLimiter(2.);
@@ -53,33 +71,35 @@ TDBScan_Algo<ScalarBlib> construct_algo() {
 	limcon->addConnector(distLimiter_);
 	limcon->addConnector(timeLimiter_);
 
-	TDBScan_Algo<ScalarBlib>::TDBScan_ParameterSet params;
+	TDBScan_Algo<SBlibWithTrace>::TDBScan_ParameterSet params;
 
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=2;
 	params.earlyMergeOverlapRatio= 1.;
 	params.lateMergeOverlapRatio= 1.;
 
-	return TDBScan_Algo<ScalarBlib>(params, limcon);
+	return TDBScan_Algo<SBlibWithTrace>(params, limcon);
 }
 
 
-std::set<ScalarBlib>
-generate_noise(const double noise_freq, const double width_fields, const double time_duration) {
-	std::set<ScalarBlib> blibs;
-	for (int time_step = 0; time_step < time_duration * noise_freq; time_step++) {
-		const auto pos = rand_double() * width_fields;
-		const auto t = rand_double() * time_duration;
-		log_trace(std::format("ONE: {}", time_step));
-		blibs.insert(ScalarBlib({pos}, t));
-	}
 
+std::set<SBlibWithTrace>
+generate_noise(const double noise_freq, const double width_fields, const double time_duration) {
+	std::set<SBlibWithTrace> blibs;
+	for (int time_step = 0; time_step < time_duration; time_step++) {
+		for (int count_noise = 0; count_noise < noise_freq * width_fields; count_noise++) {
+			const auto pos = rand_double() * width_fields;
+			const auto t = rand_double() + time_step;
+			blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::NOISE));
+		}
+	}
 	return blibs;
 }
 
-std::set<ScalarBlib>
+
+std::set<SBlibWithTrace>
 generate_moving_box(const double box_size, const double inerta, const double start_pos, const double brightness, const double time_duration) {
-	std::set<ScalarBlib> blibs;
+	std::set<SBlibWithTrace> blibs;
 	const auto _brightness_cal = brightness * box_size;
 
 	for (int time_step = 0; time_step < time_duration; time_step++) {
@@ -87,15 +107,15 @@ generate_moving_box(const double box_size, const double inerta, const double sta
 			const auto t = rand_double() + time_step;
 			const auto box_ledge_pos = time_step * inerta + start_pos - box_size /2.;
 			const auto pos = rand_double() * box_size + box_ledge_pos;
-			blibs.insert(ScalarBlib({pos}, t));
+			blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::SIGNAL));
 		}
 	}
 	return blibs;
 }
 
-std::set<ScalarBlib>
+std::set<SBlibWithTrace>
 gernerate_blibs( const double width_fields, const double time_duration ) {
-	std::set<ScalarBlib> blibs;
+	std::set<SBlibWithTrace> blibs;
 
 	log_info(std::format("Generate BOX blibs"));
 	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
@@ -113,10 +133,11 @@ int main(int argc, char **argv) {
 	const auto blibs = gernerate_blibs(100, 50  );
 	log_info(std::format("Processing nBlibs: {}", blibs.size()));
 	//take first 3
-	std::set<ScalarBlib> _blibs;
+	std::set<SBlibWithTrace> _blibs;
 	auto iter = blibs.begin();
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 10; i++) {
 		_blibs.insert(*iter);
+		log_trace(std::format("===sorting==PROBE : o:{} t:{}", double(iter->getOrdinate()), double(iter->getTime() )));
 		++iter;
 	}
 	const auto result = my_algo.Process(_blibs);
