@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "aux.h"
+#include "auxil.h"
 #include "base_defs.h"
 #include "tdbcluster.h"
 

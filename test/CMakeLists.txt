@@ -26,6 +26,13 @@ target_link_libraries(test_common_defs
         PRIVATE tdbscan_algo
         GTest::gtest_main
 )
+add_executable(test_aux
+        tdbscan_algo/test_aux.cpp
+)
+target_link_libraries(test_aux
+        PRIVATE tdbscan_algo
+        GTest::gtest_main
+)
 add_executable(test_connector
         tdbscan_algo/test_connector.cpp
 )

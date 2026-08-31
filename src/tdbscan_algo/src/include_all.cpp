@@ -2,7 +2,8 @@
 // Created by netsu on 27/08/2026.
 //
 
-
+#include "tdbscan_algo/auxil.h"
+#include "tdbscan_algo/common_defs.h"
 #include "tdbscan_algo/base_defs.h"
 #include "tdbscan_algo/absblib.h"
 #include "tdbscan_algo/connector.h"

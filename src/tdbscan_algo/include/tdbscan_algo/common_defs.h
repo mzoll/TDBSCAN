@@ -173,6 +173,46 @@ public: //comparators
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
 };
 
+//make a declaration of the Blib
+class ScalarBlib : public tdbscan::AbsBlib<Position3d, MyTime_t> {
+public: //type shorthands
+	using Ordinate_t = Position1d;
+	using Time_t = MyTime_t;
+
+private:
+	Ordinate_t pos;
+	Time_t time;
+public:
+	[[nodiscard]] Position1d
+	getOrdinate() const
+	{return pos;};
+
+	[[nodiscard]] Time_t
+	getTime() const
+		{return time;};
+
+	[[nodiscard]] Ordinate_t::Distance_t
+	getDistance(const ScalarBlib& rhs) const
+		{return pos.distance(rhs.pos);};
+
+	/// get the time difference
+	[[nodiscard]] Time_t::TimeDiff_t
+	timeDiff(const ScalarBlib& other) const
+		{return time - other.time;};
+public: //comparators
+	/// define the lesser-operator
+	[[nodiscard]] bool
+	operator<(const ScalarBlib& other) const
+		{ return time < other.time || pos < other.pos; };
+
+	[[nodiscard]] bool
+	operator==(const ScalarBlib& other) const
+		{ return time == other.time && pos == other.pos; };
+
+	///constructor
+	ScalarBlib(const Position1d pos, const Time_t time) : pos(pos), time(time) {};
+};
+
 
 
 #endif //TDBSCAN_COMMON_DEFS_H

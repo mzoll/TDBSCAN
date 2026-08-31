@@ -109,7 +109,7 @@ TDBScan_Algo<tBlib>::Finalize() {
   }
 
   //
-  // // this is implementing the postmerge
+  // //--- this is implementing the postmerge ---
   // auto ac_iter = active_clusters_.begin();
   // auto c_riter = concluded_clusters_.end();
   // while (ac_iter != active_clusters_.end()) {
