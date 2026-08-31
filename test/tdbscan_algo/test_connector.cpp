@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include "tdbscan_algo/connector.h"
 
-#include "../../src/tdbscan_algo/include/tdbscan_algo/common_defs.h"
+#include "tdbscan_algo/common_defs.h"
 
 using namespace tdbscan;
 

@@ -104,6 +104,9 @@ TDBScan_Algo<tBlib>::Finalize() {
   // observer merging rules
   //sync_time = std::numeric_limits<Time_t>::max();
 
+
+
+
   assert(active_clusters_.empty());
   return;
 };

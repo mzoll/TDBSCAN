@@ -4,10 +4,12 @@
 
 #include <gtest/gtest.h>
 
-#include "common_defs.h"
+#include "tdbscan_algo/common_defs.h"
+
 
 using namespace tdbscan;
-// Demonstrate some basic assertions.
+
+
 TEST(CommonDefs, BlibAheres) {
 
   Blib4d({1,2,0}, 0);

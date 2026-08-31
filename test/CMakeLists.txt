@@ -19,16 +19,14 @@ enable_testing()
 
 include(GoogleTest)
 
-add_executable(test_basedefs
-        ../src/tdbscan_algo/include/tdbscan_algo/common_defs.h
-        tdbscan_algo/test_basedefs.cpp
+add_executable(test_common_defs
+        tdbscan_algo/test_common_defs.cpp
 )
-target_link_libraries(test_basedefs
+target_link_libraries(test_common_defs
         PRIVATE tdbscan_algo
         GTest::gtest_main
 )
 add_executable(test_connector
-        ../src/tdbscan_algo/include/tdbscan_algo/common_defs.h
         tdbscan_algo/test_connector.cpp
 )
 target_link_libraries(test_connector
@@ -36,7 +34,7 @@ target_link_libraries(test_connector
         GTest::gtest_main
 )
 
-gtest_discover_tests(test_basedefs)
+gtest_discover_tests(test_common_defs)
 gtest_discover_tests(test_connector)
 
 # --- adding test through cmake magic

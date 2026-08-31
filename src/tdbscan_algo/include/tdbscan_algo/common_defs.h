@@ -9,6 +9,8 @@
 #include "tdbscan_algo/base_defs.h"
 #include "tdbscan_algo/absblib.h"
 
+// ========================= TIME =======================
+
 
 /** make a typedef for what is the notion of Time;
 * On first principles time is a continuous monotonic increasing variable
@@ -19,7 +21,8 @@ public:
 private:
 	double value_{0.};
 public:
-
+	/// default constructor: for convenience
+	MyTime_t() : value_(0.) {};
 	MyTime_t(const double value) : value_(value) {};
 
 	inline
@@ -46,6 +49,52 @@ public:
 	static double min() {return std::numeric_limits<double>::min();};
 	static double max() {return std::numeric_limits<double>::max();};
 };
+
+
+// ========================= ORDINATE =======================
+
+
+/** make a typedef for what is the notion of Time;
+* On first principles time is a continuous monotonic increasing variable
+*/
+class Position1d final : public tdbscan::Ordinate_t {
+public:
+	typedef double Distance_t;
+private:
+	double value_{0.};
+public:
+	/// constructor
+	Position1d(const double value) : value_(value) {};
+
+	[[nodiscard]]
+	Distance_t
+	distance(const Position1d& rhs) const
+	{ return value_- rhs.value_;};
+
+	[[nodiscard]]
+	Distance_t magnitude() const
+	{return value_;};
+
+	[[nodiscard]]
+	inline
+	Distance_t abs() const
+	{return this->magnitude();};
+
+	bool
+	operator<(const Position1d &rhs) const
+	{return value_ < rhs.value_;};
+
+	bool
+	operator==(const Position1d &rhs) const
+	{return value_ == rhs.value_;};
+public: //convenience
+	///implicit conversion operator for shorthand
+	operator double() const { return value_; }
+	/// assignment operator
+	Position1d& operator=(const double rhs)
+	{value_=rhs; return *this; };
+};
+
 
 // make a definition of a Point in 3d space
 class Position3d final : public tdbscan::Ordinate_t {
@@ -83,7 +132,8 @@ public:
 };
 
 
-	//make a declaration of the Blib
+// ========================= BLIB =======================
+//make a declaration of the Blib
 class Blib4d : public tdbscan::AbsBlib<Position3d, MyTime_t> {
 public: //type shorthands
 	using Ordinate_t = Position3d;

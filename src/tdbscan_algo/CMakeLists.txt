@@ -19,6 +19,7 @@ target_link_libraries(tdbscan_algo
 set( header_files
         tdbscan_algo/base_defs.h
         tdbscan_algo/absblib.h
+        tdbscan_algo/common_defs.h
         tdbscan_algo/tdbcluster.h
         tdbscan_algo/tdbcluster.hh
         tdbscan_algo/connector.h

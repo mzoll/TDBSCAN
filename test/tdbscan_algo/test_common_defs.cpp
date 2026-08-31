@@ -3,8 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-
-#include "../../src/tdbscan_algo/include/tdbscan_algo/common_defs.h"
+#include "tdbscan_algo/common_defs.h"
 
 
 // Demonstrate some basic assertions.
