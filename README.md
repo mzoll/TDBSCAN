@@ -1,2 +1,2 @@
 # TDBSCAN
-Temporal-Density-based spatial clustering of applications with noise (TDBSCAN)
+Temporal-Density-based spatial clustering for applications with noise (TDBSCAN)

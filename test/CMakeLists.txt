@@ -20,7 +20,7 @@ enable_testing()
 include(GoogleTest)
 
 add_executable(test_basedefs
-        tdbscan_algo/common_defs.h
+        ../src/tdbscan_algo/include/tdbscan_algo/common_defs.h
         tdbscan_algo/test_basedefs.cpp
 )
 target_link_libraries(test_basedefs
@@ -28,7 +28,7 @@ target_link_libraries(test_basedefs
         GTest::gtest_main
 )
 add_executable(test_connector
-        tdbscan_algo/common_defs.h
+        ../src/tdbscan_algo/include/tdbscan_algo/common_defs.h
         tdbscan_algo/test_connector.cpp
 )
 target_link_libraries(test_connector
