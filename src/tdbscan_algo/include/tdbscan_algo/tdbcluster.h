@@ -121,6 +121,11 @@ namespace detail {
     /// Test whether two Clusters contain the same hits
     [[nodiscard]] bool isConcruent(const CausalCluster& c2) const;
 
+    /// The number of blibs in both Clusters
+    [[nodiscard]] unsigned int nOverlap(const CausalCluster& c2) const;
+
+
+
 
     [[nodiscard]]
     inline

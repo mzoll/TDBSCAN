@@ -73,6 +73,10 @@ public: //typedefs: some internal definitions and shorthands
     // Time_t rejectTimeWindow;
     // /// PARAM: number of overlapping !DOMs! required for (partial)subevents to be merged into a super set
     // unsigned int mergeOverlap;
+    /// PARAM: number of overlapping blibs required for (partial)subevents to be merged into a super set
+    unsigned int mergeOverlap;
+
+
 
     ///constructor
     TDBScan_ParameterSet();
@@ -139,8 +143,6 @@ public: // probe of internal state
 
   //probe into the algorithm
   bool CausallyConnected(const tBlib& b1, const tBlib& b2) const;
-
-
 
 protected: // --- THE REAL MACHINERY ---
   //===================

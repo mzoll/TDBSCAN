@@ -128,6 +128,28 @@ bool CausalCluster<tBlib>::isConcruent(
 }
 
 template <class tBlib>
+unsigned int CausalCluster<tBlib>::nOverlap(const CausalCluster<tBlib>& c2) const {
+  // simultaneous step through all members and check they are equal
+  int _overlap = 0;
+  auto it1=this->blibs_.cbegin();
+  const auto end1=this->blibs_.cend();
+   auto it2=c2.blibs_.cbegin();
+  const auto end2=c2.blibs_.cend();
+  while (it1 != end1) {
+    while (*it2 < *it1) {
+      ++it2;
+      if (it2 == end2)
+        return _overlap;
+    }
+    if (*it2 == *it2)
+      _overlap++;
+    ++it1;
+  }
+  return _overlap;
+}
+
+
+template <class tBlib>
 bool CausalCluster<tBlib>::empty() const {return blibs_.empty();}
 
 template <class tBlib>
