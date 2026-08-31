@@ -1,6 +1,6 @@
 add_library(tdbscan_algo
         src/include_all.cpp
-        include/tdbscan_algo/dummy_logging.h)
+        )
 
 target_include_directories(tdbscan_algo
         PUBLIC include
@@ -17,6 +17,8 @@ target_link_libraries(tdbscan_algo
 # target_precompile_headers(ColumbaEngine PUBLIC src/Engine/stdafx.h)
 
 set( header_files
+        tdbscan_algo/dummy_logging.h
+        tdbscan_algo/aux.h
         tdbscan_algo/base_defs.h
         tdbscan_algo/absblib.h
         tdbscan_algo/common_defs.h
@@ -30,9 +32,8 @@ set( header_files
 
 
 target_sources(tdbscan_algo
-#        PUBLIC ${header_files}
-        PRIVATE
-        include/tdbscan_algo/tdbcluster.hh
+       PUBLIC ${header_files}
+
 )
 
 

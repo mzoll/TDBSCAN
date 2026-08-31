@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "aux.h"
 #include "base_defs.h"
 #include "tdbcluster.h"
 
@@ -74,8 +75,9 @@ public: //typedefs: some internal definitions and shorthands
     // /// PARAM: number of overlapping !DOMs! required for (partial)subevents to be merged into a super set
     // unsigned int mergeOverlap;
     /// PARAM: number of overlapping blibs required for (partial)subevents to be merged into a super set
-    unsigned int mergeOverlap;
-
+    ZeroOne earlyMergeOverlapRatio{1.}; //needs within [0. ... 1.]
+    /// PARAM: number of overlapping blibs required for (partial)subevents to be merged into a super set
+    ZeroOne lateMergeOverlapRatio{1.}; //needs within [0. ... 1.]
 
 
     ///constructor
@@ -156,13 +158,9 @@ protected: // --- THE REAL MACHINERY ---
    */
   void NextBlib(const tBlib &b);
 
+  void Finalize();
+
 private: //work on *clusters*
-
-
-
-  /// advance the cluster forward in time TODO more specific
-  void AdvanceInTime(tdbscan::CausalCluster<tBlib>& c, Time_t timep);
-
   /** Attempt to add Hit h to existing cluster c, or to the subset of c with which it is connected by enough hits in c
    * to meet the multiplicity condition.
    * @param c the cluster to add to
@@ -186,15 +184,6 @@ private: //things that work on the surface of Clusters, but do not change the in
   CausalCluster<tBlib> getConnectedSubCluster(
     const tBlib &h, const CausalCluster<tBlib>& c1) const;
 
-  ///insert an hit and advance the cluster
-  void insertActiveHit(const tBlib &h, CausalCluster<tBlib>& c) {
-    c.insertActiveHit(h);
-    if (c.active_doms.size()>=params_.multiplicity) {
-      c.established=true;
-    }
-  }
-
-  void Finalize();
 
 };
 };

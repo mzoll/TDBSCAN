@@ -99,9 +99,6 @@ TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
 template <class tBlib>
 void
 TDBScan_Algo<tBlib>::Finalize() {
-  // TODO implement me:
-  // something like like: move all established clusters from the active_cluster list into the (nominal) cluster list;
-  // observer merging rules
   sync_time = Time_t::max();
 
   auto ac_iter = active_clusters_.begin();
@@ -109,11 +106,37 @@ TDBScan_Algo<tBlib>::Finalize() {
     ac_iter->status = CausalCluster<tBlib>::CONCLUDED;
     concluded_clusters_.push_back(*ac_iter);
     ac_iter = active_clusters_.erase(ac_iter);
-    continue;
   }
 
+  //
+  // // this is implementing the postmerge
+  // auto ac_iter = active_clusters_.begin();
+  // auto c_riter = concluded_clusters_.end();
+  // while (ac_iter != active_clusters_.end()) {
+  //   ac_iter->status = CausalCluster<tBlib>::CONCLUDED;
+  //
+  //   bool merged_any = 0;
+  //   while (c_riter != concluded_clusters_.begin()) {
+  //     // if we sort the list of clusters first, we could establish exit conditions faster
+  //     if (c_riter->getLatestTime < ac_iter->getEarliestTime() || ac_iter->getLatestTime < c_riter->getEarliestTime()) {
+  //       c_riter++;
+  //       continue;
+  //     }
+  //     if (c_riter->nOverlap(*ac_iter)/ac_iter->count() >= params_.lateMergeOverlapRatio) {
+  //       //merge
+  //       c_riter->copyHits(ac_iter->getHits());
+  //       merged_any = true;
+  //     }
+  //     ++c_riter;
+  //   }
+  //   if (! merged_any) {
+  //     concluded_clusters_.push_back(*ac_iter);
+  //   }
+  //   ac_iter = active_clusters_.erase(ac_iter);
+  //   ac_iter++;
+  // }
+
   assert(active_clusters_.empty());
-  return;
 };
 
 
