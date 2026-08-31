@@ -68,10 +68,6 @@ std::set<Blib4d> construct_blibs() {
 }
 
 
-static void print_hello_world() {
-	cout << "Hello world";
-}
-
 
 int main(int argc, char **argv) {
 	auto my_algo = construct_algo();

@@ -102,10 +102,15 @@ TDBScan_Algo<tBlib>::Finalize() {
   // TODO implement me:
   // something like like: move all established clusters from the active_cluster list into the (nominal) cluster list;
   // observer merging rules
-  //sync_time = std::numeric_limits<Time_t>::max();
+  sync_time = Time_t::max();
 
-
-
+  auto ac_iter = active_clusters_.begin();
+  while (ac_iter != active_clusters_.end()) {
+    ac_iter->status = CausalCluster<tBlib>::CONCLUDED;
+    concluded_clusters_.push_back(*ac_iter);
+    ac_iter = active_clusters_.erase(ac_iter);
+    continue;
+  }
 
   assert(active_clusters_.empty());
   return;
