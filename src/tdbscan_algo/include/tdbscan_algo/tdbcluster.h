@@ -5,7 +5,6 @@
 #ifndef TDBSCAN_TDBCLUSTER_H
 #define TDBSCAN_TDBCLUSTER_H
 
-#include <limits>
 #include <list>
 #include <set>
 #include <cstdint>
@@ -20,26 +19,11 @@
 // Data Structures and Helper Functions
 //======================================
 namespace tdbscan {
-
-namespace detail {
-
-
-  ///sufficient overlap in set1 and set2 by hits on 'multiplicity' many DOMs with 'multiplicityTimeWindow'
-  //(agnostic)
-  template <class tPosition>
-  bool CausallyOverlaps (
-    const AbsBlibSet<tPosition>& set1,
-    const AbsBlibSet<tPosition>& set2,
-    const unsigned int multiplicity,
-    const Time_t multiplicityTimeWindow);
-} //namespace detail
-
   template<typename tBlib>
   using BlibSet = std::set<tBlib>;
 
   template<typename tBlib>
   using BlibList = std::list<tBlib>;
-
 
   /** An object which keeps track of a group of hits which are (mostly) causally connected to each other,
    * and the number of distinct DOMs on which those hits occurred.
@@ -58,15 +42,6 @@ namespace detail {
   public: //properties
     ///The ordered set of hits within this cluster
     BlibSet blibs_;
-
-    enum Status {
-      EMPTY = 0,
-      EMERGING = 10,
-      GROWING = 20,
-      DYING = 30,
-      CONCLUDED = 40,
-    } status = EMPTY;
-
 
   public:
     // Constructor
@@ -99,7 +74,7 @@ namespace detail {
     getLatestTime() const;
 
     [[nodiscard]] uint64_t
-    nHitsWithinTimeWindow(const typename tBlib::Time_t earliest, const typename tBlib::Time_t latest) const;
+    nHitsWithinTimeWindow(const typename tBlib::Time_t earliest = Time_t::min(), const typename tBlib::Time_t latest = Time_t::max()) const;
 
 
     ///is this cluster established
@@ -124,9 +99,6 @@ namespace detail {
     /// The number of blibs in both Clusters
     [[nodiscard]] unsigned int nOverlap(const CausalCluster& c2) const;
 
-
-
-
     [[nodiscard]]
     inline
     bool empty() const;
@@ -141,8 +113,7 @@ namespace detail {
   template<typename T>
   using CausalClusterList = std::list<CausalCluster<T> >;
 
-
-}// namespace tdbscan
+} // namespace tdbscan
 
 #include "tdbcluster.hh"
 

@@ -5,13 +5,10 @@
 #ifndef TDBSCAN_CONNECTOR_HH
 #define TDBSCAN_CONNECTOR_HH
 
-
-#include "absblib.h"
 #include "connector.h"
 
 #include <list>
 #include <string>
-#include <memory>
 
 //======================= Connector ============
 namespace tdbscan {

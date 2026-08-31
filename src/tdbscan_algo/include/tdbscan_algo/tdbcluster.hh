@@ -2,13 +2,10 @@
 // Created by netsu on 08/08/2026.
 //
 
-
-#pragma once
+#ifndef TDBSCAN_TDBCLUSTER_HH
+#define TDBSCAN_TDBCLUSTER_HH
 
 #include "tdbscan_algo/tdbcluster.h"
-
-#include <cstdint>
-#include <limits>
 
 namespace tdbscan {
 template <class tBlib>
@@ -32,7 +29,7 @@ typename tBlib::Time_t
 CausalCluster<tBlib>::getEarliestTime() const {
   if (!blibs_.empty())
     return(blibs_.begin()->GetTime());
-  return(std::numeric_limits<Time_t>::infinity());
+  return(Time_t::min());
 }
 
 template <class tBlib>
@@ -40,7 +37,7 @@ typename tBlib::Time_t
 CausalCluster<tBlib>::getLatestTime() const{
   if (!blibs_.empty())
     return(blibs_.rbegin()->GetTime());
-  return(tBlib::Time_t::max());
+  return(Time_t::max());
 }
 
 
@@ -156,3 +153,5 @@ template <class tBlib>
 uint64_t CausalCluster<tBlib>::count() const {return blibs_.size();}
 
 };
+
+#endif //TDBSCAN_TDBCLUSTER_HH

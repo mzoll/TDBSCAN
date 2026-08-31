@@ -67,7 +67,7 @@ TDBScan_Algo<ScalarBlib> construct_algo() {
 std::set<ScalarBlib>
 generate_noise(const double noise_freq, const double width_fields, const double time_duration) {
 	std::set<ScalarBlib> blibs;
-	for (int time_step = 0; time_step < time_duration; time_step++) {
+	for (int time_step = 0; time_step < time_duration * noise_freq; time_step++) {
 		const auto pos = rand_double() * width_fields;
 		const auto t = rand_double() * time_duration;
 		log_trace(std::format("ONE: {}", time_step));
@@ -112,11 +112,18 @@ int main(int argc, char **argv) {
 	log_info(std::format("Generate blibs"));
 	const auto blibs = gernerate_blibs(100, 50  );
 	log_info(std::format("Processing nBlibs: {}", blibs.size()));
-	const auto result = my_algo.Process(blibs);
+	//take first 3
+	std::set<ScalarBlib> _blibs;
+	auto iter = blibs.begin();
+	for (int i = 0; i < 3; i++) {
+		_blibs.insert(*iter);
+		++iter;
+	}
+	const auto result = my_algo.Process(_blibs);
 
 	log_info(std::format("Generated nClusters: {}", result.size()));
 
-	for (const auto& c : result) {
-		log_info(std::format("Size: {}", c.size()));
-	}
+	// for (const auto& c : result) {
+	// 	log_info(std::format("Size: {}", c.size()));
+	// }
 }

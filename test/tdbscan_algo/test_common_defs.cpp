@@ -8,14 +8,14 @@
 
 // Demonstrate some basic assertions.
 TEST(CommonDefs, TimeAdheres) {
-  EXPECT_EQ(double(MyTime_t(42)), 42);
+  EXPECT_EQ(static_cast<double>(ScalarTime_t(42)), 42);
 
-  EXPECT_EQ(MyTime_t(42.), MyTime_t(42.) );
+  EXPECT_EQ(ScalarTime_t(42.), ScalarTime_t(42.) );
 
-  EXPECT_TRUE(MyTime_t::min() < MyTime_t::max() );
+  EXPECT_TRUE(ScalarTime_t::min() <= ScalarTime_t::max() );
 
-  EXPECT_EQ(MyTime_t(42.)- MyTime_t(42.),0. );
-  EXPECT_EQ(MyTime_t(42.)- MyTime_t(0.),42. );
+  EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(42.),0. );
+  EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(0.),42. );
 }
 
 TEST(CommonDefs, Position3dAdheres) {

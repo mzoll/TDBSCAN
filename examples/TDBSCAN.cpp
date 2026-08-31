@@ -53,7 +53,7 @@ TDBScan_Algo<Blib4d> construct_algo() {
 
 double rand_ord() {return rand() * 100-50.;};
 Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord());};
-MyTime_t rand_time() {return MyTime_t(rand() % 10000);};
+ScalarTime_t rand_time() {return ScalarTime_t(rand() % 10000);};
 
 // std::set<Blib4d, Blib4d::TimeOrder> construct_blibs() {
 std::set<Blib4d> construct_blibs() {

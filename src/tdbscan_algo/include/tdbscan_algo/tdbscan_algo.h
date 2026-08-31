@@ -165,26 +165,10 @@ private: //work on *clusters*
    * to meet the multiplicity condition.
    * @param c the cluster to add to
    * @param b the blib to add
-   */
-  bool TryInsertHit(
-    tdbscan::CausalCluster<tBlib>& c,
-    const tBlib& b);  // This needs modification
+  */
+  bool TryInsertHit_Emergence( CausalCluster<tBlib>& c, const tBlib& b);
 
-private: //things that work on the surface of Clusters, but do not change the internal state
-
-  void evalEstablished(CausalCluster<tBlib> c) const {
-    if (c.count() >= params_.multiplicity)
-      c.established = true;
-  }
-
-  /** get the CausalCluster of all active hits within this cluster which can be considered connected
-   * \param h the Hit to check against
-   */
-  [[nodiscard]]
-  CausalCluster<tBlib> getConnectedSubCluster(
-    const tBlib &h, const CausalCluster<tBlib>& c1) const;
-
-
+  bool TryInsertHit_Established( CausalCluster<tBlib>& c, const tBlib& b);
 };
 };
 

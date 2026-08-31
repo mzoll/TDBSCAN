@@ -15,35 +15,35 @@
 /** make a typedef for what is the notion of Time;
 * On first principles time is a continuous monotonic increasing variable
 */
-class MyTime_t final : tdbscan::Time_t  {
+class ScalarTime_t final : tdbscan::Time_t  {
 public:
 	typedef double TimeDiff_t;
 private:
 	double value_{0.};
 public:
 	/// default constructor: for convenience
-	MyTime_t() : value_(0.) {};
-	MyTime_t(const double value) : value_(value) {};
+	ScalarTime_t() : value_(0.) {};
+	ScalarTime_t(const double value) : value_(value) {};
 
 	inline
 	bool
-	operator<(const MyTime_t &rhs) const
+	operator<(const ScalarTime_t &rhs) const
 			{return value_ < rhs.value_;};
 
 	inline
 	bool
-	operator==(const MyTime_t &rhs) const
+	operator==(const ScalarTime_t &rhs) const
 			{return value_ == rhs.value_;};
 
 	inline
 	TimeDiff_t
-	operator-(const MyTime_t &rhs) const
+	operator-(const ScalarTime_t &rhs) const
 			{return value_ - rhs.value_;};
 
 	//implicit conversion operator for shorthand
 	operator double() const { return value_; }
 	//assignment operator
-	MyTime_t& operator=(const double rhs)
+	ScalarTime_t& operator=(const double rhs)
 			{value_=rhs; return *this; };
 
 	static double min() {return std::numeric_limits<double>::min();};
@@ -134,10 +134,10 @@ public:
 
 // ========================= BLIB =======================
 //make a declaration of the Blib
-class Blib4d : public tdbscan::AbsBlib<Position3d, MyTime_t> {
+class Blib4d : public tdbscan::AbsBlib<Position3d, ScalarTime_t> {
 public: //type shorthands
 	using Ordinate_t = Position3d;
-	using Time_t = MyTime_t;
+	using Time_t = ScalarTime_t;
 
 private:
 	Ordinate_t pos;
@@ -174,10 +174,10 @@ public: //comparators
 };
 
 //make a declaration of the Blib
-class ScalarBlib : public tdbscan::AbsBlib<Position3d, MyTime_t> {
+class ScalarBlib : public tdbscan::AbsBlib<Position1d, ScalarTime_t> {
 public: //type shorthands
 	using Ordinate_t = Position1d;
-	using Time_t = MyTime_t;
+	using Time_t = ScalarTime_t;
 
 private:
 	Ordinate_t pos;
@@ -212,7 +212,6 @@ public: //comparators
 	///constructor
 	ScalarBlib(const Position1d pos, const Time_t time) : pos(pos), time(time) {};
 };
-
 
 
 #endif //TDBSCAN_COMMON_DEFS_H
