@@ -10,16 +10,15 @@ option(ENABLE_TIME_TRACE "Add -ftime-trace to Clang builds" OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+file(READ "VERSION" VER_FILE_CONTENT)
+string(STRIP ${VER_FILE_CONTENT} version)
+
 project (TDBSCAN
-    VERSION 0.0.1
+    VERSION version
     LANGUAGES CXX
 #    CXX_STANDARD 17  #current
 #    CXX_STANDARD_REQUIRED ON
 )
-
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
