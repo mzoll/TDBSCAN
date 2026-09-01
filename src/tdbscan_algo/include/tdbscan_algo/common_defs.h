@@ -56,7 +56,7 @@ private:
 	std::ostream& operator<< ( std::ostream& outs, const ScalarTime_t & st);
 };
 
-
+inline
 std::ostream& operator<< ( std::ostream& os, const ScalarTime_t & st) {
 	return os << std::format("ScalarTime({})", st.value_);
 };
@@ -75,7 +75,7 @@ private:
 	double value_{0.};
 public:
 	/// constructor
-	Position1d(const double value) : value_(value) {};
+  explicit Position1d(const double value) : value_(value) {};
 
 	[[nodiscard]]
 	Distance_t
@@ -100,11 +100,21 @@ public:
 	{return value_ == rhs.value_;};
 public: //convenience
 	///implicit conversion operator for shorthand
-	operator double() const { return value_; }
+  explicit operator double() const { return value_; }
 	/// assignment operator
 	Position1d& operator=(const double rhs)
-	{value_=rhs; return *this; };
+	  {value_=rhs; return *this; };
+
+private:
+  friend
+  std::ostream& operator<< ( std::ostream& os, const Position1d & p1d);
 };
+
+
+inline std::ostream& operator<< ( std::ostream& os, const Position1d & p1d) {
+  return os << std::format("Position1d({})", p1d.value_);
+};
+
 
 
 // make a definition of a Point in 3d space
@@ -140,6 +150,14 @@ public:
 	[[nodiscard]]
 	bool operator==(const Position3d& rhs) const
 			{return xord == rhs.xord && yord == rhs.yord && zord == rhs.zord;};
+
+private:
+  friend
+  std::ostream& operator<< ( std::ostream& os, const Position3d & p3d);
+};
+
+inline std::ostream& operator<< ( std::ostream& os, const Position3d & p3d) {
+  return os << std::format("Position1d(x:{}, y:{}, z:{})", p3d.xord, p3d.yord, p3d.zord);
 };
 
 
@@ -182,7 +200,15 @@ public: //comparators
 
 	///constructor
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
+
+// private:
+//   friend
+//   std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d);
 };
+
+// inline std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d) {
+//   return os << std::format("Blib4d(ord: {}, time: {})", b4d.getOrdinate(), b4d.getTime());
+
 
 //make a declaration of the Blib
 class ScalarBlib : public tdbscan::AbsBlib<Position1d, ScalarTime_t> {
@@ -230,11 +256,10 @@ public: //comparators
 
 private:
 	friend
-	std::ostream& operator<< ( std::ostream& outs, const ScalarBlib & sb);
+	std::ostream& operator<< ( std::ostream& os, const ScalarBlib & sb);
 };
 
-
-std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
+inline std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
 	return os << std::format("ScalarBlib(ord: {}, time: {})", double(sb.getOrdinate()), double(sb.getTime()));
 };
 
