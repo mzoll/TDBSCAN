@@ -2,10 +2,13 @@
 
 #include <cstdlib>
 #include <format>
+#include <exception>
+#include <fmt/format.h>
 
 #include "tdbscan_algo/common_defs.h"
 
 #include <random>
+#include <sstream>
 
 using namespace std;
 using namespace tdbscan;
@@ -32,11 +35,33 @@ public:
 		SIGNAL =100,
 	} origin_{UNKNOWN};
 
+  inline
+  static std::string origin_tostr(const Origin o) {
+    switch (o) {
+      case UNKNOWN: return "UNKNOWN";
+      case NOISE: return "NOISE";
+      case SIGNAL: return "SIGNAL";
+      default: throw std::invalid_argument("Value_error");
+    }
+
+  }
+
   ///mark this Blib as to stem either from a Noise or Signal source
 	SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; }
 
   /// constructor
 	SBlibWithTrace( const SBlibWithTrace::Ordinate_t& ord , const SBlibWithTrace::Time_t& t, const Origin o ) : ScalarBlib(ord, t) ,origin_(o) {};
+
+public:
+  friend
+  std::ostream& operator<< ( std::ostream& outs, const SBlibWithTrace & st);
+};
+
+inline
+std::ostream& operator<< ( std::ostream& os, const SBlibWithTrace & sblib_trace) {
+  return os <<
+    SBlibWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
+      static_cast<ScalarBlib>(sblib_trace);
 };
 
 
@@ -122,11 +147,12 @@ std::set<SBlibWithTrace>
 gernerate_blibs( const double width_fields, const double time_duration ) {
 	std::set<SBlibWithTrace> blibs;
 
-	log_info(std::format("Generate BOX blibs"));
 	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
-	log_info(std::format("Generate NOISE blibs"));
+	log_info(std::format("Generated {} BOX blibs", _box_blibs.size()));
+
 	const auto _noise_blibs = generate_noise(0.1, 100, 50.);
-	blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
+  log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
+  blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
@@ -136,15 +162,16 @@ int main(int argc, char **argv) {
 
 	log_info(std::format("Generate blibs"));
 	const auto blibs = gernerate_blibs(100, 50  );
-	log_info(std::format("Processing nBlibs: {}", blibs.size()));
+
 	//take first 3
 	std::set<SBlibWithTrace> _blibs;
 	auto iter = blibs.begin();
 	for (int i = 0; i < 100; i++) {
 		_blibs.insert(*iter);
-		log_trace(std::format("===sorting==PROBE : o:{} t:{}", double(iter->getOrdinate()), double(iter->getTime() )));
+		log_trace( std::ostringstream() << "===sorting==PROBE : {}" << *iter);
 		++iter;
 	}
+  log_info(std::format("Processing nBlibs: {}", _blibs.size()));
 	const auto result = my_algo.Process(_blibs);
 
 	log_info(std::format("Generated nClusters: {}", result.size()));

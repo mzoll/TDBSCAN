@@ -254,13 +254,23 @@ public: //comparators
 
 	};
 
-private:
+public:
 	friend
 	std::ostream& operator<< ( std::ostream& os, const ScalarBlib & sb);
 };
 
-inline std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
+inline
+std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
 	return os << std::format("ScalarBlib(ord: {}, time: {})", double(sb.getOrdinate()), double(sb.getTime()));
+};
+
+template <>
+struct std::formatter<ScalarBlib> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+
+  auto format(const ScalarBlib& sb, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[ord:{}, time:{}]", static_cast<double>(sb.getOrdinate()), static_cast<double>(sb.getTime()) );
+  };
 };
 
 
