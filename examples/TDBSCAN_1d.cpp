@@ -20,18 +20,22 @@ double rand_double() {
 	return unif(re);
 }
 
-
-
+/**
+ * A twist to the ScalarBlib class that allows to keep track of its source, either Noise or Signal
+ */
 class SBlibWithTrace final : public ScalarBlib {
 public:
+  /// denotes the origin of the Blib; either Noise or Signal
 	enum Origin {
 		UNKNOWN = 0,
 		NOISE = 20,
 		SIGNAL =100,
 	} origin_{UNKNOWN};
 
+  ///mark this Blib as to stem either from a Noise or Signal source
 	SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; }
 
+  /// constructor
 	SBlibWithTrace( const SBlibWithTrace::Ordinate_t& ord , const SBlibWithTrace::Time_t& t, const Origin o ) : ScalarBlib(ord, t) ,origin_(o) {};
 };
 
@@ -89,8 +93,8 @@ generate_noise(const double noise_freq, const double width_fields, const double 
 	std::set<SBlibWithTrace> blibs;
 	for (int time_step = 0; time_step < time_duration; time_step++) {
 		for (int count_noise = 0; count_noise < noise_freq * width_fields; count_noise++) {
-			const auto pos = rand_double() * width_fields;
-			const auto t = rand_double() + time_step;
+			const double pos = rand_double() * width_fields;
+			const double t = rand_double() + time_step;
 			blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::NOISE));
 		}
 	}
@@ -123,7 +127,7 @@ gernerate_blibs( const double width_fields, const double time_duration ) {
 	log_info(std::format("Generate NOISE blibs"));
 	const auto _noise_blibs = generate_noise(0.1, 100, 50.);
 	blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
-	blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
 
@@ -136,7 +140,7 @@ int main(int argc, char **argv) {
 	//take first 3
 	std::set<SBlibWithTrace> _blibs;
 	auto iter = blibs.begin();
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 100; i++) {
 		_blibs.insert(*iter);
 		log_trace(std::format("===sorting==PROBE : o:{} t:{}", double(iter->getOrdinate()), double(iter->getTime() )));
 		++iter;

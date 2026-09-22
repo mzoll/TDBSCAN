@@ -75,7 +75,7 @@ private:
 	double value_{0.};
 public:
 	/// constructor
-  explicit Position1d(const double value) : value_(value) {};
+  Position1d(const double value) : value_(value) {};
 
 	[[nodiscard]]
 	Distance_t

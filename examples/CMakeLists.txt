@@ -2,7 +2,7 @@ add_executable(tdbscan_ex)
 
 target_sources(tdbscan_ex
         PRIVATE
-        TDBSCAN.cpp)
+        TDBSCAN_3d.cpp)
 
 target_link_libraries(tdbscan_ex
         tdbscan_algo
@@ -17,22 +17,43 @@ set_target_properties(tdbscan_ex PROPERTIES
 )
 
 #---------------------------------------
-add_executable(tdbscan_ex1d)
+add_executable(exec_tdbscan_1d)
 
-target_sources(tdbscan_ex1d
+target_sources(exec_tdbscan_1d
         PRIVATE
         TDBSCAN_1d.cpp)
 
-target_link_libraries(tdbscan_ex1d
+target_link_libraries(exec_tdbscan_1d
         tdbscan_algo
 )
 
-target_compile_features(tdbscan_ex1d PUBLIC cxx_std_17)
+target_compile_features(exec_tdbscan_1d PUBLIC cxx_std_17)
 
-set_target_properties(tdbscan_ex1d PROPERTIES
+set_target_properties(exec_tdbscan_1d PROPERTIES
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
 )
+
+
+
+#---------------------------------------
+add_executable(exec_tdbscan_3d)
+
+target_sources(exec_tdbscan_3d
+        PRIVATE
+        TDBSCAN_3d.cpp)
+
+target_link_libraries(exec_tdbscan_3d
+        tdbscan_algo
+)
+
+target_compile_features(exec_tdbscan_3d PUBLIC cxx_std_17)
+
+set_target_properties(exec_tdbscan_3d PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+)
+
 
 
 #---------------------------------------
