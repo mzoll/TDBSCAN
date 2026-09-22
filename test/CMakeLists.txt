@@ -1,7 +1,5 @@
 
 # --- make available GTest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
 include(FetchContent)
 FetchContent_Declare(
         googletest
