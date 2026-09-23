@@ -1,6 +1,6 @@
 add_library(tdbscan_algo
         src/include_all.cpp
-        )
+)
 
 target_include_directories(tdbscan_algo
         PUBLIC include

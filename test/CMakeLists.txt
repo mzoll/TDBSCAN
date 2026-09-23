@@ -49,6 +49,15 @@ target_link_libraries(test_absblib
         GTest::gtest_main
 )
 
+#-----------------------------
+add_executable(test_tdbcluster
+        tdbscan_algo/test_tdbcluster.cpp
+)
+target_link_libraries(test_tdbcluster
+        PRIVATE tdbscan_algo
+        GTest::gtest_main
+)
+
 
 gtest_discover_tests(test_common_defs)
 gtest_discover_tests(test_connector)

@@ -71,15 +71,15 @@ const typename CausalCluster<tBlib>::BlibSet& CausalCluster<tBlib>::getHits() co
 
 template <class tBlib>
 bool CausalCluster<tBlib>::isSubsetOf(
-  const CausalCluster& c2) const
+  const CausalCluster& other) const
 {
-  if (c2.blibs_.size()<this->blibs_.size())
+  if (other.blibs_.size()<this->blibs_.size())
     return(false);
   //use the fact that strict time-order is enforced on the blibs_
   auto it1=this->blibs_.begin();
   auto end1=this->blibs_.end();
-  auto it2=c2.blibs_.begin();
-  auto end2=c2.blibs_.end();
+  auto it2=other.blibs_.begin();
+  auto end2=other.blibs_.end();
   for (; it1!=end1 && it2!=end2; ++it1, ++it2) {
     //if the two current items don't match scan though the (potential) superset looking for a match
     while (it2!=end2 && *it2<*it1)
@@ -98,25 +98,25 @@ bool CausalCluster<tBlib>::isSubsetOf(
 
 template <class tBlib>
 bool CausalCluster<tBlib>::isSupersetOf(
-  const CausalCluster& c2) const
+  const CausalCluster& other) const
 {
-  return c2.isSubsetOf(*this);
+  return other.isSubsetOf(*this);
 }
 
 template <class tBlib>
 bool CausalCluster<tBlib>::isConcruent(
-  const CausalCluster& c2) const
+  const CausalCluster& other) const
 {
-  if (c2.blibs_.size() != this->blibs_.size())
+  if (other.blibs_.size() != this->blibs_.size())
     return false;
 
   // simultaneous step through all members and check they are equal
   auto it1=this->blibs_.begin();
   auto end1=this->blibs_.end();
-  auto it2=c2.blibs_.begin();
-  auto end2=c2.blibs_.end();
+  auto it2=other.blibs_.begin();
+  auto end2=other.blibs_.end();
   while (it1 != end1 && it2 != end2) {
-    if (it1 != it2)
+    if (*it1 != *it2)
       return false;
     ++it1;
     ++it2;
@@ -125,20 +125,22 @@ bool CausalCluster<tBlib>::isConcruent(
 }
 
 template <class tBlib>
-unsigned int CausalCluster<tBlib>::nOverlap(const CausalCluster<tBlib>& c2) const {
+unsigned int CausalCluster<tBlib>::nOverlap(const CausalCluster<tBlib>& other) const {
   // simultaneous step through all members and check they are equal
+  if (this->count() == 0 || other.count() == 0)
+    return 0;
   int _overlap = 0;
   auto it1=this->blibs_.cbegin();
   const auto end1=this->blibs_.cend();
-   auto it2=c2.blibs_.cbegin();
-  const auto end2=c2.blibs_.cend();
+  auto it2=other.blibs_.cbegin();
+  const auto end2=other.blibs_.cend();
   while (it1 != end1) {
     while (*it2 < *it1) {
       ++it2;
       if (it2 == end2)
         return _overlap;
     }
-    if (*it2 == *it2)
+    if (*it1 == *it2)
       _overlap++;
     ++it1;
   }

@@ -261,7 +261,7 @@ public:
 
 inline
 std::ostream& operator << ( std::ostream& os, const ScalarBlib & sb) {
-	return os << std::format("ScalarBlib(ord: {}, time: {})", double(sb.getOrdinate()), double(sb.getTime()));
+	return os << std::format("[ord: {}, time: {}]", double(sb.getOrdinate()), double(sb.getTime()));
 };
 
 template <>

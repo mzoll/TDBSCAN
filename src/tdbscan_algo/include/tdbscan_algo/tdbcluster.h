@@ -53,7 +53,7 @@ namespace tdbscan {
     /// this should be made in a proper copy constructor
     CausalCluster(const CausalCluster& cc);
 
-  protected: //methods (altering)
+  public: //methods (altering)
     ///Add a new hit to the cluster
     ///\param h The hit to add
     void insertBlib(const tBlib &h);
@@ -74,14 +74,7 @@ namespace tdbscan {
     getLatestTime() const;
 
     [[nodiscard]] uint64_t
-    nHitsWithinTimeWindow(const typename tBlib::Time_t earliest = Time_t::min(), const typename tBlib::Time_t latest = Time_t::max()) const;
-
-
-    ///is this cluster established
-    [[nodiscard]] bool isEstablished() const;
-
-    /// ist this cluster concluded (no hits can be added)
-    [[nodiscard]] bool isConcluded() const;
+    nHitsWithinTimeWindow(typename tBlib::Time_t earliest = Time_t::min(), typename tBlib::Time_t latest = Time_t::max()) const;
 
     ///Test whether the hits in this are a subset those of super
     /// @param super cluster with a series of hits which might be a superset
@@ -91,13 +84,13 @@ namespace tdbscan {
     ///Test whether the hits in this are a subset those of super
     /// @param sub cluster with a series of hits which might be a superset
     /// @return true, if this is a subset of super
-    [[nodiscard]] bool isSupersetOf(const CausalCluster& sub) const;
+    [[nodiscard]] bool isSupersetOf(const CausalCluster& other) const;
 
     /// Test whether two Clusters contain the same hits
-    [[nodiscard]] bool isConcruent(const CausalCluster& c2) const;
+    [[nodiscard]] bool isConcruent(const CausalCluster& other) const;
 
     /// The number of blibs in both Clusters
-    [[nodiscard]] unsigned int nOverlap(const CausalCluster& c2) const;
+    [[nodiscard]] unsigned int nOverlap(const CausalCluster& other) const;
 
     [[nodiscard]]
     inline

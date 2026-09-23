@@ -127,16 +127,32 @@ generate_noise(const double noise_freq, const double width_fields, const double 
 }
 
 
+/**
+ * generate blibs from a box moving over a 1d space left to right
+ *
+ * example: box_size: 4, inertia: 2, ledge_start_pos: 0, brightness: 0.5, time_duration 5
+ * --[xx  ]-------------------
+ * --.--[ x x]----------------
+ * --.----[x  x]--------------
+ * --.------[ xx ]------------
+ * --.--------[  xx]----------
+ *
+ * @param box_size
+ * @param inerta
+ * @param ledge_start_pos
+ * @param brightness a measure of the signal frequency in one unit-volume of the box
+ * @param time_duration
+ * @return
+ */
 std::set<SBlibWithTrace>
-generate_moving_box(const double box_size, const double inerta, const double start_pos, const double brightness, const double time_duration) {
+generate_moving_box(const double box_size, const double inerta, const double ledge_start_pos, const double brightness, const double time_duration) {
 	std::set<SBlibWithTrace> blibs;
-	const auto _brightness_cal = brightness * box_size;
 
 	for (int time_step = 0; time_step < time_duration; time_step++) {
-		for (int j = 0; j < _brightness_cal; j++) {
-			const auto t = rand_double() + time_step;
-			const auto box_ledge_pos = time_step * inerta + start_pos - box_size /2.;
-			const auto pos = rand_double() * box_size + box_ledge_pos;
+		const auto box_ledge_pos = time_step * inerta + ledge_start_pos;
+	  for (int j = 0; j < brightness * box_size; j++) {
+			const auto t = time_step + rand_double();
+			const auto pos = box_ledge_pos + rand_double() * box_size ;
 			blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::SIGNAL));
 		}
 	}
@@ -150,8 +166,8 @@ gernerate_blibs( const double width_fields, const double time_duration ) {
 	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
 	log_info(std::format("Generated {} BOX blibs", _box_blibs.size()));
 
-	const auto _noise_blibs = generate_noise(0.1, 100, 50.);
-  log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
+	//const auto _noise_blibs = generate_noise(0.1, 100, 50.);
+  //log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
@@ -166,9 +182,9 @@ int main(int argc, char **argv) {
 	//take first 3
 	std::set<SBlibWithTrace> _blibs;
 	auto iter = blibs.begin();
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 5; i++) {
 		_blibs.insert(*iter);
-		log_trace( std::ostringstream() << "===sorting==PROBE : {}" << *iter);
+		log_trace( std::ostringstream() << "Sample : " << *iter);
 		++iter;
 	}
   log_info(std::format("Processing nBlibs: {}", _blibs.size()));
