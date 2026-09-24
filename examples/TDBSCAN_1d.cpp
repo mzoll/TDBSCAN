@@ -159,25 +159,55 @@ generate_moving_box(const double box_size, const double inerta, const double led
 	return blibs;
 }
 
+
+/**
+ * Generate Blibs for our scenario
+ *
+ * A bright box moves left to right in
+ * @param time_duration
+ * @param width_fields
+ * @param noise_contamination
+ * @return
+ */
 std::set<SBlibWithTrace>
-gernerate_blibs( const double width_fields, const double time_duration ) {
+gernerate_blibs( const double time_duration=50, const int width_fields = 100, const double noise_contamination = 0.1) {
 	std::set<SBlibWithTrace> blibs;
 
 	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
 	log_info(std::format("Generated {} BOX blibs", _box_blibs.size()));
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 
-	const auto _noise_blibs = generate_noise(0.1, 100, 50.);
+	const auto _noise_blibs = generate_noise(noise_contamination, 100, 50.);
   log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
 	blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
 
+
+/// calculate the purity, Signal over Noise ratio, of this Blib sample
+double calculate_signal_purity(const std::set<SBlibWithTrace> blibs) {
+  int _signal_count= 0;
+  int _noise_count = 0;
+  for (const auto& b: blibs) {
+    switch (b.origin_) {
+      case SBlibWithTrace::SIGNAL:
+        _signal_count++;
+        break;
+      case SBlibWithTrace::NOISE:
+        _signal_count++;
+        break;
+    }
+  }
+  return static_cast<double>(_signal_count)/blibs.size();
+}
+
+
+
 int main(int argc, char **argv) {
 	auto my_algo = construct_algo();
 
 	log_info(std::format("Generate blibs"));
-	const auto blibs = gernerate_blibs(100, 50  );
+	const auto blibs = gernerate_blibs(50 ,100, 0.5 );
 
 	//take first 3
 	std::set<SBlibWithTrace> _blibs;
@@ -187,10 +217,12 @@ int main(int argc, char **argv) {
 	// 	log_trace( std::ostringstream() << "Sample : " << *iter);
 	// 	++iter;
 	// }
- //  log_info(std::format("Processing nBlibs: {}", _blibs.size()));
+  log_info(std::format("Processing nBlibs: {} (purity {:.3f})", blibs.size(), calculate_signal_purity(blibs)));
 	const auto result = my_algo.Process(blibs);
 
 	log_info(std::format("Generated nClusters: {}", result.size()));
+
+  log_info(std::format("First Cluster size: {} (purity {:.3f})", result.cbegin()->size(), calculate_signal_purity(*result.cbegin())));
 
 	// for (const auto& c : result) {
 	// 	log_info(std::format("Size: {}", c.size()));

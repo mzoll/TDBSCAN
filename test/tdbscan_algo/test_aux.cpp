@@ -4,7 +4,7 @@
 
 
 #include <gtest/gtest.h>
-#include "tdbscan_algo/auxil.h"
+#include "../../src/tdbscan_algo/include/tdbscan_algo/auxilary/auxil.h"
 
 
 // Demonstrate some basic assertions.

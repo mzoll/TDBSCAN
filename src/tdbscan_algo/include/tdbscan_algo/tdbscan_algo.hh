@@ -13,7 +13,7 @@
 #include <cassert>
 #include <format>
 
-#include "tdbscan_algo/dummy_logging.h"
+#include "auxilary/dummy_logging.h"
 
 //===========================================
 //============== IMPLEMENTATION =============
