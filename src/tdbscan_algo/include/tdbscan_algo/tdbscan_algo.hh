@@ -9,11 +9,12 @@
 #pragma once
 
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <cassert>
 #include <format>
 
-#include "auxilary/dummy_logging.h"
+
+#include "auxilary/trivial_logging.h"
 
 //===========================================
 //============== IMPLEMENTATION =============
@@ -46,31 +47,31 @@ TDBScan_Algo<tBlib>::TDBScan_Algo (
   connector_(connector)
 {
   if (params_.multiplicity<=0)
-    log_fatal("Multiplicity should be greater than zero");
+    LOG_FATAL("Multiplicity should be greater than zero");
   if (params_.multiplicityTimeWindow<=0.0)
-    log_fatal("TimeWindow should be greater than zero");
+    LOG_FATAL("TimeWindow should be greater than zero");
 //  if (params_.acceptTimeWindow<0.0)
-//    log_fatal("AcceptTimeWindow cannot be negative");
+//    LOG_FATAL("AcceptTimeWindow cannot be negative");
 //  if (params_.rejectTimeWindow<0.0)
-//    log_fatal("RejectTimeWindow cannot be negative");
+//    LOG_FATAL("RejectTimeWindow cannot be negative");
 //  if (params_.mergeOverlap==0)
-//    log_warn("RequiredDOMOverlap configured with 0, everything will be merged");
+//    LOG_WARNn("RequiredDOMOverlap configured with 0, everything will be merged");
 
 //  if (params_.rejectTimeWindow <= params_.acceptTimeWindow)
-//    log_fatal("RejectTimeWindow needs to be greater than AcceptTimeWindow");
+//    LOG_FATAL("RejectTimeWindow needs to be greater than AcceptTimeWindow");
 
   if (! connector_)
-    log_error("No ConnectionBlock defined!");
+    LOG_ERROR("No ConnectionBlock defined!");
 
-  log_info("This is TDBScan!");
-  log_debug("Leaving Init()");
+  LOG_INFO("This is TDBScan!");
+  LOG_DEBUG("Leaving Init()");
 };
 
 
 template <class tBlib> template<class tBlibContainer>
 typename TDBScan_Algo<tBlib>::BlibSetSequence
 TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
-  log_debug("Entering Process()");
+  LOG_DEBUG("Entering Process()");
   concluded_clusters_.clear();
   active_clusters_.clear();
   emerging_clusters_.clear();
@@ -84,7 +85,7 @@ TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
     //process through machinery
     NextBlib(b);
 
-  log_debug("Finalize");
+  LOG_DEBUG("Finalize");
   Finalize();
 
   //prepare output
@@ -92,7 +93,7 @@ TDBScan_Algo<tBlib>::Process (const tBlibContainer& blibs) {
   for (const auto& c : concluded_clusters_)
     bss.insert(BlibSet(c.hits.begin(), c.hits.end() ));
 
-  log_debug("Leaving Process()");
+  LOG_DEBUG("Leaving Process()");
   return bss;
 };
 
@@ -146,7 +147,7 @@ TDBScan_Algo<tBlib>::Finalize() {
 template <class tBlib>
 typename TDBScan_Algo<tBlib>::BlibSetSequence
 TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
-  log_debug("Entering Process()");
+  LOG_DEBUG("Entering Process()");
   emerging_clusters_.clear();
   active_clusters_.clear();
   concluded_clusters_.clear();
@@ -156,7 +157,7 @@ TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
     NextBlib(b);
   }
 
-  log_debug("Finalize");
+  LOG_DEBUG("Finalize");
   Finalize();
 
   //prepare output
@@ -164,22 +165,22 @@ TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
   for (const auto& c : concluded_clusters_)
     bss.insert(BlibSet(c.blibs_.begin(), c.blibs_.end() ));
 
-  log_debug("Leaving Process()");
+  LOG_DEBUG("Leaving Process()");
   return bss;
 };
 
 
 template <class tBlib>
 bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib& b1, const tBlib& b2) const {
-  return detail::CausallyConnected(b1, b2, *connector_);
+  return detail::CausallyConnected(*connector_, b1, b2);
 };
 
 
 template <class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
-  log_debug("Entering NextBlib()");
-  log_trace(std::format("=== NEXT BLIB : o:{} t:{}", double(b.getOrdinate()), double(b.getTime() )));
-  log_trace(std::format("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size()));
+  LOG_DEBUG("Entering NextBlib()");
+  LOG_TRACE(">>> NEXT BLIB : {}", b );
+  LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
   const auto now = b.getTime();
   // advance every each cluster in time and try to add the hit to it
 
@@ -190,14 +191,14 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   // 50. traverse the newly established list and try to merge clusters with the active clusters
   // 9. put the hit on a newly created cluster by its own
 
-  log_debug("Eliminating emerging clusters, adding to emerging clusters");
+  LOG_DEBUG("Eliminating emerging clusters, adding to emerging clusters");
   // 10. go through all emerging clusters and see if blibs have fallen out of the emergence time window, if so kill the cluster off
   std::list<CausalCluster<tBlib>> _newly_established_clusters;
   auto ec_iter = emerging_clusters_.begin();
   while (ec_iter != emerging_clusters_.end()) {
     const auto _n_active = ec_iter->nHitsWithinTimeWindow(  now - params_.emergenceTimeWindow, now);
     if (_n_active < ec_iter->count()) {
-      log_trace("Killing off one emerging cluster!");
+      LOG_TRACE("Killing off one emerging cluster!");
       ec_iter = emerging_clusters_.erase(ec_iter);
       continue;
     }
@@ -205,7 +206,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     // 11. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
     const auto success = TryInsertHit_Emergence(*ec_iter, b);
     if (success && ec_iter->count() == params_.multiplicity) {
-      log_trace("Promote one emerging cluster!");
+      LOG_TRACE("Promote one emerging cluster!");
       _newly_established_clusters.push_back(*ec_iter);
       ec_iter = emerging_clusters_.erase(ec_iter);
       continue;
@@ -213,31 +214,31 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     ++ec_iter;
   }
 
-  log_debug("Create self-contained cluster");
+  LOG_DEBUG("Create self-contained cluster");
   // 12. put the hit on a newly created emerging cluster by its own
   emerging_clusters_.insert(emerging_clusters_.end(), CausalCluster(b));
 
 
-  log_debug("Traversing active clusters");
+  LOG_DEBUG("Traversing active clusters");
   // 20. go through all active clusters and see if blibs have fallen out of the time window and multiplicity cannot be fulfilled; if there is nothing left, move to 'concluded'
   // 21. try to add hit to any Active cluster that has sufficient causal evidence
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
     const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now-params_.emergenceTimeWindow, now);
     if (_n_active == 0) {
-      log_trace("Active cluster concluded");
+      LOG_TRACE("Active cluster concluded");
       concluded_clusters_.push_back(*ac_iter);
       ac_iter = active_clusters_.erase(ac_iter);
       continue;
     }
 
-    log_trace("Try Adding to active cluster");
+    LOG_TRACE("Try Adding to active cluster");
     const auto success = TryInsertHit_Established(*ac_iter, b);
     ++ac_iter;
   }
 
-  log_debug(std::format("Early merge: iterating _newly_established_clusters: {}", _newly_established_clusters.size()));
-  log_trace(std::format("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size()));
+  LOG_DEBUG("Early merge: iterating _newly_established_clusters: {}", _newly_established_clusters.size());
+  LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
   // 50. traverse the newly established list and try to merge clusters with the active clusters
   auto nec_iter = _newly_established_clusters.cbegin();
   ac_iter = active_clusters_.begin();
@@ -247,12 +248,12 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
       //TODO implement the early merge criteria
 
       if (nec_iter->isSubsetOf(*ac_iter)) {
-        log_trace("this is a subset;");
+        LOG_TRACE("this is a subset;");
         nec_iter = _newly_established_clusters.erase(nec_iter);
         ac_iter = active_clusters_.begin();
         continue;
       }
-      log_trace("this is NOT a subset;");
+      LOG_TRACE("this is NOT a subset;");
       ++ac_iter;
     }
     //established cluster is a genuinely new cluster
@@ -260,15 +261,13 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     ac_iter = active_clusters_.begin();
   }
   if (!_newly_established_clusters.empty()) {
-    log_debug(std::format("Inserting {} genuine new active clusters", _newly_established_clusters.size()));
+    LOG_DEBUG("Inserting {} genuine new active clusters", _newly_established_clusters.size());
     active_clusters_.insert(active_clusters_.end(), _newly_established_clusters.begin(), _newly_established_clusters.end());
     _newly_established_clusters.clear();
   }
 
-
-
-  log_trace(std::format("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size()));
-  log_debug("Leaving NextHit()");
+  LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
+  LOG_DEBUG("Leaving NextHit()");
 }
 
 
@@ -276,27 +275,26 @@ template <class tBlib>
 bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
   CausalCluster<tBlib>& c,
   const tBlib& b) {
-  log_debug("Entering TryInsertHit_Emergence()");
+  LOG_DEBUG("Entering TryInsertHit_Emergence()");
   //all blibs in the emerging Cluster must connect
 
   for (const auto& cb : c.blibs_) {
     const auto timediff = cb.timeTo(b);
     if (timediff>= params_.emergenceTimeWindow ) {
-      log_trace(std::format("Timediff past the allowed emergenceTimeWindow({}): {}", double(params_.emergenceTimeWindow), double(timediff)));
+      LOG_TRACE("Timediff past the allowed emergenceTimeWindow({}): {}", double(params_.emergenceTimeWindow), double(timediff));
       /// we are past the timeframe;
       return false;
     }
     if (not CausallyConnected(cb, b)) {
-      log_trace("Blibs not causally connected");
+      LOG_TRACE("Blibs not causally connected");
       return false;
     }
 
-
   }
-  log_trace("Adding Blib to emerging Cluster");
+  LOG_TRACE("Adding Blib to emerging Cluster");
   c.blibs_.insert(c.blibs_.end(), b);
 
-  log_debug("Leaving TryInsertHit_Emergence()");
+  LOG_DEBUG("Leaving TryInsertHit_Emergence()");
   return true;
 }
 
@@ -305,7 +303,7 @@ template <class tBlib>
 bool TDBScan_Algo<tBlib>::TryInsertHit_Established(
   CausalCluster<tBlib>& c,
   const tBlib& b) {
-  log_debug("Entering TryInsertHit_Established()");
+  LOG_DEBUG("Entering TryInsertHit_Established()");
 
   auto _result = false;
 
@@ -325,12 +323,12 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Established(
   }
 
   if (_result) {
-    log_debug("Sufficient Multiplicity in causal overlap; Adding Hit");
+    LOG_DEBUG("Sufficient Multiplicity in causal overlap; Adding Hit");
     c.blibs_.insert(c.blibs_.end(), b);
     _result = true;
   }
 
-  log_debug("Leaving TryInsertHit_Established()");
+  LOG_DEBUG("Leaving TryInsertHit_Established()");
   return _result;
 };
 

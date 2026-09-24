@@ -17,12 +17,12 @@ namespace detail {
 
 template <class tBlib>
 bool CausallyConnected(
+  const Connector<tBlib>& connector,
   const tBlib& h1,
-  const tBlib& h2,
-  const Connector<tBlib>& connector)
+  const tBlib& h2)
 {
   if (h1.getTime() > h2.getTime())
-    return CausallyConnected(h2, h1, connector); //recursive call to enforce time-order at this point
+    return CausallyConnected(connector, h2, h1); //recursive call to enforce time-order at this point
   return connector.eval(h1, h2);
 }
 } // namespace tdbscan::detail

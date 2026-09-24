@@ -80,7 +80,7 @@ public:
 	[[nodiscard]]
 	Distance_t
 	distance(const Position1d& rhs) const
-	{ return value_- rhs.value_;};
+	{ return rhs.value_ - value_;};
 
 	[[nodiscard]]
 	Distance_t magnitude() const
@@ -228,8 +228,9 @@ public:
 	getTime() const
 		{return time;};
 
+  ///
 	[[nodiscard]] Ordinate_t::Distance_t
-	distance(const ScalarBlib& rhs) const
+	distanceTo(const ScalarBlib& rhs) const
 		{return pos.distance(rhs.pos);};
 
 	/// get the time difference

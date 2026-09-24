@@ -21,10 +21,10 @@ void ConnectorBlock<tBlib>::addConnector(ConnectorSingle<tBlib>* connector_ptr) 
 template <class tBlib>
 bool ConnectorBlock<tBlib>::eval(const tBlib& h1, const tBlib& h2) const {
   for (const auto& connector : connectorlist_) {
-    if (connector->eval(h1, h2))
-      return true;
+    if (! connector->eval(h1, h2))
+      return false;
   }
-  return false;
+  return true;
 }
 
 template <class tBlib>

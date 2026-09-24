@@ -65,6 +65,20 @@ std::ostream& operator<< ( std::ostream& os, const SBlibWithTrace & sblib_trace)
 };
 
 
+template <>
+struct std::formatter<SBlibWithTrace> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+
+  auto format(const SBlibWithTrace& sb, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[ord:{}, time:{}]::{}",
+      static_cast<double>(sb.getOrdinate()),
+      static_cast<double>(sb.getTime()),
+      SBlibWithTrace::origin_tostr(sb.origin_));
+  };
+};
+
+
+
 
 // define some Limiters
 class DistanceLimiter final : public ConnectorSingle<SBlibWithTrace> {
@@ -72,10 +86,10 @@ public:
 	SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
 	DistanceLimiter(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return lhs.distance(rhs) <= maxDist_;};
+	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return abs(lhs.distanceTo(rhs)) <= maxDist_;};
 };
 
-// make one connector which just connects to max time-diff
+// make one connector which just connects to max time-diff; this is time ordered and thereby is positive one-sided
 class TimeLimiter final : public ConnectorSingle<SBlibWithTrace> {
 public:
 	SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
@@ -90,12 +104,12 @@ class LimitingConnector final : public ConnectorBlock<SBlibWithTrace> {
 
 
 
+// ========================= PARTS for the main algo =========================
 
+TDBScan_Algo<SBlibWithTrace> construct_algo(const double distance_lim, const double time_lim) {
 
-TDBScan_Algo<SBlibWithTrace> construct_algo() {
-
-	auto distLimiter_ = new DistanceLimiter(4.);
-	auto timeLimiter_ = new TimeLimiter(2.);
+	auto distLimiter_ = new DistanceLimiter(distance_lim);
+	auto timeLimiter_ = new TimeLimiter(time_lim);
 	auto limcon = new LimitingConnector();
 	limcon->addConnector(distLimiter_);
 	limcon->addConnector(timeLimiter_);
@@ -166,19 +180,20 @@ generate_moving_box(const double box_size, const double inerta, const double led
  * A bright box moves left to right in
  * @param time_duration
  * @param width_fields
+ * @param brightness
  * @param noise_contamination
  * @return
  */
 std::set<SBlibWithTrace>
-gernerate_blibs( const double time_duration=50, const int width_fields = 100, const double noise_contamination = 0.1) {
+gernerate_blibs( const double time_duration=50, const int width_fields = 100, const int brightness= 1, const double noise_contamination = 0.1) {
 	std::set<SBlibWithTrace> blibs;
 
-	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
-	log_info(std::format("Generated {} BOX blibs", _box_blibs.size()));
+	const auto _box_blibs = generate_moving_box( 5, 1, 0, brightness, time_duration);
+	LOG_INFO("Generated {} BOX blibs", _box_blibs.size());
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 
-	const auto _noise_blibs = generate_noise(noise_contamination, 100, 50.);
-  log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
+	const auto _noise_blibs = generate_noise(noise_contamination*brightness, width_fields, time_duration);
+  LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
 	blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
@@ -186,7 +201,7 @@ gernerate_blibs( const double time_duration=50, const int width_fields = 100, co
 
 /// calculate the purity, Signal over Noise ratio, of this Blib sample
 double calculate_signal_purity(const std::set<SBlibWithTrace> blibs) {
-  int _signal_count= 0;
+  int _signal_count = 0;
   int _noise_count = 0;
   for (const auto& b: blibs) {
     switch (b.origin_) {
@@ -194,7 +209,9 @@ double calculate_signal_purity(const std::set<SBlibWithTrace> blibs) {
         _signal_count++;
         break;
       case SBlibWithTrace::NOISE:
-        _signal_count++;
+        _noise_count++;
+        break;
+      case SBlibWithTrace::UNKNOWN:
         break;
     }
   }
@@ -204,27 +221,25 @@ double calculate_signal_purity(const std::set<SBlibWithTrace> blibs) {
 
 
 int main(int argc, char **argv) {
-	auto my_algo = construct_algo();
+	auto my_algo = construct_algo(2., 1.);
 
-	log_info(std::format("Generate blibs"));
-	const auto blibs = gernerate_blibs(50 ,100, 0.5 );
+	LOG_INFO("Generate blibs");
+	const auto blibs = gernerate_blibs(50 ,100, 3, 0.3 );
 
-	//take first 3
-	std::set<SBlibWithTrace> _blibs;
-	auto iter = blibs.begin();
-	// for (int i = 0; i < 100; i++) {
-	// 	_blibs.insert(*iter);
-	// 	log_trace( std::ostringstream() << "Sample : " << *iter);
-	// 	++iter;
-	// }
-  log_info(std::format("Processing nBlibs: {} (purity {:.3f})", blibs.size(), calculate_signal_purity(blibs)));
+  LOG_INFO("Processing nBlibs: {} (purity {:.3f})", blibs.size(), calculate_signal_purity(blibs));
 	const auto result = my_algo.Process(blibs);
 
-	log_info(std::format("Generated nClusters: {}", result.size()));
+	LOG_INFO("Generated nClusters: {}", result.size());
 
-  log_info(std::format("First Cluster size: {} (purity {:.3f})", result.cbegin()->size(), calculate_signal_purity(*result.cbegin())));
+  auto r_citer = result.cbegin();
+  for (int i =0; i< 5; i++) {
+    if (r_citer == result.cend())
+      break;
+    LOG_INFO("Cluster {} size: {} (purity {:.3f})", i, r_citer->size(), calculate_signal_purity(*r_citer));
+    r_citer++;
+  }
 
 	// for (const auto& c : result) {
-	// 	log_info(std::format("Size: {}", c.size()));
+	// 	LOG_INFO(std::format("Size: {}", c.size()));
 	// }
 }
