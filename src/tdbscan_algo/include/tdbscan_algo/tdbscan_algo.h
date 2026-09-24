@@ -78,6 +78,10 @@ public: //typedefs: some internal definitions and shorthands
     ZeroOne earlyMergeOverlapRatio{1.}; //needs within [0. ... 1.]
     /// PARAM: number of overlapping blibs required for (partial)subevents to be merged into a super set
     ZeroOne lateMergeOverlapRatio{1.}; //needs within [0. ... 1.]
+    /// when trying to merge newly emerging clusters with already established clusters, ignore that many blibs in the overlap
+    unsigned int earlyMergeRejectionHoldout{1};
+
+
 
 
     ///constructor

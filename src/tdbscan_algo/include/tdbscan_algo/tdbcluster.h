@@ -61,7 +61,7 @@ namespace tdbscan {
     void insertBlib(const tBlib &h);
     /// Take all hits from the cluster and add them to its own
     /// @param c the cluster to be merged
-    void copyHits(const CausalCluster& c);
+    void copyBlibs(const CausalCluster& c);
 
   public: //methods (inert)
     /// get hits of this cluster

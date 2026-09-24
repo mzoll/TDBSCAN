@@ -227,12 +227,35 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now-params_.emergenceTimeWindow, now);
     if (_n_active == 0) {
       LOG_TRACE("Active cluster concluded");
+
+      // TODO late merge mechanism here
+      LOG_DEBUG("Late merge mechanism");
+      auto acother_iter = active_clusters_.begin();
+      bool was_reabsorbed = false;
+      while (acother_iter != active_clusters_.end()) {
+        if (ac_iter == acother_iter)
+          continue;
+
+        if (ac_iter->nOverlap(*acother_iter)/ std::min(ac_iter->count(), acother_iter->count()) >= params_.lateMergeOverlapRatio) {
+          LOG_TRACE("this cluster can be reabsorbed ...");
+          was_reabsorbed = true;
+          acother_iter->copyBlibs(*ac_iter);
+        }
+
+      }
+      if (was_reabsorbed) {
+        LOG_TRACE("... and was thus erased")
+        ac_iter = active_clusters_.erase(ac_iter);
+        continue;
+      }
+
+      LOG_TRACE("... and was pushed to the concluded clusters");
       concluded_clusters_.push_back(*ac_iter);
       ac_iter = active_clusters_.erase(ac_iter);
       continue;
     }
 
-    LOG_TRACE("Try Adding to active cluster");
+    LOG_TRACE("Try Adding Blib to active cluster");
     const auto success = TryInsertHit_Established(*ac_iter, b);
     ++ac_iter;
   }
@@ -240,16 +263,18 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   LOG_DEBUG("Early merge: iterating _newly_established_clusters: {}", _newly_established_clusters.size());
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
   // 50. traverse the newly established list and try to merge clusters with the active clusters
-  auto nec_iter = _newly_established_clusters.cbegin();
+  auto nec_citer = _newly_established_clusters.cbegin();
   ac_iter = active_clusters_.begin();
-  while (nec_iter != _newly_established_clusters.cend()) {
-    while (ac_iter != active_clusters_.end() && nec_iter != _newly_established_clusters.cend()) {
+  while (nec_citer != _newly_established_clusters.cend()) {
+    while (ac_iter != active_clusters_.end() && nec_citer != _newly_established_clusters.cend()) {
 
       //TODO implement the early merge criteria
 
-      if (nec_iter->isSubsetOf(*ac_iter)) {
+      // if there is overlap except in one blib, the one holdout blib might be noise hit that was just , but the
+      const auto overlap = nec_citer->nOverlap(*ac_iter);
+      if ( overlap >= params_.multiplicity - params_.earlyMergeRejectionHoldout ) {
         LOG_TRACE("this is a subset;");
-        nec_iter = _newly_established_clusters.erase(nec_iter);
+        nec_citer = _newly_established_clusters.erase(nec_citer);
         ac_iter = active_clusters_.begin();
         continue;
       }
@@ -257,7 +282,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
       ++ac_iter;
     }
     //established cluster is a genuinely new cluster
-    ++nec_iter;
+    ++nec_citer;
     ac_iter = active_clusters_.begin();
   }
   if (!_newly_established_clusters.empty()) {
@@ -286,7 +311,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
       return false;
     }
     if (not CausallyConnected(cb, b)) {
-      LOG_TRACE("Blibs not causally connected");
+      LOG_TRACE("Blibs not causally connected: {} {}", cb, b);
       return false;
     }
 

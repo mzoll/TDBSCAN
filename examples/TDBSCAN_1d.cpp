@@ -194,7 +194,7 @@ gernerate_blibs( const double time_duration=50, const int width_fields = 100, co
 
 	const auto _noise_blibs = generate_noise(noise_contamination*brightness, width_fields, time_duration);
   LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
-	blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
 
@@ -221,13 +221,23 @@ double calculate_signal_purity(const std::set<SBlibWithTrace> blibs) {
 
 
 int main(int argc, char **argv) {
-	auto my_algo = construct_algo(2., 1.);
+	auto my_algo = construct_algo(2., 0.5);
 
 	LOG_INFO("Generate blibs");
 	const auto blibs = gernerate_blibs(50 ,100, 3, 0.3 );
 
   LOG_INFO("Processing nBlibs: {} (purity {:.3f})", blibs.size(), calculate_signal_purity(blibs));
-	const auto result = my_algo.Process(blibs);
+  //take first 3
+  std::set<SBlibWithTrace> _blibs;
+  auto iter = blibs.begin();
+  for (int i = 0; i < 10; i++) {
+    _blibs.insert(*iter);
+    LOG_TRACE( "Sample : {}", *iter);
+    ++iter;
+  }
+
+
+	const auto result = my_algo.Process(_blibs);
 
 	LOG_INFO("Generated nClusters: {}", result.size());
 
@@ -236,6 +246,10 @@ int main(int argc, char **argv) {
     if (r_citer == result.cend())
       break;
     LOG_INFO("Cluster {} size: {} (purity {:.3f})", i, r_citer->size(), calculate_signal_purity(*r_citer));
+    for (const auto& b : *r_citer) {
+      LOG_INFO("das {}", b)
+    }
+
     r_citer++;
   }
 

@@ -23,7 +23,7 @@
 // TRACE < DEBUG < INFO < WARN < ERROR < FATAL
 // DEBUG (with optimisations)
 
-#define RELEASE_OPT
+//#define RELEASE_OPT
 
 #ifdef RELEASE_OPT
 #define LOG_TRACE(...) ;

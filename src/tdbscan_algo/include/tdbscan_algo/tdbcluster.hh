@@ -64,7 +64,7 @@ void CausalCluster<tBlib>::insertBlib(const tBlib &h) {
 
 
 template <class tBlib>
-void CausalCluster<tBlib>::copyHits (const CausalCluster<tBlib>& c){
+void CausalCluster<tBlib>::copyBlibs (const CausalCluster<tBlib>& c){
   blibs_.insert(c.blibs_.begin(), c.blibs_.end());
 }
 
