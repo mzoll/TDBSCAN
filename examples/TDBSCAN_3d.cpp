@@ -12,29 +12,29 @@ using namespace tdbscan;
 
 
 // define some Limiters
-class DistanceLimiter final : public ConnectorSingle<Blib4d> {
+class DistanceLimiter final : public ConnectorSingle<Blib3d> {
 public:
-	Blib4d::Ordinate_t::Distance_t maxDist_;
-	DistanceLimiter(const Blib4d::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
+	Blib3d::Ordinate_t::Distance_t maxDist_;
+	DistanceLimiter(const Blib3d::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
+	bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
 };
 
 // make one connector which just connects to max time-diff
-class TimeLimiter final : public ConnectorSingle<Blib4d> {
+class TimeLimiter final : public ConnectorSingle<Blib3d> {
 public:
-	Blib4d::Time_t::TimeDiff_t maxTimediff_;
-	explicit TimeLimiter(const Blib4d::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
+	Blib3d::Time_t::TimeDiff_t maxTimediff_;
+	explicit TimeLimiter(const Blib3d::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-	bool eval(const Blib4d& lhs, const Blib4d& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
+	bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
 };
 
 // combine the Connectors into a ConnectorBlock
-class LimitingConnector final : public ConnectorBlock<Blib4d> {
+class LimitingConnector final : public ConnectorBlock<Blib3d> {
 };
 
 
-TDBScan_Algo<Blib4d> construct_algo() {
+TDBScan_Algo<Blib3d> construct_algo() {
 
 	auto distLimiter_ = new DistanceLimiter(20.);
 	auto timeLimiter_ = new TimeLimiter(20.);
@@ -42,12 +42,12 @@ TDBScan_Algo<Blib4d> construct_algo() {
 	limcon->addConnector(distLimiter_);
 	limcon->addConnector(timeLimiter_);
 
-	TDBScan_Algo<Blib4d>::TDBScan_ParameterSet params;
+	TDBScan_Algo<Blib3d>::TDBScan_ParameterSet params;
 
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=20;
 
-	return TDBScan_Algo<Blib4d>(params, limcon);
+	return TDBScan_Algo<Blib3d>(params, limcon);
 }
 
 
@@ -56,12 +56,12 @@ Position3d rand_pos() {return Position3d(rand_ord(), rand_ord(), rand_ord());};
 ScalarTime_t rand_time() {return ScalarTime_t(rand() % 10000);};
 
 // std::set<Blib4d, Blib4d::TimeOrder> construct_blibs() {
-std::set<Blib4d> construct_blibs() {
+std::set<Blib3d> construct_blibs() {
 	int many_blibs = 1000;
 
-	std::set<Blib4d> blibs;
+	std::set<Blib3d> blibs;
 	for (int i = 0; i < many_blibs; i++) {
-		blibs.insert(Blib4d(rand_pos(), rand_time()));
+		blibs.insert(Blib3d(rand_pos(), rand_time()));
 	}
 
 	return blibs;

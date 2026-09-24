@@ -13,7 +13,6 @@
 
 // ========================= TIME =======================
 
-
 /** make a typedef for what is the notion of Time;
 * On first principles time is a continuous monotonic increasing variable
 */
@@ -191,7 +190,7 @@ struct std::formatter<Position3d> {
 
 // ========================= BLIB =======================
 //make a declaration of the Blib
-class Blib4d : public tdbscan::AbsBlib<Position3d, ScalarTime_t> {
+class Blib3d : public tdbscan::AbsBlib<Position3d, ScalarTime_t> {
 public: //type shorthands
 	using Ordinate_t = Position3d;
 	using Time_t = ScalarTime_t;
@@ -209,33 +208,33 @@ public:
 		{return time;};
 
 	[[nodiscard]] Ordinate_t::Distance_t
-	getDistance(const Blib4d& rhs) const
+	getDistance(const Blib3d& rhs) const
 		{return pos.distance(rhs.pos);};
 
 	/// get the time difference
 	[[nodiscard]] Time_t::TimeDiff_t
-	timeDiff(const Blib4d& other) const
+	timeDiff(const Blib3d& other) const
 		{return time - other.time;};
 public: //comparators
 	/// define the lesser-operator
 	[[nodiscard]] bool
-	operator<(const Blib4d& other) const
+	operator<(const Blib3d& other) const
 		{ return time < other.time || time == other.time && pos < other.pos; };
 
 	[[nodiscard]] bool
-	operator==(const Blib4d& other) const
+	operator==(const Blib3d& other) const
 		{ return time == other.time && pos == other.pos; };
 
 	///constructor
-	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
+	Blib3d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
 
 private:
   friend
-  std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d);
+  std::ostream& operator<< ( std::ostream& os, const Blib3d & b4d);
 };
 
-inline std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d) {
-  return os << std::format("Blib4d(ord:{}, time:{})", b4d.getOrdinate(), b4d.getTime());
+inline std::ostream& operator<< ( std::ostream& os, const Blib3d & b4d) {
+  return os << std::format("Blib3d(ord:{}, time:{})", b4d.getOrdinate(), b4d.getTime());
 };
 
 // template <>

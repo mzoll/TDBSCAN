@@ -12,13 +12,13 @@ using namespace tdbscan;
 
 TEST(CommonDefs, Blib4dAheres) {
 
-  Blib4d({1,2,0}, 0);
-  EXPECT_EQ(Blib4d({1,2,3}, 42), Blib4d({1,2,3}, 42));
-  EXPECT_NE(Blib4d({1,2,3}, 42), Blib4d({3,2,1}, 42));
+  Blib3d({1,2,0}, 0);
+  EXPECT_EQ(Blib3d({1,2,3}, 42), Blib3d({1,2,3}, 42));
+  EXPECT_NE(Blib3d({1,2,3}, 42), Blib3d({3,2,1}, 42));
 
   //the lesser operation is
-  EXPECT_FALSE(Blib4d({1,2,3}, 42) < Blib4d({1,2,3}, 42));
-  EXPECT_TRUE(Blib4d({1,2,3}, 0) < Blib4d({1,2,3}, 42));
+  EXPECT_FALSE(Blib3d({1,2,3}, 42) < Blib3d({1,2,3}, 42));
+  EXPECT_TRUE(Blib3d({1,2,3}, 0) < Blib3d({1,2,3}, 42));
 }
 
 
