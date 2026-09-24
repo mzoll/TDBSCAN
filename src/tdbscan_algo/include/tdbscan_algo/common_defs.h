@@ -53,7 +53,7 @@ public:
 
 private:
 	friend
-	std::ostream& operator<< ( std::ostream& outs, const ScalarTime_t & st);
+	std::ostream& operator<< ( std::ostream& os, const ScalarTime_t & st);
 };
 
 inline
@@ -62,8 +62,16 @@ std::ostream& operator<< ( std::ostream& os, const ScalarTime_t & st) {
 };
 
 
-// ========================= ORDINATE =======================
+template <>
+struct std::formatter<ScalarTime_t> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
 
+  auto format(const ScalarTime_t& st, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "t_{}", static_cast<double>(st));
+  };
+};
+
+// ========================= ORDINATE =======================
 
 /** make a typedef for what is the notion of Time;
 * On first principles time is a continuous monotonic increasing variable
@@ -77,6 +85,7 @@ public:
 	/// constructor
   Position1d(const double value) : value_(value) {};
 
+  /// the distance to another position
 	[[nodiscard]]
 	Distance_t
 	distance(const Position1d& rhs) const
@@ -113,6 +122,15 @@ private:
 
 inline std::ostream& operator<< ( std::ostream& os, const Position1d & p1d) {
   return os << std::format("Position1d({})", p1d.value_);
+};
+
+template <>
+struct std::formatter<Position1d> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+
+  auto format(const Position1d& p1d, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[x:{}]", static_cast<double>(p1d));
+  };
 };
 
 
@@ -157,8 +175,18 @@ private:
 };
 
 inline std::ostream& operator<< ( std::ostream& os, const Position3d & p3d) {
-  return os << std::format("Position1d(x:{}, y:{}, z:{})", p3d.xord, p3d.yord, p3d.zord);
+  return os << std::format("Position3d(x:{}, y:{}, z:{})", p3d.xord, p3d.yord, p3d.zord);
 };
+
+template <>
+struct std::formatter<Position3d> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+
+  auto format(const Position3d& p3d, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[x:{}, y:{}, z:{}]", p3d.xord, p3d.yord, p3d.zord);
+  };
+};
+
 
 
 // ========================= BLIB =======================
@@ -201,16 +229,30 @@ public: //comparators
 	///constructor
 	Blib4d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
 
-// private:
-//   friend
-//   std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d);
+private:
+  friend
+  std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d);
 };
 
-// inline std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d) {
-//   return os << std::format("Blib4d(ord: {}, time: {})", b4d.getOrdinate(), b4d.getTime());
+inline std::ostream& operator<< ( std::ostream& os, const Blib4d & b4d) {
+  return os << std::format("Blib4d(ord:{}, time:{})", b4d.getOrdinate(), b4d.getTime());
+};
+
+// template <>
+// struct std::formatter<Blib4d> {
+//   constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+//
+//   auto format(const Blib4d& sb, std::format_context &ctx) const {
+//     return std::format_to(ctx.out(), "[ord:{}, time:{}]", sb.getOrdinate()), static_cast<double>(sb.getTime());
+//   };
+// };
 
 
-//make a declaration of the Blib
+
+
+/**
+ * A Blib that has a scalar Ordinate
+ */
 class ScalarBlib : public tdbscan::AbsBlib<Position1d, ScalarTime_t> {
 public: //type shorthands
 	using Ordinate_t = Position1d;
@@ -252,7 +294,6 @@ public: //comparators
 
 	struct TimeOrder {
 		bool operator()(const ScalarBlib& lhs, const ScalarBlib& rhs) const {return double(lhs.getTime()) < double(rhs.getTime());};
-
 	};
 
 public:

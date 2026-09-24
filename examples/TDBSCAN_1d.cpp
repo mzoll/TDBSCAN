@@ -49,8 +49,17 @@ public:
   ///mark this Blib as to stem either from a Noise or Signal source
 	SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; }
 
-  /// constructor
-	SBlibWithTrace( const SBlibWithTrace::Ordinate_t& ord , const SBlibWithTrace::Time_t& t, const Origin o ) : ScalarBlib(ord, t) ,origin_(o) {};
+  /**
+   * Fully qualified constructor
+   * @param ord the Ordinate
+   * @param t time of the blib
+   * @param o the origin of the Blib, aka SIGNAL, or NOISE
+   */
+  SBlibWithTrace(
+	  const SBlibWithTrace::Ordinate_t& ord,
+	  const SBlibWithTrace::Time_t& t,
+	  const Origin o ) :
+  ScalarBlib(ord, t) ,origin_(o) {};
 
 public:
   friend
