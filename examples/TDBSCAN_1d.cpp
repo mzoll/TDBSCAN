@@ -165,11 +165,11 @@ gernerate_blibs( const double width_fields, const double time_duration ) {
 
 	const auto _box_blibs = generate_moving_box( 5, 2, 0, 1, 50 );
 	log_info(std::format("Generated {} BOX blibs", _box_blibs.size()));
-
-	//const auto _noise_blibs = generate_noise(0.1, 100, 50.);
-  //log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
-	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+
+	const auto _noise_blibs = generate_noise(0.1, 100, 50.);
+  log_info(std::format("Generated {} NOISE blibs", _noise_blibs.size()));
+	blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
 	return blibs;
 }
 
@@ -182,13 +182,13 @@ int main(int argc, char **argv) {
 	//take first 3
 	std::set<SBlibWithTrace> _blibs;
 	auto iter = blibs.begin();
-	for (int i = 0; i < 5; i++) {
-		_blibs.insert(*iter);
-		log_trace( std::ostringstream() << "Sample : " << *iter);
-		++iter;
-	}
-  log_info(std::format("Processing nBlibs: {}", _blibs.size()));
-	const auto result = my_algo.Process(_blibs);
+	// for (int i = 0; i < 100; i++) {
+	// 	_blibs.insert(*iter);
+	// 	log_trace( std::ostringstream() << "Sample : " << *iter);
+	// 	++iter;
+	// }
+ //  log_info(std::format("Processing nBlibs: {}", _blibs.size()));
+	const auto result = my_algo.Process(blibs);
 
 	log_info(std::format("Generated nClusters: {}", result.size()));
 
