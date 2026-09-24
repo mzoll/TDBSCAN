@@ -72,7 +72,7 @@ public:
 	SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
 	DistanceLimiter(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
+	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return lhs.distance(rhs) <= maxDist_;};
 };
 
 // make one connector which just connects to max time-diff
@@ -81,7 +81,7 @@ public:
 	SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
 	explicit TimeLimiter(const SBlibWithTrace::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
+	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {return rhs.timeTo(lhs) <= maxTimediff_;};
 };
 
 // combine the Connectors into a ConnectorBlock

@@ -39,4 +39,11 @@ TEST(CommonDefs, Position3dAdheres) {
   EXPECT_FALSE(Position3d(1,0,0) < Position3d(0,0,0));
 }
 
-// Demonstrate some basic assertions.
+
+
+TEST(CommonDefs, ScalarTimeAdheres) {
+  const ScalarTime_t t0(0.);
+  const ScalarTime_t t42(42.);
+  EXPECT_EQ(t0 - t42, -42.);
+  EXPECT_EQ(t42 - t0, 42.);
+}

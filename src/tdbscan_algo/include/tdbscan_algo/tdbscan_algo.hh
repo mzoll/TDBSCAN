@@ -217,19 +217,16 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   // 10. go through all active clusters and see if blibs have fallen out of the emergence time window and multiplicity cannot be fulfilled; mark them as 'dying'; if there is nothing left mark as 'concluded'
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
-    const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now, Time_t::max());
-
+    const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now-params_.emergenceTimeWindow, now);
     if (_n_active == 0) {
       log_trace("Active cluster concluded");
       concluded_clusters_.push_back(*ac_iter);
       ac_iter = active_clusters_.erase(ac_iter);
       continue;
     }
-    else {
-      log_trace("Added to active cluster");
-      const auto success = TryInsertHit_Established(*ec_iter, b);
-    }
-    ac_iter++;
+    log_trace("Adding to active cluster");
+    const auto success = TryInsertHit_Established(*ac_iter, b);
+    ++ac_iter;
   }
 
 
@@ -276,7 +273,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
   //all blibs in the emerging Cluster must connect
 
   for (const auto& cb : c.blibs_) {
-    const auto timediff = cb.timeDiff(b);
+    const auto timediff = cb.timeTo(b);
     if (timediff>= params_.emergenceTimeWindow ) {
       log_trace(std::format("Timediff past the allowed emergenceTimeWindow({}): {}", double(params_.emergenceTimeWindow), double(timediff)));
       /// we are past the timeframe;
@@ -302,18 +299,26 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Established(
   CausalCluster<tBlib>& c,
   const tBlib& b) {
   log_debug("Entering TryInsertHit_Established()");
+
   auto _result = false;
 
   int active_connectees = 0;
-  auto cb_iter = c.blibs_.cend();
-  while (cb_iter != c.blibs_.cbegin()) {
-    if (cb_iter->timeDiff(b) >= params_.multiplicityTimeWindow) {
+  auto cb_riter = c.blibs_.crbegin();
+  while (cb_riter != c.blibs_.crend()) {
+    if (cb_riter->timeTo(b) >= params_.multiplicityTimeWindow) {
       /// we are past the timeframe;
       break;
     }
-    active_connectees += CausallyConnected(*cb_iter, b);
+    active_connectees += CausallyConnected(*cb_riter, b);
+    if (active_connectees >= params_.multiplicity) {
+      _result = true;
+      break;
+    }
+    ++cb_riter;
   }
-  if (active_connectees >= params_.multiplicity) {
+
+  if (_result) {
+    log_debug("Sufficient Multiplicity in causal overlap; Adding Hit");
     c.blibs_.insert(c.blibs_.end(), b);
     _result = true;
   }

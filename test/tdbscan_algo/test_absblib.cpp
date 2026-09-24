@@ -32,8 +32,8 @@ TEST(CommonDefs, ScalarBlib) {
   EXPECT_FALSE(ScalarBlib({42}, 42) < ScalarBlib({42}, 42));
   EXPECT_TRUE(ScalarBlib({1}, 0) < ScalarBlib({2}, 42));
 
-  EXPECT_EQ(ScalarBlib({42},42.).timeDiff(ScalarBlib({42.}, 42)), 0);
-  EXPECT_EQ(ScalarBlib({42},42.).timeDiff(ScalarBlib({42.}, 0)), 42);
-  EXPECT_EQ(ScalarBlib({42},42.).timeDiff(ScalarBlib({42.}, 42)), 0);
-  EXPECT_EQ(ScalarBlib({42},42.).timeDiff(ScalarBlib({42.}, 0)), 42);
+  EXPECT_EQ(ScalarBlib({42},42.).timeTo(ScalarBlib({42.}, 42)), 0);
+  EXPECT_EQ(ScalarBlib({42},42.).timeTo(ScalarBlib({42.}, 0)), 42);
+  EXPECT_EQ(ScalarBlib({42},42.).timeTo(ScalarBlib({42.}, 42)), 0);
+  EXPECT_EQ(ScalarBlib({42},42.).timeTo(ScalarBlib({42.}, 0)), 42);
 }

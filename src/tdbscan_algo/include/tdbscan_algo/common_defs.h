@@ -229,12 +229,12 @@ public:
 		{return time;};
 
 	[[nodiscard]] Ordinate_t::Distance_t
-	getDistance(const ScalarBlib& rhs) const
+	distance(const ScalarBlib& rhs) const
 		{return pos.distance(rhs.pos);};
 
 	/// get the time difference
 	[[nodiscard]] Time_t::TimeDiff_t
-	timeDiff(const ScalarBlib& other) const
+	timeTo(const ScalarBlib& other) const
 		{return time - other.time;};
 public: //comparators
 	/// define the lesser-operator
