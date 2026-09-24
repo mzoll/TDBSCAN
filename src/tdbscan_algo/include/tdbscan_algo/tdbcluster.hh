@@ -43,7 +43,11 @@ CausalCluster<tBlib>::getLatestTime() const{
 
 template <class tBlib>
 uint64_t CausalCluster<tBlib>::nHitsWithinTimeWindow(
-  const typename tBlib::Time_t earliest, const typename tBlib::Time_t latest) const {
+  const typename CausalCluster<tBlib>::tTime earliest, const CausalCluster<tBlib>::tTime latest) const {
+  if (earliest > latest)
+    throw std::invalid_argument("positional argument 1 needs to be lesser or equal to argument 2");
+
+
   uint64_t _count = 0;
   for (const auto& b : blibs_) {
     if (earliest <= b.getTime() && b.getTime() <= latest)

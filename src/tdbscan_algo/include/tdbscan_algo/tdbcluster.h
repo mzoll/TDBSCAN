@@ -39,6 +39,8 @@ namespace tdbscan {
     using BlibSet = std::set<tBlib>;
     using BlibList = std::list<tBlib>;
 
+    using tTime = tBlib::Time_t;
+
   public: //properties
     ///The ordered set of hits within this cluster
     BlibSet blibs_;
@@ -47,7 +49,7 @@ namespace tdbscan {
     // Constructor
     CausalCluster();
     ///adhoc constructor from single blib
-    CausalCluster(const tBlib &h );
+    CausalCluster(const tBlib &h);
     ///adhoc constructor series of hits
     CausalCluster(const std::set<tBlib> &bset);
     /// this should be made in a proper copy constructor
@@ -66,15 +68,15 @@ namespace tdbscan {
     [[nodiscard]] const BlibSet& getHits() const;
     ///Finds the time of the earliest hit in this cluster
     /// @return The earliest hit time or minus infinity if the cluster is empty
-    [[nodiscard]] typename tBlib::Time_t
+    [[nodiscard]] tTime
     getEarliestTime() const;
     ///Finds the time of the latest hit in this cluster
     /// @return The latest hit time or infinity if the cluster is empty
-    [[nodiscard]] typename tBlib::Time_t
+    [[nodiscard]] tTime
     getLatestTime() const;
 
     [[nodiscard]] uint64_t
-    nHitsWithinTimeWindow(typename tBlib::Time_t earliest = Time_t::min(), typename tBlib::Time_t latest = Time_t::max()) const;
+    nHitsWithinTimeWindow(tTime earliest = tTime::min(), tTime latest = tTime::max()) const;
 
     ///Test whether the hits in this are a subset those of super
     /// @param super cluster with a series of hits which might be a superset

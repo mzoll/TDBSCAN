@@ -22,6 +22,9 @@ struct inverse_int {
 
 
 int main() {
+  cout << ScalarTime_t::min() << endl;
+  cout << ScalarTime_t::max() << endl;
+
   std::set<ScalarTime_t> s;
   s.insert(ScalarTime_t(1));
   s.insert(ScalarTime_t(9));

@@ -13,8 +13,7 @@
 
 using namespace tdbscan;
 
-// Demonstrate some basic assertions.
-TEST(ClusterTest, ArtificiallyConstructedCase) {
+TEST(ClusterTest, SetOperations) {
 
   CausalCluster<ScalarBlib> c1;
   CausalCluster<ScalarBlib> c2;
@@ -82,4 +81,42 @@ TEST(ClusterTest, ArtificiallyConstructedCase) {
 
    EXPECT_EQ(c1.nOverlap(c2), 1);
    EXPECT_EQ(c2.nOverlap(c1), 1);
+}
+
+
+
+TEST(ClusterTest, TimeWindow) {
+  CausalCluster<ScalarBlib> c1;
+
+  ScalarBlib b0(Position1d{0}, {0.});
+  ScalarBlib b1(Position1d{1}, {0.});
+  ScalarBlib b2(Position1d{2}, {1.});
+  ScalarBlib b3(Position1d{3}, {1});
+  ScalarBlib b4(Position1d{4}, {1});
+
+  //with defaults
+  EXPECT_EQ(c1.nHitsWithinTimeWindow(), 0);
+  //with explicit defaults
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{std::numeric_limits<double>::infinity()}), 0);
+
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-1}, {1}), 0); //with value
+  // violating time order in arguments
+  EXPECT_ANY_THROW(c1.nHitsWithinTimeWindow( {1}, {-1} ));
+
+  c1.insertBlib(b0);
+
+  EXPECT_EQ(c1.nHitsWithinTimeWindow(), 1);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-1.},{1}), 1);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({1.},{1}), 0);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{1}), 1);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{-1}), 0);
+
+  c1.insertBlib(b1);
+  c1.insertBlib(b2);
+
+  EXPECT_EQ(c1.nHitsWithinTimeWindow(), 3);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-1.},{1}), 3);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({1.},{1.}), 1);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{0.}), 2);
+  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{-1.}), 0);
 }

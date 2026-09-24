@@ -48,8 +48,8 @@ public:
 	ScalarTime_t& operator=(const double rhs)
 			{value_=rhs; return *this; };
 
-	static double min() {return std::numeric_limits<double>::min();};
-	static double max() {return std::numeric_limits<double>::max();};
+	static constexpr double min() {return -std::numeric_limits<double>::infinity();};
+	static constexpr double max() {return std::numeric_limits<double>::infinity();};
 
 private:
 	friend
