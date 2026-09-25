@@ -100,28 +100,55 @@ struct std::formatter<SBlibWithTrace> {
 // The only thing we need to implement is the the `bool eval(Blib rhs, Blib rhs)´ function.
 // In the end we combine both Limiters into a single `ConnectorBlock`, which than can be used in the TDBscan-algorithm
 // ========================================================
+
+/**
+ * Limits the Distance within which Blibs causally connect
+ */
 class DistanceLimiter final : public ConnectorSingle<SBlibWithTrace> {
 public:
 	SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
 	DistanceLimiter(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) :
   ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {
+	[[nodiscard]] bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const override {
 	  return abs(lhs.distanceTo(rhs)) <= maxDist_;
 	};
 };
 
-// make one connector which just connects to max time-diff; this is time ordered and thereby is positive one-sided
+
+
+/**
+ * Limits the Distance within which Blibs causally connect
+ *
+ * make one connector which just connects to max time-diff; this is time ordered and thereby is positive one-sided.
+ */
 class TimeLimiter final : public ConnectorSingle<SBlibWithTrace> {
 public:
 	SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
 	explicit TimeLimiter(const SBlibWithTrace::Time_t::TimeDiff_t maxTimeDiff) :
   ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-	bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {
-	  return rhs.timeTo(lhs) <= maxTimediff_;
+	[[nodiscard]] bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const override {
+	  return lhs.timeTo(rhs) <= maxTimediff_;  //TODO check if this is well formed
 	};
 };
+
+
+/**
+ * Assumes that hits are intrinsically caused by a source that moves with a certain inertia.
+ */
+class InertiaConnector final : public ConnectorSingle<SBlibWithTrace> {
+public:
+  const double inertia_;
+  const double tollerance_abs_;
+  explicit InertiaConnector(const double inertia, const double tollerance_abs) :
+  ConnectorSingle("InertiaConnector"), inertia_(inertia), tollerance_abs_(tollerance_abs) {};
+
+  [[nodiscard]] bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const override {
+    return abs(lhs.timeTo(rhs) * inertia_ - lhs.distanceTo(rhs)) <= tollerance_abs_;
+  };
+};
+
 
 // combine the Connectors into a ConnectorBlock
 class LimitingConnector final : public ConnectorBlock<SBlibWithTrace> {
@@ -198,8 +225,8 @@ std::set<SBlibWithTrace>
 generate_moving_box(
   const double box_size,
   const double inertia,
-  const double start_pos,
-  const double brightness,
+  const double start_pos, // =0.,
+  const double brightness, // =1.,
   const double field_size,
   const double time_duration) {
 	std::set<SBlibWithTrace> blibs;
@@ -212,7 +239,7 @@ generate_moving_box(
 
     const double center_pos = field_size * (int(center_pos_ind) % 2 == 0 ?  center_pos_ind - std::floor(center_pos_ind) : 1. - (center_pos_ind - std::floor(center_pos_ind)));
 
-    const double blib_pos_inbox = rand_double() * box_size - box_size/2.;
+    const double blib_pos_inbox = box_size * (rand_double() - 1/2.);
 
     const auto blib_pos = center_pos + blib_pos_inbox;
 
@@ -286,7 +313,7 @@ int main(int argc, char **argv) {
   //take first 3
   std::set<SBlibWithTrace> _blibs;
   auto iter = blibs.begin();
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 100; i++) {
     _blibs.insert(*iter);
     LOG_TRACE( "Sample : {}", *iter);
     ++iter;
