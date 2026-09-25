@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
   //take first 3
   std::set<SBlibWithTrace> _blibs;
   auto iter = blibs.begin();
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20; i++) {
     _blibs.insert(*iter);
     LOG_TRACE( "Sample : {}", *iter);
     ++iter;
