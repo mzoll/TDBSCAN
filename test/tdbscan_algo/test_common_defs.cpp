@@ -39,11 +39,25 @@ TEST(CommonDefs, Position3dAdheres) {
   EXPECT_FALSE(Position3d(1,0,0) < Position3d(0,0,0));
 }
 
-
-
 TEST(CommonDefs, ScalarTimeAdheres) {
   const ScalarTime_t t0(0.);
   const ScalarTime_t t42(42.);
   EXPECT_EQ(t0 - t42, -42.);
   EXPECT_EQ(t42 - t0, 42.);
+}
+
+
+TEST(CommonDefs, ScalarBlibAdheres) {
+  const ScalarBlib b0({0.},  {0. }  );
+  const ScalarBlib b1({42.},  {1.  }  );
+
+  EXPECT_EQ(b0.timeTo(b0), 0.);
+  EXPECT_EQ(b1.timeTo(b1), 0.);
+  EXPECT_EQ(b0.timeTo(b1), 1.);
+  EXPECT_EQ(b1.timeTo(b0), -1.);
+
+  EXPECT_EQ(b0.distanceTo(b0), 0.);
+  EXPECT_EQ(b1.distanceTo(b1), 0.);
+  EXPECT_EQ(b0.distanceTo(b1), 42.);
+  EXPECT_EQ(b1.distanceTo(b0), -42.);
 }

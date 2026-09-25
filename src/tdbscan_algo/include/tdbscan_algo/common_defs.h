@@ -246,9 +246,6 @@ inline std::ostream& operator<< ( std::ostream& os, const Blib3d & b4d) {
 //   };
 // };
 
-
-
-
 /**
  * A Blib that has a scalar Ordinate
  */
@@ -277,7 +274,7 @@ public:
 	/// get the time difference
 	[[nodiscard]] Time_t::TimeDiff_t
 	timeTo(const ScalarBlib& other) const
-		{return time - other.time;};
+		{return other.time - time;};
 public: //comparators
 	/// define the lesser-operator
 	[[nodiscard]] bool
