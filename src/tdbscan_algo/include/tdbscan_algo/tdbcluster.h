@@ -1,5 +1,5 @@
 //
-// Created by netsu on 07/08/2026.
+// Created by mzoll on 07/08/2026.
 //
 
 #ifndef TDBSCAN_TDBCLUSTER_H

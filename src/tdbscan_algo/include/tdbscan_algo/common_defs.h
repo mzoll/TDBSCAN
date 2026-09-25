@@ -1,5 +1,5 @@
 //
-// Created by netsu on 30/08/2026.
+// Created by mzoll on 30/08/2026.
 //
 
 #ifndef TDBSCAN_COMMON_DEFS_H
