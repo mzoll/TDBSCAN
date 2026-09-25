@@ -67,6 +67,10 @@ public:
 	  const Origin o ) :
   ScalarBlib(ord, t) ,origin_(o) {};
 
+  bool operator==(const SBlibWithTrace& rhs) const {
+    return this->origin_ == rhs.origin_ && static_cast<ScalarBlib>(*this) == static_cast<ScalarBlib>(rhs);
+  };
+
 public:
   friend
   std::ostream& operator<< ( std::ostream& outs, const SBlibWithTrace & st);
@@ -116,11 +120,8 @@ public:
 };
 
 
-
 /**
  * Limits the Distance within which Blibs causally connect
- *
- * make one connector which just connects to max time-diff; this is time ordered and thereby is positive one-sided.
  */
 class TimeLimiter final : public ConnectorSingle<SBlibWithTrace> {
 public:
@@ -129,8 +130,9 @@ public:
   ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
 	[[nodiscard]] bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const override {
-	  return lhs.timeTo(rhs) <= maxTimediff_;  //TODO check if this is well formed
-	};
+	  return abs(lhs.timeTo(rhs)) <= maxTimediff_;
+	}
+
 };
 
 
