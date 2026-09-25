@@ -233,15 +233,18 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
       auto acother_iter = active_clusters_.begin();
       bool was_reabsorbed = false;
       while (acother_iter != active_clusters_.end()) {
-        if (ac_iter == acother_iter)
+        if (ac_iter == acother_iter) {
+          // its the cluster itself
+          ++acother_iter;
           continue;
+        }
 
         if (ac_iter->nOverlap(*acother_iter)/ std::min(ac_iter->count(), acother_iter->count()) >= params_.lateMergeOverlapRatio) {
           LOG_TRACE("this cluster can be reabsorbed ...");
           was_reabsorbed = true;
           acother_iter->copyBlibs(*ac_iter);
         }
-
+        ++acother_iter;
       }
       if (was_reabsorbed) {
         LOG_TRACE("... and was thus erased")
