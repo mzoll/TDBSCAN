@@ -81,15 +81,9 @@ public: //typedefs: some internal definitions and shorthands
     /// when trying to merge newly emerging clusters with already established clusters, ignore that many blibs in the overlap
     unsigned int earlyMergeRejectionHoldout{1};
 
-
-
-
     ///constructor
     TDBScan_ParameterSet();
   };
-
-
-
 
 
 private: // internal state
@@ -112,9 +106,9 @@ private: //parameters
   // Configurable Parameters
   //========================
   /// PARAM: A parameter-set to run on
-  TDBScan_ParameterSet params_;
+  const TDBScan_ParameterSet params_;
   /// PARAM: this defines the 'physics' at play
-  Connector_t* connector_;
+  const Connector_t* connector_;
 
 public: //interface
   /**
@@ -124,7 +118,7 @@ public: //interface
    */
   TDBScan_Algo(
     const TDBScan_ParameterSet& params,
-    Connector_t* connector);
+    const Connector_t* connector);
 
   /** @brief ACTION
    * Perform the Splitting feeding it a series of Hits

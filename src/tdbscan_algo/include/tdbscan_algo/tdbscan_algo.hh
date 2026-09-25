@@ -42,7 +42,7 @@ TDBScan_Algo<tBlib>::BlibSetTimeOrder::operator()(const BlibSet &lhs, const Blib
 template <class tBlib>
 TDBScan_Algo<tBlib>::TDBScan_Algo (
   const TDBScan_ParameterSet& params,
-  Connector_t* connector) :
+  const Connector_t* const connector) :
   params_(params),
   connector_(connector)
 {
