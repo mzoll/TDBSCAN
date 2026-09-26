@@ -54,7 +54,7 @@ class Connector {
 class ConnectorBlock : public Connector<tBlib> {
   public:
     typedef Connector<tBlib> Connector_t;
-    typedef std::list< Connector_t*> ConnectorList;
+    typedef std::list<const Connector_t*> ConnectorList;
   private: //property
     ///list of all connectors
     ConnectorList connectorlist_;
@@ -62,7 +62,7 @@ class ConnectorBlock : public Connector<tBlib> {
   public: //methods
     /// Add a Connector to the list of to be evaluated Connectors
     void addConnector (
-      ConnectorSingle<tBlib> *connector_ptr);
+      const ConnectorSingle<tBlib>* connector_ptr);
 
     ///check if to Hits are connected by any of the Connectors
     bool eval(const tBlib& h1, const tBlib& h2) const;
@@ -80,7 +80,7 @@ class ConnectorBlock : public Connector<tBlib> {
 
     //=== getters ===
     ///retrieve a connector from the ConnectorList; 0 will pass the cumulative one
-    ConnectorSingle<tBlib>* getConnector (const int index) const;
+    ConnectorSingle<tBlib>* getConnector (int index) const;
     ///Get the complete list of Relations
     ConnectorList getConnectorList() const;
   };
