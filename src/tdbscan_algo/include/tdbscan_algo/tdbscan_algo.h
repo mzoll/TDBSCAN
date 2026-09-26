@@ -48,12 +48,11 @@ public: //shorthands for types
     /// implement the order principle for sets of blibs; order them by the earliest time blib they contain
     bool operator()(const BlibSet &lhs, const BlibSet &rhs) const;
   };
-
   ///a time-ordered sequence of time-ordered HitSets
-  typedef std::set<BlibSet, BlibSetTimeOrder> BlibSetSequence;
+  using BlibSetSequence = std::set<BlibSet, BlibSetTimeOrder>;
 
-  typedef Connector<tBlib> Connector_t;
-  typedef CausalCluster<tBlib> CausalCluster_t;
+  using Connector_t = Connector<tBlib>;
+  using CausalCluster_t = CausalCluster<tBlib>;
 
 
 public: //typedefs: some internal definitions and shorthands
