@@ -204,13 +204,18 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
     }
 
     // 11. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
-    const auto success = TryInsertHit_Emergence(*ec_iter, b);
-    if (success && ec_iter->count() == params_.multiplicity) {
-      LOG_TRACE("Promote one emerging cluster!");
-      _newly_established_clusters.push_back(*ec_iter);
-      ec_iter = emerging_clusters_.erase(ec_iter);
-      continue;
+    if (IsConnected_Emergence(*ec_iter, b)) {
+      LOG_TRACE("Adding Blib to emerging Cluster");
+      ec_iter->insertBlib(b);
+
+      if (ec_iter->count() == params_.multiplicity) {
+        LOG_TRACE("Promote one emerging cluster!");
+        _newly_established_clusters.push_back(*ec_iter);
+        ec_iter = emerging_clusters_.erase(ec_iter);
+        continue;
+      }
     }
+
     ++ec_iter;
   }
 
@@ -258,8 +263,11 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
       continue;
     }
 
-    LOG_TRACE("Try Adding Blib to active cluster");
-    const auto success = TryInsertHit_Established(*ac_iter, b);
+    if (IsConnected_Established(*ac_iter, b)) {
+      LOG_TRACE("Adding Blib to active cluster");
+      ac_iter->insertBlib(b);
+    }
+
     ++ac_iter;
   }
 
@@ -300,7 +308,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
 
 
 template <class tBlib>
-bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
+bool TDBScan_Algo<tBlib>::IsConnected_Emergence(
   CausalCluster<tBlib>& c,
   const tBlib& b) {
   LOG_DEBUG("Entering TryInsertHit_Emergence()");
@@ -317,10 +325,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
       LOG_TRACE("Blibs not causally connected: {} {}", cb, b);
       return false;
     }
-
   }
-  LOG_TRACE("Adding Blib to emerging Cluster");
-  c.blibs_.insert(c.blibs_.end(), b);
 
   LOG_DEBUG("Leaving TryInsertHit_Emergence()");
   return true;
@@ -328,22 +333,30 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Emergence(
 
 
 template <class tBlib>
-bool TDBScan_Algo<tBlib>::TryInsertHit_Established(
+bool TDBScan_Algo<tBlib>::IsConnected_Established(
   CausalCluster<tBlib>& c,
   const tBlib& b) {
   LOG_DEBUG("Entering TryInsertHit_Established()");
+  /* iterate over all blibs in the cluster starting with the latest time moving to the earliest;
+   * > if the time distance between the iterated blib and the inspecting blib becomes greater than the permitted
+   * __multiplicity time window__ the iteration is stopped with a negative result
+   * > if the iterated blib and the inspecting blib causally connect, determined by the connector, __found evidence__ counter
+   * is raised by one.
+   * >> if the found evidence surpasses the required __multiplicity__ the blib is considered to evidently connected with
+   * the clustered and is added to it
+   */
 
   auto _result = false;
 
-  int active_connectees = 0;
+  unsigned int found_evidence = 0;
   auto cb_riter = c.blibs_.crbegin();
   while (cb_riter != c.blibs_.crend()) {
     if (cb_riter->timeTo(b) >= params_.multiplicityTimeWindow) {
       /// we are past the timeframe;
       break;
     }
-    active_connectees += CausallyConnected(*cb_riter, b);
-    if (active_connectees >= params_.multiplicity) {
+    found_evidence += CausallyConnected(*cb_riter, b);
+    if (found_evidence >= params_.multiplicity) {
       _result = true;
       break;
     }
@@ -351,8 +364,7 @@ bool TDBScan_Algo<tBlib>::TryInsertHit_Established(
   }
 
   if (_result) {
-    LOG_DEBUG("Sufficient Multiplicity in causal overlap; Adding Hit");
-    c.blibs_.insert(c.blibs_.end(), b);
+    LOG_DEBUG("Sufficient Multiplicity in causal overlap");
     _result = true;
   }
 

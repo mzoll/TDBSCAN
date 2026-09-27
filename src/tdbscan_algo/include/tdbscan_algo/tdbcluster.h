@@ -56,8 +56,9 @@ namespace tdbscan {
     CausalCluster(const CausalCluster& cc);
 
   public: //methods (altering)
-    ///Add a new hit to the cluster
-    /// @param h The hit to add
+    /** Add a new hit to the cluster, hinting at the end of all blibs
+     *  @param h The hit to add
+     */
     void insertBlib(const tBlib &h);
     /// Take all hits from the cluster and add them to its own
     /// @param c the cluster to be merged

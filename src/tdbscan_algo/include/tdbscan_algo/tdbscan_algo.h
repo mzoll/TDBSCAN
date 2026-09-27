@@ -163,9 +163,9 @@ private: //work on *clusters*
    * @param c the cluster to add to
    * @param b the blib to add
   */
-  bool TryInsertHit_Emergence( CausalCluster<tBlib>& c, const tBlib& b);
+  bool IsConnected_Emergence( CausalCluster<tBlib>& c, const tBlib& b);
 
-  bool TryInsertHit_Established( CausalCluster<tBlib>& c, const tBlib& b);
+  bool IsConnected_Established( CausalCluster<tBlib>& c, const tBlib& b);
 };
 };
 
