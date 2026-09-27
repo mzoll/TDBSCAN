@@ -6,12 +6,15 @@
 #define TDBSCAN__EXAMPLE_3D__BLIB_H
 
 
-#include "tdbscan_algo/common_defs.h"
+#include "tdbscan_algo/common_blibs.h"
+
+namespace ex3d {
+using namespace tdbscan;
 
 /**
  * A twist to the Blib3d class that allows to keep track of its source, either Noise or Signal
  */
-class Blib3dWithTrace final : public Blib3d {
+class Blib3dWithTrace final : public tdbscan::Blib3d {
 public:
   /// denotes the origin of the Blib; either Noise or Signal
   enum Origin {
@@ -64,21 +67,24 @@ inline
 std::ostream& operator<< ( std::ostream& os, const Blib3dWithTrace & sblib_trace) {
   return os <<
     Blib3dWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
-      static_cast<Blib3d>(sblib_trace);
+      static_cast<tdbscan::Blib3d>(sblib_trace);
 };
+
+} //namespace ex3d
 
 /// custom formatter for Blib3dWithTrace. Used in conjunction with `std::format` or `fmt::format`
 template <>
-struct std::formatter<Blib3dWithTrace> {
+struct std::formatter<ex3d::Blib3dWithTrace> {
   constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
 
-  auto format(const Blib3dWithTrace& sb, std::format_context &ctx) const {
+  auto format(const ex3d::Blib3dWithTrace& sb, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "[ord:{}, time:{}]::{}",
       sb.getOrdinate(),
       static_cast<double>(sb.getTime()),
-      Blib3dWithTrace::origin_tostr(sb.origin_));
+      ex3d::Blib3dWithTrace::origin_tostr(sb.origin_));
   };
 };
+
 
 
 #endif //TDBSCAN__EXAMPLE_3D__BLIB_H

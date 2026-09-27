@@ -9,10 +9,14 @@
 #include <tdbscan_algo/connector.h>
 
 
+namespace ex3d {
+
+using namespace tdbscan;
+
 // define some Limiters
-class DistanceLimiter final : public tdbscan::ConnectorSingle<Blib3d> {
+class DistanceLimiter final : public tdbscan::ConnectorSingle<tdbscan::Blib3d> {
 public:
-  Blib3d::Ordinate_t::Distance_t maxDist_;
+  tdbscan::Blib3d::Ordinate_t::Distance_t maxDist_;
   DistanceLimiter(const Blib3d::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
   bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return lhs.distanceTo(rhs) <= maxDist_;};
@@ -44,5 +48,7 @@ public:
     delete time_limiter_;
   };
 };
+
+} // namespace ex3d
 
 #endif //TDBSCAN__EXAMPLE_3D__CONNECTORS_H

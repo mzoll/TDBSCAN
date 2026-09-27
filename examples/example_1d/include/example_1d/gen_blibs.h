@@ -19,7 +19,8 @@ double rand_double() {
   return unif(re);
 }
 
-
+namespace ex1d {
+using namespace tdbscan;
 
 /* ========================= Create the scenario =======================
  * For a demonstration and testing scenario Blibs need to be generated which stem from two distinguishable sources:
@@ -30,15 +31,15 @@ double rand_double() {
  */
 std::set<SBlibWithTrace>
 generate_noise(const double noise_freq, const double width_fields, const double time_duration) {
-	std::set<SBlibWithTrace> blibs;
-	for (int time_step = 0; time_step < time_duration; time_step++) {
-		for (int count_noise = 0; count_noise < noise_freq * width_fields; count_noise++) {
-			const double pos = rand_double() * width_fields;
-			const double t = rand_double() + time_step;
-			blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::NOISE));
-		}
-	}
-	return blibs;
+  std::set<SBlibWithTrace> blibs;
+  for (int time_step = 0; time_step < time_duration; time_step++) {
+    for (int count_noise = 0; count_noise < noise_freq * width_fields; count_noise++) {
+      const double pos = rand_double() * width_fields;
+      const double t = rand_double() + time_step;
+      blibs.insert(SBlibWithTrace({pos}, t, SBlibWithTrace::NOISE));
+    }
+  }
+  return blibs;
 }
 
 
@@ -70,7 +71,7 @@ generate_moving_box(
   const double brightness, // =1.,
   const double field_size,
   const double time_duration) {
-	std::set<SBlibWithTrace> blibs;
+  std::set<SBlibWithTrace> blibs;
 
   const int n_blibs = static_cast<int>(time_duration * box_size * brightness);
 
@@ -90,7 +91,7 @@ generate_moving_box(
     blibs.insert(SBlibWithTrace({blib_pos}, t, SBlibWithTrace::SIGNAL));
   }
 
-	return blibs;
+  return blibs;
 }
 
 
@@ -106,18 +107,17 @@ generate_moving_box(
  */
 std::set<SBlibWithTrace>
 gernerate_blibs( const double time_duration=50, const double width_fields = 100, const double brightness= 1., const double noise_contamination = 0.1) {
-	std::set<SBlibWithTrace> blibs;
+  std::set<SBlibWithTrace> blibs;
 
-	const auto _box_blibs = generate_moving_box(5., 1., 0., brightness, width_fields, time_duration);
-	LOG_INFO("Generated {} BOX blibs", _box_blibs.size());
+  const auto _box_blibs = generate_moving_box(5., 1., 0., brightness, width_fields, time_duration);
+  LOG_INFO("Generated {} BOX blibs", _box_blibs.size());
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 
-	const auto _noise_blibs = generate_noise(noise_contamination*brightness, width_fields, time_duration);
+  const auto _noise_blibs = generate_noise(noise_contamination*brightness, width_fields, time_duration);
   LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
-	//blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
-	return blibs;
+  //blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+  return blibs;
 }
-
-
+} //namespace ex1d
 
 #endif //TDBSCAN__EX1D__GEN_BLIBS_H

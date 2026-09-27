@@ -5,8 +5,10 @@
 #ifndef TDBSCAN__EX1D__BLIB_H
 #define TDBSCAN__EX1D__BLIB_H
 
-#include "tdbscan_algo/common_defs.h"
+#include "tdbscan_algo/common_blibs.h"
 
+namespace ex1d {
+using namespace tdbscan;
 /**
  * A twist to the ScalarBlib class that allows to keep track of its source, either Noise or Signal
  */
@@ -28,12 +30,10 @@ public:
       case SIGNAL: return "SIGNAL";
       default: throw std::invalid_argument("Value_error");
     }
-
   }
 
   ///mark this Blib as to stem either from a Noise or Signal source
   SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; };
-
 
   /**
    * Fully qualified constructor
@@ -65,17 +65,18 @@ std::ostream& operator<< ( std::ostream& os, const SBlibWithTrace & sblib_trace)
     SBlibWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
       static_cast<ScalarBlib>(sblib_trace);
 };
+} // namespace ex1d
 
 /// custom formatter for SBlibWithTrace. Used in conjunction with `std::format` or `fmt::format`
 template <>
-struct std::formatter<SBlibWithTrace> {
+struct std::formatter<ex1d::SBlibWithTrace> {
   constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
 
-  auto format(const SBlibWithTrace& sb, std::format_context &ctx) const {
+  auto format(const ex1d::SBlibWithTrace& sb, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "[ord:{}, time:{}]::{}",
       static_cast<double>(sb.getOrdinate()),
       static_cast<double>(sb.getTime()),
-      SBlibWithTrace::origin_tostr(sb.origin_));
+      ex1d::SBlibWithTrace::origin_tostr(sb.origin_));
   };
 };
 

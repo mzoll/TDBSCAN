@@ -8,6 +8,8 @@
 #include <set>
 #include "blib.h"
 
+
+namespace ex1d {
 /**
  * Helper function: calculate the purity, Signal over Noise ratio, of this Blib sample
  * @param blibs the blibs to quantify
@@ -31,5 +33,6 @@ double calculate_signal_purity(const std::set<SBlibWithTrace>& blibs) {
   return static_cast<double>(_signal_count)/blibs.size();
 }
 
+} //namespace ex1d
 
-#endif //TDBSCAN__EXAMPLE1D__HELPERS_Hs
+#endif //TDBSCAN__EXAMPLE1D__HELPERS_H

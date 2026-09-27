@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace tdbscan;
+using namespace ex1d;
 
 
 /* ============================ Constructing the TDBscan algorithm instance ==================

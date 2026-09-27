@@ -9,7 +9,8 @@
 #include "tdbscan_algo/connector.h"
 #include "blib.h"
 
-
+namespace ex1d {
+using namespace tdbscan;
 // ===================== Define some Limiters ====================
 // We create two simple limiters: One to limit distance and one to Limit time between Blibs
 // Both of them are Connectors and compare one Blib to another.
@@ -22,14 +23,14 @@
  */
 class DistanceLimiter_ : public tdbscan::ConnectorSingle<ScalarBlib> {
 protected:
-	SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
+  SBlibWithTrace::Ordinate_t::Distance_t maxDist_;
 public:
-	DistanceLimiter_(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) :
+  DistanceLimiter_(const SBlibWithTrace::Ordinate_t::Distance_t maxDistance) :
     ConnectorSingle("DistanceLimiter"), maxDist_(maxDistance) {};
 
-	[[nodiscard]] bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const override {
-	  return abs(lhs.distanceTo(rhs)) <= maxDist_;
-	};
+  [[nodiscard]] bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const override {
+    return abs(lhs.distanceTo(rhs)) <= maxDist_;
+  };
 };
 
 /// Extends the DistanceLimiter_ to SBlibWithTrace
@@ -52,14 +53,14 @@ public:
  */
 class TimeLimiter_ : public tdbscan::ConnectorSingle<ScalarBlib> {
 private:
-	SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
+  SBlibWithTrace::Time_t::TimeDiff_t maxTimediff_;
 public:
-	TimeLimiter_(const SBlibWithTrace::Time_t::TimeDiff_t maxTimeDiff) :
+  TimeLimiter_(const SBlibWithTrace::Time_t::TimeDiff_t maxTimeDiff) :
     ConnectorSingle("TimeLimiter"), maxTimediff_(maxTimeDiff) {};
 
-	[[nodiscard]] bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const final {
-	  return abs(lhs.timeTo(rhs)) <= maxTimediff_;
-	}
+  [[nodiscard]] bool eval(const ScalarBlib& lhs, const ScalarBlib& rhs) const final {
+    return abs(lhs.timeTo(rhs)) <= maxTimediff_;
+  }
 };
 
 /// Extends the TimeLimiter_ to SBlibWithTrace
@@ -71,8 +72,8 @@ public:
 
   [[nodiscard]] inline
   bool eval(const SBlibWithTrace& lhs, const SBlibWithTrace& rhs) const {
-      return TimeLimiter_::eval(lhs, rhs);
-    };
+    return TimeLimiter_::eval(lhs, rhs);
+  };
 };
 
 
@@ -117,6 +118,8 @@ public:
     delete time_limiter_;
   };
 };
+
+}// namespace ex1d
 
 
 #endif //TDBSCAN__EX1D__CONNECTORS_H

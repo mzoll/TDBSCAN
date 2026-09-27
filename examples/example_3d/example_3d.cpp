@@ -15,7 +15,7 @@
 
 using namespace std;
 using namespace tdbscan;
-
+using namespace ex3d;
 
 TDBScan_Algo<Blib3d> construct_algo(const double distance_lim, const double time_lim) {
   auto limcon = new LimitingConnector(distance_lim, time_lim);
