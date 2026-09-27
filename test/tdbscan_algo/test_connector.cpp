@@ -17,7 +17,7 @@ public:
   Blib3d::Ordinate_t::Distance_t maxDist_;
   DistanceLimiter(const Blib3d::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
-  bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return lhs.getDistance(rhs) <= maxDist_;};
+  bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return lhs.distanceTo(rhs) <= maxDist_;};
 };
 
 // make one connector which just connects to max time-diff
@@ -26,7 +26,7 @@ public:
   Blib3d::Time_t::TimeDiff_t maxTimediff_;
   explicit TimeLimiter(const Blib3d::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
-  bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return rhs.timeDiff(lhs) <= maxTimediff_;};
+  bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return rhs.timeTo(lhs) <= maxTimediff_;};
 };
 
 // Demonstrate some basic assertions.

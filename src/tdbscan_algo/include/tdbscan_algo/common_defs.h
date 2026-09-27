@@ -208,13 +208,13 @@ public:
 		{return time;};
 
 	[[nodiscard]] Ordinate_t::Distance_t
-	getDistance(const Blib3d& rhs) const
+	distanceTo(const Blib3d& rhs) const
 		{return pos.distance(rhs.pos);};
 
 	/// get the time difference
 	[[nodiscard]] Time_t::TimeDiff_t
-	timeDiff(const Blib3d& other) const
-		{return time - other.time;};
+	timeTo(const Blib3d& other) const
+		{return other.time - time;};
 public: //comparators
 	/// define the lesser-operator
 	[[nodiscard]] bool
@@ -237,14 +237,16 @@ inline std::ostream& operator<< ( std::ostream& os, const Blib3d & b4d) {
   return os << std::format("Blib3d(ord:{}, time:{})", b4d.getOrdinate(), b4d.getTime());
 };
 
-// template <>
-// struct std::formatter<Blib4d> {
-//   constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
-//
-//   auto format(const Blib4d& sb, std::format_context &ctx) const {
-//     return std::format_to(ctx.out(), "[ord:{}, time:{}]", sb.getOrdinate()), static_cast<double>(sb.getTime());
-//   };
-// };
+
+template <>
+struct std::formatter<Blib3d> {
+  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+
+  auto format(const Blib3d& sb, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[ord:{}, time:{}]", sb.getOrdinate(), static_cast<double>(sb.getTime()));
+  };
+};
+
 
 /**
  * A Blib that has a scalar Ordinate

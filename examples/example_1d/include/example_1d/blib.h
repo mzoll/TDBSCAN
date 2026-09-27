@@ -79,6 +79,4 @@ struct std::formatter<SBlibWithTrace> {
   };
 };
 
-
-
 #endif //TDBSCAN__EX1D__BLIB_H

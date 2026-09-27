@@ -11,4 +11,4 @@
 #include "tdbscan_algo/tdbcluster.h"
 #include "tdbscan_algo/tdbcluster.hh"
 #include "tdbscan_algo/tdbscan_algo.h"
- #include "tdbscan_algo/tdbscan_algo.hh"
+#include "tdbscan_algo/tdbscan_algo.hh"
