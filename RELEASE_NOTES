@@ -13,3 +13,8 @@
 260801 mzoll    (marcel.zoll.physics@gmail.com)
 ------------------------------------------------------
 * Start the reassembly process
+
+260901 mzoll    (marcel.zoll.physics@gmail.com)
+------------------------------------------------------
+* The algorithm is running and performing as expected
+* Example1D gives some idea about performance, where it matters.
