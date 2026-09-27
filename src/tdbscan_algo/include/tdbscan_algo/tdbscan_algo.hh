@@ -107,37 +107,36 @@ TDBScan_Algo<tBlib>::Finalize() {
 
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
+   if ( params_.lateMergeOverlapRatio < 1. ) { // ==1 means no late-merge applied
+      LOG_DEBUG("Late merge mechanism");
+      // probe if the qualified overlap with any remaining active cluster surpasses the required __lateMergeOverlapRatio__
+      // if so, the cluster's blibs are reabsorbed by the other cluster, and the cluster deleted
+      auto acother_iter = active_clusters_.begin();
+      bool was_reabsorbed = false;
+      while (acother_iter != active_clusters_.end()) {
+        if (ac_iter == acother_iter) { // it's the cluster itself
+          ++acother_iter;
+          continue;
+        }
+
+        if (ac_iter->nOverlap(*acother_iter)/ std::min(ac_iter->count(), acother_iter->count()) >= params_.lateMergeOverlapRatio) {
+          LOG_TRACE("this cluster can be reabsorbed ...");
+          was_reabsorbed = true;
+          acother_iter->copyBlibs(*ac_iter);
+        }
+        ++acother_iter;
+      }
+      if (was_reabsorbed) {
+        LOG_TRACE("... and was thus erased")
+        ac_iter = active_clusters_.erase(ac_iter);
+        continue;
+      }
+    }
+
+    LOG_TRACE("... and was pushed to the concluded clusters");
     concluded_clusters_.push_back(*ac_iter);
     ac_iter = active_clusters_.erase(ac_iter);
   }
-
-  //
-  // //--- this is implementing the postmerge ---
-  // auto ac_iter = active_clusters_.begin();
-  // auto c_riter = concluded_clusters_.end();
-  // while (ac_iter != active_clusters_.end()) {
-  //   ac_iter->status = CausalCluster<tBlib>::CONCLUDED;
-  //
-  //   bool merged_any = 0;
-  //   while (c_riter != concluded_clusters_.begin()) {
-  //     // if we sort the list of clusters first, we could establish exit conditions faster
-  //     if (c_riter->getLatestTime < ac_iter->getEarliestTime() || ac_iter->getLatestTime < c_riter->getEarliestTime()) {
-  //       c_riter++;
-  //       continue;
-  //     }
-  //     if (c_riter->nOverlap(*ac_iter)/ac_iter->count() >= params_.lateMergeOverlapRatio) {
-  //       //merge
-  //       c_riter->copyHits(ac_iter->getHits());
-  //       merged_any = true;
-  //     }
-  //     ++c_riter;
-  //   }
-  //   if (! merged_any) {
-  //     concluded_clusters_.push_back(*ac_iter);
-  //   }
-  //   ac_iter = active_clusters_.erase(ac_iter);
-  //   ac_iter++;
-  // }
 
   assert(active_clusters_.empty());
 };
@@ -233,30 +232,33 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
     const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now-params_.emergenceTimeWindow, now);
-    if (_n_active == 0) {
+    if (_n_active < params_.multiplicity) {
       LOG_TRACE("Active cluster concluded");
 
-      // TODO late merge mechanism here
-      LOG_DEBUG("Late merge mechanism");
-      auto acother_iter = active_clusters_.begin();
-      bool was_reabsorbed = false;
-      while (acother_iter != active_clusters_.end()) {
-        if (ac_iter == acother_iter) { // it's the cluster itself
+      if ( params_.lateMergeOverlapRatio < 1. ) { // ==1 means no late-merge applied
+        LOG_DEBUG("Late merge mechanism");
+        // probe if the qualified overlap with any remaining active cluster surpasses the required __lateMergeOverlapRatio__
+        // if so, the cluster's blibs are reabsorbed by the other cluster, and the cluster deleted
+        auto acother_iter = active_clusters_.begin();
+        bool was_reabsorbed = false;
+        while (acother_iter != active_clusters_.end()) {
+          if (ac_iter == acother_iter) { // it's the cluster itself
+            ++acother_iter;
+            continue;
+          }
+
+          if (ac_iter->nOverlap(*acother_iter)/ std::min(ac_iter->count(), acother_iter->count()) >= params_.lateMergeOverlapRatio) {
+            LOG_TRACE("this cluster can be reabsorbed ...");
+            was_reabsorbed = true;
+            acother_iter->copyBlibs(*ac_iter);
+          }
           ++acother_iter;
+        }
+        if (was_reabsorbed) {
+          LOG_TRACE("... and was thus erased")
+          ac_iter = active_clusters_.erase(ac_iter);
           continue;
         }
-
-        if (ac_iter->nOverlap(*acother_iter)/ std::min(ac_iter->count(), acother_iter->count()) >= params_.lateMergeOverlapRatio) {
-          LOG_TRACE("this cluster can be reabsorbed ...");
-          was_reabsorbed = true;
-          acother_iter->copyBlibs(*ac_iter);
-        }
-        ++acother_iter;
-      }
-      if (was_reabsorbed) {
-        LOG_TRACE("... and was thus erased")
-        ac_iter = active_clusters_.erase(ac_iter);
-        continue;
       }
 
       LOG_TRACE("... and was pushed to the concluded clusters");
