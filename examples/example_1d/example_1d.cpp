@@ -2,10 +2,10 @@
 // Created by mzoll on 01/08/2026.
 //
 
-#include "example_1d/blib.h"
-#include "example_1d/connectors.h"
-#include "example_1d/gen_blibs.h"
-#include "example_1d/helpers.h"
+#include "blib.h"
+#include "connectors.h"
+#include "gen_blibs.h"
+#include "helpers.h"
 
 #include "tdbscan_algo/tdbscan_algo.h"
 

@@ -6,11 +6,6 @@ target_sources(exec_tdbscan_3d
         example_3d.cpp
 )
 
-target_include_directories(exec_tdbscan_3d
-        PRIVATE
-        ./include
-)
-
 target_link_libraries(exec_tdbscan_3d
         tdbscan_algo
         fmt::fmt

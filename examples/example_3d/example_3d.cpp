@@ -6,8 +6,8 @@
 
 #include "tdbscan_algo/common_defs.h"
 
-#include "example_3d/blib.h"
-#include "example_3d/connectors.h"
+#include "blib.h"
+#include "connectors.h"
 
 #include "tdbscan_algo/tdbscan_algo.h"
 
