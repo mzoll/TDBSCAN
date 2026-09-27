@@ -179,17 +179,19 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib& b1, const tBlib& b2) co
 template <class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   LOG_DEBUG("Entering NextBlib()");
-  LOG_TRACE(">>> NEXT BLIB : {}", b );
+  LOG_DEBUG(">>> NEXT BLIB : {}", b );
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
   const auto now = b.getTime();
-  // advance every each cluster in time and try to add the hit to it
 
-  // 10. go through all emerging clusters and see if blibs have fallen out of the emergence time window, kill them off;
-  // 20. go through all active clusters and see if blibs have fallen out of the time window and multiplicity cannot be fulfilled; if there is nothing left mark as 'concluded'
-  // 30. try to add the hit to existing emerging clusters; if it was added, put the emerging clusters that fulfill multiplicity on a 'new_established' list;
-  // 40. try to add the hit to existing active clusters;
-  // 50. traverse the newly established list and try to merge clusters with the active clusters
-  // 9. put the hit on a newly created cluster by its own
+  /*
+   * 10. go through all emerging clusters and see if blibs have fallen out of the emergence time window, kill them off;
+   * 11. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
+   * 12. put the hit on a newly created cluster by its own
+   * 20. go through all active clusters and see if blibs have fallen out of the time window and multiplicity cannot be fulfilled; if there is nothing left mark as 'concluded'
+   * 30. try to add the hit to existing emerging clusters; if it was added, put the emerging clusters that fulfill multiplicity on a 'new_established' list;
+   * 40. try to add the hit to existing active clusters;
+   * 50. traverse the newly established list and try to merge clusters with the active clusters
+   */
 
   LOG_DEBUG("Eliminating emerging clusters, adding to emerging clusters");
   // 10. go through all emerging clusters and see if blibs have fallen out of the emergence time window, if so kill the cluster off
@@ -220,13 +222,14 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   }
 
   LOG_DEBUG("Create self-contained cluster");
-  // 12. put the hit on a newly created emerging cluster by its own
+  // 12. put the blib on a newly created emerging cluster by its own
   emerging_clusters_.insert(emerging_clusters_.end(), CausalCluster(b));
 
 
   LOG_DEBUG("Traversing active clusters");
-  // 20. go through all active clusters and see if blibs have fallen out of the time window and multiplicity cannot be fulfilled; if there is nothing left, move to 'concluded'
-  // 21. try to add hit to any Active cluster that has sufficient causal evidence
+  // 20. go through all __active clusters__ and see if blibs have fallen out of the time window and multiplicity cannot be fulfilled;
+  // if there is nothing left, move to 'concluded'
+  // 21. try to add blib to any __active cluster__ that has sufficient causal evidence
   auto ac_iter = active_clusters_.begin();
   while (ac_iter != active_clusters_.end()) {
     const auto _n_active = ac_iter->nHitsWithinTimeWindow(  now-params_.emergenceTimeWindow, now);
@@ -238,8 +241,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
       auto acother_iter = active_clusters_.begin();
       bool was_reabsorbed = false;
       while (acother_iter != active_clusters_.end()) {
-        if (ac_iter == acother_iter) {
-          // its the cluster itself
+        if (ac_iter == acother_iter) { // it's the cluster itself
           ++acother_iter;
           continue;
         }
