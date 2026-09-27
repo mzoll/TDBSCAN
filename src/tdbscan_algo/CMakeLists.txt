@@ -14,7 +14,7 @@ target_include_directories(tdbscan_algo
 # target_precompile_headers(ColumbaEngine PUBLIC src/Engine/stdafx.h)
 
 set( header_files
-        include/tdbscan_algo/dummy_logging.h
+        include/tdbscan_algo/auxilary/dummy_logging.h
         include/tdbscan_algo/base_defs.h
         include/tdbscan_algo/absblib.h
         include/tdbscan_algo/common_defs.h
