@@ -10,29 +10,58 @@
 
 
 namespace ex3d {
-
 using namespace tdbscan;
 
 // define some Limiters
-class DistanceLimiter final : public tdbscan::ConnectorSingle<tdbscan::Blib3d> {
+class DistanceLimiter_ : public ConnectorSingle<Blib3d> {
 public:
-  tdbscan::Blib3d::Ordinate_t::Distance_t maxDist_;
-  DistanceLimiter(const Blib3d::Ordinate_t::Distance_t maxDistance) : ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
+  Blib3d::Ordinate_t::Distance_t maxDist_;
+  DistanceLimiter_(const Blib3d::Ordinate_t::Distance_t maxDistance) :
+    ConnectorSingle("DistConnector"), maxDist_(maxDistance) {};
 
   bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return lhs.distanceTo(rhs) <= maxDist_;};
 };
 
+
+/// Extends the DistanceLimiter_ to SBlibWithTrace
+class DistanceLimiter : public DistanceLimiter_, public ConnectorSingle<Blib3dWithTrace> {
+public:
+  DistanceLimiter(const Blib3dWithTrace::Ordinate_t::Distance_t maxDistance)
+  : DistanceLimiter_(maxDistance),
+    ConnectorSingle<Blib3dWithTrace>(DistanceLimiter_::name_) {};
+
+  [[nodiscard]] inline
+  bool eval(const Blib3dWithTrace& lhs, const Blib3dWithTrace& rhs) const {
+    return DistanceLimiter_::eval(lhs, rhs);
+  };
+};
+
 // make one connector which just connects to max time-diff
-class TimeLimiter final : public tdbscan::ConnectorSingle<Blib3d> {
+class TimeLimiter_ : public ConnectorSingle<Blib3d> {
 public:
   Blib3d::Time_t::TimeDiff_t maxTimediff_;
-  explicit TimeLimiter(const Blib3d::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
+  explicit TimeLimiter_(const Blib3d::Time_t::TimeDiff_t maxTimeDiff) : ConnectorSingle("DistConnector"), maxTimediff_(maxTimeDiff) {};
 
   bool eval(const Blib3d& lhs, const Blib3d& rhs) const {return rhs.timeTo(lhs) <= maxTimediff_;};
 };
 
+
+/// Extends the DistanceLimiter_ to SBlibWithTrace
+class TimeLimiter : public TimeLimiter_, public ConnectorSingle<Blib3dWithTrace> {
+public:
+  TimeLimiter(const Blib3dWithTrace::Ordinate_t::Distance_t maxDistance)
+  : TimeLimiter_(maxDistance),
+    ConnectorSingle<Blib3dWithTrace>(TimeLimiter_::name_) {};
+
+  [[nodiscard]] inline
+  bool eval(const Blib3dWithTrace& lhs, const Blib3dWithTrace& rhs) const {
+    return TimeLimiter_::eval(lhs, rhs);
+  };
+};
+
+
 // combine the Connectors into a ConnectorBlock
-class LimitingConnector final : public tdbscan::ConnectorBlock<Blib3d> {
+class LimitingConnector final : public ConnectorBlock<Blib3dWithTrace> {
   const DistanceLimiter* const distance_limiter_;
   const TimeLimiter* const time_limiter_;
 public:

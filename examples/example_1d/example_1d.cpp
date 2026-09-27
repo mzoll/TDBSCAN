@@ -29,7 +29,7 @@ TDBScan_Algo<SBlibWithTrace> construct_algo(const double distance_lim, const dou
 	params.earlyMergeOverlapRatio= 1.; //ZeroOne: its a ratio
 	params.lateMergeOverlapRatio= 1.; //ZeroOne: its a ratio
 
-	return TDBScan_Algo<SBlibWithTrace>(params, limcon);
+	return TDBScan_Algo(params, limcon);
 }
 
 
