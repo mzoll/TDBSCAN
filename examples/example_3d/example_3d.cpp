@@ -23,7 +23,7 @@ TDBScan_Algo<Blib3dWithTrace> construct_algo(const double distance_lim, const do
 	params.multiplicity=4;
 	params.multiplicityTimeWindow=2.;
   params.emergenceTimeWindow=2.;//internally converted into SBlibWithTrace<..., tTime>::tTime::Time_t
-  params.earlyMergeOverlapRatio= 1.; //ZeroOne: its a ratio
+  params.earlyMergeMultiplicityRatio= 1.; //ZeroOne: its a ratio
   params.lateMergeOverlapRatio= 1.; //ZeroOne: its a ratio
 
 	return TDBScan_Algo<Blib3dWithTrace>(params, limcon);

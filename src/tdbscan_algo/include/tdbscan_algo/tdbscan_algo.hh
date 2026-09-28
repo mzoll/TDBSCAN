@@ -297,7 +297,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
 
       // if there is overlap except in one blib, the one holdout blib might be noise hit that was just , but the
       const auto overlap = nec_citer->nOverlap(*ac_iter);
-      if ( overlap >= params_.multiplicity - params_.earlyMergeRejectionHoldout ) {
+      if ( overlap >= params_.multiplicity * params_.earlyMergeMultiplicityRatio ) {
         LOG_TRACE("this is a subset;");
         nec_citer = _newly_established_clusters.erase(nec_citer);
         ac_iter = active_clusters_.begin();
