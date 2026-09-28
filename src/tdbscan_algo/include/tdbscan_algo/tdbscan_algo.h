@@ -90,8 +90,10 @@ private: // internal state
   // Properties
   //==================
 
+  /// the time of the last processed hit
+  Time_t last_now_time_{Time_t::min()};
   /// the time of the algo
-  Time_t sync_time;
+  Time_t sync_time{Time_t::min()};
 
   /// all emerging-clusters
   std::list<CausalCluster_t> emerging_clusters_;

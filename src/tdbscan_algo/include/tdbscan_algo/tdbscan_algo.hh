@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <exception>
 #include <cassert>
 #include <format>
 
@@ -21,6 +22,8 @@
 //===========================================
 
 namespace tdbscan {
+
+using namespace std;
 
 //=============== namespace tdbsscan::details =================
 
@@ -164,6 +167,8 @@ TDBScan_Algo<tBlib>::Process (const std::set<tBlib>& blibs) {
   for (const auto& c : concluded_clusters_)
     bss.insert(BlibSet(c.blibs_.begin(), c.blibs_.end() ));
 
+  last_now_time_ = Time_t::max();
+  sync_time = Time_t::max();
   LOG_DEBUG("Leaving Process()");
   return bss;
 };
@@ -182,6 +187,11 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
   const auto now = b.getTime();
 
+  if (now < last_now_time_) {
+    const std::string msg = "violation against time order in sequence of blibs!";
+    LOG_ERROR("violation against time order in sequence of blibs!"); // msg.c_str());
+    throw std::logic_error(msg);
+  }
   /*
    * 10. go through all emerging clusters and see if blibs have fallen out of the emergence time window, kill them off;
    * 11. try to add the hit to remaining clusters; if it was added and cluster establishes (multiplicity met) put the clusters on a new_established list;
@@ -307,6 +317,7 @@ void TDBScan_Algo<tBlib>::NextBlib (const tBlib& b) {
   }
 
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(), concluded_clusters_.size());
+  last_now_time_ = now;
   LOG_DEBUG("Leaving NextHit()");
 }
 
