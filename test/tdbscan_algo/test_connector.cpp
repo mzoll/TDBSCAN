@@ -39,7 +39,7 @@ TEST(ConnectorTest, DummyConnector) {
 }
 
 
-class LimitingConnector final : public ConnectorBlock<Blib3d> {};
+class LimitingConnector final : public ConnectorAssembly<Blib3d> {};
 
 
 TEST(ConnectorTest, DummyConnectorBlock) {

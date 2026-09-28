@@ -100,7 +100,7 @@ class InertiaConnector : public InertiaConnector_, public ConnectorSingle<SBlibW
 
 
 /// combine the Connectors into a ConnectorBlock
-class LimitingConnector final : public ConnectorBlock<SBlibWithTrace> {
+class LimitingConnector final : public ConnectorAssembly_AND<SBlibWithTrace> {
   const DistanceLimiter* const distance_limiter_;
   const TimeLimiter* const time_limiter_;
 public:

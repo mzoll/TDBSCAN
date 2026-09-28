@@ -61,7 +61,7 @@ public:
 
 
 // combine the Connectors into a ConnectorBlock
-class LimitingConnector final : public ConnectorBlock<Blib3dWithTrace> {
+class LimitingConnector final : public ConnectorAssembly_AND<Blib3dWithTrace> {
   const DistanceLimiter* const distance_limiter_;
   const TimeLimiter* const time_limiter_;
 public:

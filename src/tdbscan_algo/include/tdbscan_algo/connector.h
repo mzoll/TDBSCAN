@@ -51,11 +51,11 @@ class Connector {
    * A collection of Connectors, which can be evaluated en-block.
    */
   template <class tBlib>
-class ConnectorBlock : public Connector<tBlib> {
+class ConnectorAssembly : public Connector<tBlib> {
   public:
     typedef Connector<tBlib> Connector_t;
     typedef std::list<const Connector_t*> ConnectorList;
-  private: //property
+  protected: //property
     ///list of all connectors
     ConnectorList connectorlist_;
 
@@ -63,9 +63,6 @@ class ConnectorBlock : public Connector<tBlib> {
     /// Add a Connector to the list of to be evaluated Connectors
     void addConnector (
       const ConnectorSingle<tBlib>* connector_ptr);
-
-    ///check if to Hits are connected by any of the Connectors
-    bool eval(const tBlib& h1, const tBlib& h2) const;
 
     /**
      * diagnose the connection for these hits, as by which connector they are voted as connected
@@ -84,6 +81,33 @@ class ConnectorBlock : public Connector<tBlib> {
     ///Get the complete list of Relations
     ConnectorList getConnectorList() const;
   };
+
+
+/**
+ * chains Connectors together by a logical AND operation
+ * @tparam tBlib
+ */
+  template<class tBlib>
+  class ConnectorAssembly_AND : public ConnectorAssembly<tBlib> {
+  public:
+    bool eval(const tBlib& h1, const tBlib& h2) const;
+  };
+
+  /**
+   * chains Connectors together by a logical OR operation
+   * @tparam tBlib
+   */
+  template<class tBlib>
+  class ConnectorAssembly_OR : public ConnectorAssembly<tBlib> {
+  public:
+    bool eval(const tBlib& h1, const tBlib& h2) const;
+  };
+
+
+
+
+
+
 }
 
 
