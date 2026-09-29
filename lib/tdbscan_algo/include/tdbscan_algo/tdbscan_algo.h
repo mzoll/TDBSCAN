@@ -12,15 +12,12 @@
 #include "tdbcluster.h"
 
 namespace tdbscan {
-
 namespace detail {
-
-template <class tBlib>
+template<class tBlib>
 bool CausallyConnected(
-  const Connector<tBlib>& connector,
-  const tBlib& h1,
-  const tBlib& h2)
-{
+  const Connector<tBlib> &connector,
+  const tBlib &h1,
+  const tBlib &h2) {
   if (h1.getTime() > h2.getTime())
     return CausallyConnected(connector, h2, h1); //recursive call to enforce time-order at this point
   return connector.eval(h1, h2);
@@ -32,7 +29,7 @@ bool CausallyConnected(
  * The main algorithm class
  * Needs to be configured with a connector and a parameter set then can be fed with a sequence of hits
  */
-template <class tBlib>
+template<class tBlib>
 class TDBScan_Algo {
 public: //shorthands for types
 
@@ -42,24 +39,24 @@ public: //shorthands for types
 
 
   /// A set of hits, time-order is enforced automatically
-  using BlibSet = std::set<tBlib> ;
+  using BlibSet = std::set<tBlib>;
 
   struct BlibSetTimeOrder {
     /// implement the order principle for sets of blibs; order them by the earliest time blib they contain
     bool operator()(const BlibSet &lhs, const BlibSet &rhs) const;
   };
+
   ///a time-ordered sequence of time-ordered HitSets
   using BlibSetSequence = std::set<BlibSet, BlibSetTimeOrder>;
 
   using Connector_t = Connector<tBlib>;
   using CausalCluster_t = CausalCluster<tBlib>;
 
-
 public: //typedefs: some internal definitions and shorthands
   //  SET_LOGGER("HiveSplitter");
 
   /// A set of parameters that steer the algorithm behaviour
-  struct TDBScan_ParameterSet{
+  struct TDBScan_ParameterSet {
     /// PARAM: Required multiplicity of connected !DOMs! with any hit within the time-window for to be accepted to the cluster
     unsigned int multiplicity;
 
@@ -81,7 +78,6 @@ public: //typedefs: some internal definitions and shorthands
     ///constructor
     TDBScan_ParameterSet();
   };
-
 
 private: // internal state
   //==================
@@ -107,7 +103,7 @@ private: //parameters
   /// PARAM: A parameter-set to run on
   const TDBScan_ParameterSet params_;
   /// PARAM: this defines the 'physics' at play
-  const Connector_t* connector_;
+  const Connector_t *connector_;
 
 public: //interface
   /**
@@ -116,8 +112,8 @@ public: //interface
    * @param connector Pointer to a Connector, which facilítates the comparison of hits
    */
   TDBScan_Algo(
-    const TDBScan_ParameterSet& params,
-    const Connector_t* connector);
+    const TDBScan_ParameterSet &params,
+    const Connector_t *connector);
 
   /** @brief ACTION
    * Perform the Splitting feeding it a series of Hits
@@ -130,10 +126,10 @@ public: //interface
    * @param inhits the hits to process
    * @return a series of hits, which are the subevents (time-order in sequence and in hit-order)
    */
-  template <class tBlibContainer>
-  BlibSetSequence Process (const tBlibContainer& blibs);
+  template<class tBlibContainer>
+  BlibSetSequence Process(const tBlibContainer &blibs);
 
-  BlibSetSequence Process (const BlibSet& blibs);
+  BlibSetSequence Process(const BlibSet &blibs);
 
 public: // probe of internal state
   /// Get the time until which the result is static and no active hits are percolating in the algorithm/clusters
@@ -141,7 +137,7 @@ public: // probe of internal state
   Time_t FinalizedUntil() const;
 
   //probe into the algorithm
-  bool CausallyConnected(const tBlib& b1, const tBlib& b2) const;
+  bool CausallyConnected(const tBlib &b1, const tBlib &b2) const;
 
 protected: // --- THE REAL MACHINERY ---
   //===================
@@ -163,9 +159,9 @@ private: //work on *clusters*
    * @param c the cluster to add to
    * @param b the blib to add
   */
-  bool IsConnected_Emergence( CausalCluster<tBlib>& c, const tBlib& b);
+  bool IsConnected_Emergence(CausalCluster<tBlib> &c, const tBlib &b);
 
-  bool IsConnected_Established( CausalCluster<tBlib>& c, const tBlib& b);
+  bool IsConnected_Established(CausalCluster<tBlib> &c, const tBlib &b);
 };
 };
 

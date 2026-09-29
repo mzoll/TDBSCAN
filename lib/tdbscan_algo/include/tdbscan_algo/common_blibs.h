@@ -22,39 +22,35 @@ public: //type shorthands
 protected:
   Ordinate_t pos;
   Time_t time;
+
 public:
   [[nodiscard]] Position3d
-  getOrdinate() const
-  {return pos;};
+  getOrdinate() const { return pos; };
 
   [[nodiscard]] Time_t
-  getTime() const
-  {return time;};
+  getTime() const { return time; };
 
   [[nodiscard]] Ordinate_t::Distance_t
-  distanceTo(const Blib3d& rhs) const
-  {return pos.distance(rhs.pos);};
+  distanceTo(const Blib3d &rhs) const { return pos.distance(rhs.pos); };
 
   /// get the time difference
   [[nodiscard]] Time_t::TimeDiff_t
-  timeTo(const Blib3d& other) const
-  {return other.time - time;};
+  timeTo(const Blib3d &other) const { return other.time - time; };
+
 public: //comparators
   /// define the lesser-operator
   [[nodiscard]] bool
-  operator<(const Blib3d& other) const
-  { return time < other.time || time == other.time && pos < other.pos; };
+  operator<(const Blib3d &other) const { return time < other.time || time == other.time && pos < other.pos; };
 
   [[nodiscard]] bool
-  operator==(const Blib3d& other) const
-  { return time == other.time && pos == other.pos; };
+  operator==(const Blib3d &other) const { return time == other.time && pos == other.pos; };
 
   ///constructor
   Blib3d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
 
 private:
   friend
-  std::ostream& operator<< ( std::ostream& os, const Blib3d & b4d);
+  std::ostream &operator<<(std::ostream &os, const Blib3d &b4d);
 };
 
 
@@ -69,46 +65,43 @@ public: //type shorthands
 protected:
   Ordinate_t pos;
   Time_t time;
+
 public:
   [[nodiscard]] Position1d
-  getOrdinate() const
-  {return pos;};
+  getOrdinate() const { return pos; };
 
   [[nodiscard]] Time_t
-  getTime() const
-  {return time;};
+  getTime() const { return time; };
 
   /// get the distance to another blib
   [[nodiscard]] Ordinate_t::Distance_t
-  distanceTo(const ScalarBlib& rhs) const
-  {return pos.distance(rhs.pos);};
+  distanceTo(const ScalarBlib &rhs) const { return pos.distance(rhs.pos); };
 
   /// get the time difference to another blib
   [[nodiscard]] Time_t::TimeDiff_t
-  timeTo(const ScalarBlib& other) const
-  {return other.time - time;};
+  timeTo(const ScalarBlib &other) const { return other.time - time; };
+
 public: //comparators
   /// define the lesser-operator
   [[nodiscard]] bool
-  operator<(const ScalarBlib& other) const
-  { return time < other.time || time == other.time && pos < other.pos; };
+  operator<(const ScalarBlib &other) const { return time < other.time || time == other.time && pos < other.pos; };
 
   [[nodiscard]] bool
-  operator==(const ScalarBlib& other) const
-  { return time == other.time && pos == other.pos; };
+  operator==(const ScalarBlib &other) const { return time == other.time && pos == other.pos; };
 
   ///constructor
   ScalarBlib(const Position1d pos, const Time_t time) : pos(pos), time(time) {};
 
   struct TimeOrder {
-    bool operator()(const ScalarBlib& lhs, const ScalarBlib& rhs) const {return double(lhs.getTime()) < double(rhs.getTime());};
+    bool operator()(const ScalarBlib &lhs, const ScalarBlib &rhs) const {
+      return double(lhs.getTime()) < double(rhs.getTime());
+    };
   };
 
 public:
   friend
-  std::ostream& operator<< ( std::ostream& os, const ScalarBlib & sb);
+  std::ostream &operator<<(std::ostream &os, const ScalarBlib &sb);
 };
-
 }; //namespace tdbscan
 
 #include "common_blibs.hh"

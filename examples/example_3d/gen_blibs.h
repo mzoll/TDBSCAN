@@ -6,6 +6,4 @@
 #define TDBSCAN__EXAMPLE_3D__GEN_BLIBS_H
 
 
-
-
 #endif //TDBSCAN__EXAMPLE_3D__GEN_BLIBS_H

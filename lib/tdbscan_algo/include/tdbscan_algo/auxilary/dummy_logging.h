@@ -9,19 +9,19 @@
 #include <format>
 #include <sstream>
 
-inline void log_fatal(const std::string msg) {std::cout << "FATAL: " << msg << std::endl;};
-inline void log_error(const std::string msg) {std::cout << "ERROR: " << msg << std::endl;};
-inline void log_warn(const std::string msg) {std::cout << "WARN: " << msg << std::endl;};
-inline void log_info(const std::string msg) {std::cout << "INFO: " << msg << std::endl;};
-inline void log_debug(const std::string msg) {std::cout << "DEBUG: " << msg << std::endl;};
-inline void log_trace(const std::string msg) {std::cout << "TRACE: " << msg << std::endl;};
+inline void log_fatal(const std::string msg) { std::cout << "FATAL: " << msg << std::endl; };
+inline void log_error(const std::string msg) { std::cout << "ERROR: " << msg << std::endl; };
+inline void log_warn(const std::string msg) { std::cout << "WARN: " << msg << std::endl; };
+inline void log_info(const std::string msg) { std::cout << "INFO: " << msg << std::endl; };
+inline void log_debug(const std::string msg) { std::cout << "DEBUG: " << msg << std::endl; };
+inline void log_trace(const std::string msg) { std::cout << "TRACE: " << msg << std::endl; };
 
-inline void log_fatal(const std::ostringstream& msg) {std::cout << "FATAL: " << msg.str() << std::endl;};
-inline void log_error(const std::ostringstream& msg) {std::cout << "ERROR: " << msg.str() << std::endl;};
-inline void log_warn(const std::ostringstream& msg) {std::cout << "WARN: " << msg.str() << std::endl;};
-inline void log_info(const std::ostringstream& msg) {std::cout << "INFO: " << msg.str() << std::endl;};
-inline void log_debug(const std::ostringstream& msg) {std::cout << "DEBUG: " << msg.str() << std::endl;};
-inline void log_trace(const std::ostringstream& msg) {std::cout << "TRACE: " << msg.str() << std::endl;};
+inline void log_fatal(const std::ostringstream &msg) { std::cout << "FATAL: " << msg.str() << std::endl; };
+inline void log_error(const std::ostringstream &msg) { std::cout << "ERROR: " << msg.str() << std::endl; };
+inline void log_warn(const std::ostringstream &msg) { std::cout << "WARN: " << msg.str() << std::endl; };
+inline void log_info(const std::ostringstream &msg) { std::cout << "INFO: " << msg.str() << std::endl; };
+inline void log_debug(const std::ostringstream &msg) { std::cout << "DEBUG: " << msg.str() << std::endl; };
+inline void log_trace(const std::ostringstream &msg) { std::cout << "TRACE: " << msg.str() << std::endl; };
 
 //
 // template <class... Args>

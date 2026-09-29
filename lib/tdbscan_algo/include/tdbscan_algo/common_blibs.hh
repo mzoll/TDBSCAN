@@ -10,32 +10,33 @@
 #include "common_defs.h"
 
 inline
-std::ostream&
-operator<<(std::ostream& os, const tdbscan::Blib3d & b4d) {
+std::ostream &
+operator<<(std::ostream &os, const tdbscan::Blib3d &b4d) {
   return os << std::format("Blib3d(ord:{}, time:{})", b4d.getOrdinate(), b4d.getTime());
 };
 
-template <>
+template<>
 struct std::formatter<tdbscan::Blib3d> {
-  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const tdbscan::Blib3d& sb, std::format_context &ctx) const {
+  auto format(const tdbscan::Blib3d &sb, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "[ord:{}, time:{}]", sb.getOrdinate(), static_cast<double>(sb.getTime()));
   };
 };
 
 inline
-std::ostream&
-operator<<(std::ostream& os, const tdbscan::ScalarBlib & sb) {
+std::ostream &
+operator<<(std::ostream &os, const tdbscan::ScalarBlib &sb) {
   return os << std::format("[ord: {}, time: {}]", double(sb.getOrdinate()), double(sb.getTime()));
 };
 
-template <>
+template<>
 struct std::formatter<tdbscan::ScalarBlib> {
-  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const tdbscan::ScalarBlib& sb, std::format_context &ctx) const {
-    return std::format_to(ctx.out(), "[ord:{}, time:{}]", static_cast<double>(sb.getOrdinate()), static_cast<double>(sb.getTime()) );
+  auto format(const tdbscan::ScalarBlib &sb, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[ord:{}, time:{}]", static_cast<double>(sb.getOrdinate()),
+                          static_cast<double>(sb.getTime()));
   };
 };
 

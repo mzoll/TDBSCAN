@@ -15,10 +15,10 @@ namespace ex1d {
  * @param blibs the blibs to quantify
  * @return the purity as '#signal / #all'.
  */
-double calculate_signal_purity(const std::set<SBlibWithTrace>& blibs) {
+double calculate_signal_purity(const std::set<SBlibWithTrace> &blibs) {
   int _signal_count = 0;
   int _noise_count = 0;
-  for (const auto& b: blibs) {
+  for (const auto &b: blibs) {
     switch (b.origin_) {
       case SBlibWithTrace::SIGNAL:
         _signal_count++;
@@ -30,9 +30,8 @@ double calculate_signal_purity(const std::set<SBlibWithTrace>& blibs) {
         break;
     }
   }
-  return static_cast<double>(_signal_count)/blibs.size();
+  return static_cast<double>(_signal_count) / blibs.size();
 }
-
 } //namespace ex1d
 
 #endif //TDBSCAN__EXAMPLE1D__HELPERS_H

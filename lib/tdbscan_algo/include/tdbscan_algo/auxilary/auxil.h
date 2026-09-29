@@ -16,21 +16,25 @@
  * */
 class ZeroOne {
   double value_;
+
 public:
   ZeroOne(const double value) : value_(value) {
     if (value < 0. || value > 1.)
       throw std::invalid_argument("value must be within the range [0. ... 1.].");
   }
 
-  operator double() const {return value_;}
-  ZeroOne& operator=(const double value) {value_=value; return *this;}
+  operator double() const { return value_; }
+
+  ZeroOne &operator=(const double value) {
+    value_ = value;
+    return *this;
+  }
 };
 
 
-
 namespace uuid {
-static std::random_device              rd;
-static std::mt19937                    gen(rd());
+static std::random_device rd;
+static std::mt19937 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);
 static std::uniform_int_distribution<> dis2(8, 11);
 

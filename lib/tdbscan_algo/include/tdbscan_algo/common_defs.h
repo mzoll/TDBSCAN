@@ -16,11 +16,13 @@ namespace tdbscan {
 /** make a typedef for what is the notion of Time;
 * On first principles time is a continuous monotonic increasing variable
 */
-class ScalarTime_t final : Time_t  {
+class ScalarTime_t final : Time_t {
 public:
   typedef double TimeDiff_t;
+
 private:
   double value_{0.};
+
 public:
   /// default constructor: for convenience
   ScalarTime_t() : value_(0.) {};
@@ -40,15 +42,16 @@ public:
 
   //implicit conversion operator for shorthand
   operator double() const;
-  //assignment operator
-  ScalarTime_t& operator=(const double rhs);
 
-  static constexpr double min() {return -std::numeric_limits<double>::infinity();};
-  static constexpr double max() {return std::numeric_limits<double>::infinity();};
+  //assignment operator
+  ScalarTime_t &operator=(const double rhs);
+
+  static constexpr double min() { return -std::numeric_limits<double>::infinity(); };
+  static constexpr double max() { return std::numeric_limits<double>::infinity(); };
 
 private:
   friend
-  std::ostream& operator<< ( std::ostream& os, const ScalarTime_t & st);
+  std::ostream &operator<<(std::ostream &os, const ScalarTime_t &st);
 };
 
 
@@ -60,8 +63,10 @@ private:
 class Position1d final : public tdbscan::Ordinate_t {
 public:
   typedef double Distance_t;
+
 private:
   double value_{0.};
+
 public:
   /// constructor
   Position1d(const double value) : value_(value) {};
@@ -69,7 +74,7 @@ public:
   /// the distance to another position
   [[nodiscard]]
   Distance_t
-  distance(const Position1d& rhs) const;
+  distance(const Position1d &rhs) const;
 
   [[nodiscard]]
   Distance_t magnitude() const;;
@@ -82,15 +87,17 @@ public:
 
   [[nodiscard]]
   bool operator==(const Position1d &rhs) const;
+
 public: //convenience
   ///implicit conversion operator for shorthand
   explicit operator double() const;
+
   /// assignment operator
-  Position1d& operator=(double rhs);
+  Position1d &operator=(double rhs);
 
 private:
   friend
-  std::ostream& operator<< (std::ostream& os, const Position1d & p1d);
+  std::ostream &operator<<(std::ostream &os, const Position1d &p1d);
 };
 
 
@@ -98,17 +105,18 @@ private:
 class Position3d final : public tdbscan::Ordinate_t {
 public:
   typedef double Distance_t;
+
 public:
   double xord, yord, zord;
+
 public:
   /// constructor
-  Position3d(const double x, const double y, const double z) :
-      xord(x), yord(y), zord(z) {};
+  Position3d(const double x, const double y, const double z) : xord(x), yord(y), zord(z) {};
 
   /// get the distance with a partner object
   [[nodiscard]]
   Distance_t
-  distance(const Position3d& rhs) const;
+  distance(const Position3d &rhs) const;
 
   [[nodiscard]]
   Distance_t magnitude() const;
@@ -117,17 +125,16 @@ public:
   Distance_t abs() const;
 
   [[nodiscard]]
-  bool operator<(const Position3d& rhs) const;
+  bool operator<(const Position3d &rhs) const;
 
   [[nodiscard]]
-  bool operator==(const Position3d& rhs) const;
+  bool operator==(const Position3d &rhs) const;
 
 private:
   friend
-  std::ostream& operator<< ( std::ostream& os, const Position3d & p3d);
+  std::ostream &operator<<(std::ostream &os, const Position3d &p3d);
 };
-
-}  //namespace tdbscan
+} //namespace tdbscan
 
 #include "common_defs.hh"
 

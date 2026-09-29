@@ -14,7 +14,7 @@
 double rand_double() {
   double lower_bound = 0.;
   double upper_bound = 1.;
-  static std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
+  static std::uniform_real_distribution<double> unif(lower_bound, upper_bound);
   static std::default_random_engine re;
   return unif(re);
 }
@@ -77,15 +77,17 @@ generate_moving_box(
 
   for (int i_blib = 0; i_blib < n_blibs; i_blib++) {
     const auto t = rand_double() * time_duration;
-    const auto center_pos_ind = (t*inertia + start_pos) / field_size;
+    const auto center_pos_ind = (t * inertia + start_pos) / field_size;
 
-    const double center_pos = field_size * (int(center_pos_ind) % 2 == 0 ?  center_pos_ind - std::floor(center_pos_ind) : 1. - (center_pos_ind - std::floor(center_pos_ind)));
+    const double center_pos = field_size * (int(center_pos_ind) % 2 == 0
+                                              ? center_pos_ind - std::floor(center_pos_ind)
+                                              : 1. - (center_pos_ind - std::floor(center_pos_ind)));
 
-    const double blib_pos_inbox = box_size * (rand_double() - 1/2.);
+    const double blib_pos_inbox = box_size * (rand_double() - 1 / 2.);
 
     const auto blib_pos = center_pos + blib_pos_inbox;
 
-    if (blib_pos<0. || blib_pos > field_size)
+    if (blib_pos < 0. || blib_pos > field_size)
       continue;
 
     blibs.insert(SBlibWithTrace({blib_pos}, t, SBlibWithTrace::SIGNAL));
@@ -106,14 +108,15 @@ generate_moving_box(
  * @return
  */
 std::set<SBlibWithTrace>
-gernerate_blibs( const double time_duration=50, const double width_fields = 100, const double brightness= 1., const double noise_contamination = 0.1) {
+gernerate_blibs(const double time_duration = 50, const double width_fields = 100, const double brightness = 1.,
+                const double noise_contamination = 0.1) {
   std::set<SBlibWithTrace> blibs;
 
   const auto _box_blibs = generate_moving_box(5., 1., 0., brightness, width_fields, time_duration);
   LOG_INFO("Generated {} BOX blibs", _box_blibs.size());
   blibs.insert(_box_blibs.cbegin(), _box_blibs.cend());
 
-  const auto _noise_blibs = generate_noise(noise_contamination*brightness, width_fields, time_duration);
+  const auto _noise_blibs = generate_noise(noise_contamination * brightness, width_fields, time_duration);
   LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
   //blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
   return blibs;

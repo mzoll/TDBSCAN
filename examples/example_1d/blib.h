@@ -33,7 +33,10 @@ public:
   }
 
   ///mark this Blib as to stem either from a Noise or Signal source
-  SBlibWithTrace& mark(const Origin o) { origin_ = o; return *this; };
+  SBlibWithTrace &mark(const Origin o) {
+    origin_ = o;
+    return *this;
+  };
 
   /**
    * Fully qualified constructor
@@ -42,41 +45,40 @@ public:
    * @param o the origin of the Blib, aka SIGNAL, or NOISE
    */
   SBlibWithTrace(
-    const SBlibWithTrace::Ordinate_t& ord,
-    const SBlibWithTrace::Time_t& t,
-    const Origin o ) :
-  ScalarBlib(ord, t) ,origin_(o) {};
+    const SBlibWithTrace::Ordinate_t &ord,
+    const SBlibWithTrace::Time_t &t,
+    const Origin o) : ScalarBlib(ord, t), origin_(o) {};
 
   inline
-  bool operator==(const SBlibWithTrace& rhs) const {
+  bool operator==(const SBlibWithTrace &rhs) const {
     return this->origin_ == rhs.origin_ && static_cast<ScalarBlib>(*this) == static_cast<ScalarBlib>(rhs);
   };
 
 public:
   friend
-  std::ostream& operator<< ( std::ostream& outs, const SBlibWithTrace & st);
+  std::ostream &operator<<(std::ostream &outs, const SBlibWithTrace &st);
 };
 
 
 /// custom ostream output; nicely formats the class as a string
 inline
-std::ostream& operator<< ( std::ostream& os, const SBlibWithTrace & sblib_trace) {
+std::ostream &operator<<(std::ostream &os, const SBlibWithTrace &sblib_trace) {
   return os <<
-    SBlibWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
-      static_cast<ScalarBlib>(sblib_trace);
+         SBlibWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
+         static_cast<ScalarBlib>(sblib_trace);
 };
 } // namespace ex1d
 
 /// custom formatter for SBlibWithTrace. Used in conjunction with `std::format` or `fmt::format`
-template <>
+template<>
 struct std::formatter<ex1d::SBlibWithTrace> {
-  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const ex1d::SBlibWithTrace& sb, std::format_context &ctx) const {
+  auto format(const ex1d::SBlibWithTrace &sb, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "[ord:{}, time:{}]::{}",
-      static_cast<double>(sb.getOrdinate()),
-      static_cast<double>(sb.getTime()),
-      ex1d::SBlibWithTrace::origin_tostr(sb.origin_));
+                          static_cast<double>(sb.getOrdinate()),
+                          static_cast<double>(sb.getTime()),
+                          ex1d::SBlibWithTrace::origin_tostr(sb.origin_));
   };
 };
 

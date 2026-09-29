@@ -32,11 +32,13 @@ public:
       case SIGNAL: return "SIGNAL";
       default: throw std::invalid_argument("Value_error");
     }
-
   }
 
   ///mark this Blib as to stem either from a Noise or Signal source
-  Blib3dWithTrace& mark(const Origin o) { origin_ = o; return *this; };
+  Blib3dWithTrace &mark(const Origin o) {
+    origin_ = o;
+    return *this;
+  };
 
 
   /**
@@ -46,45 +48,42 @@ public:
    * @param o the origin of the Blib, aka SIGNAL, or NOISE
    */
   Blib3dWithTrace(
-    const Blib3dWithTrace::Ordinate_t& ord,
-    const Blib3dWithTrace::Time_t& t,
-    const Origin o ) :
-  Blib3d(ord, t) ,origin_(o) {};
+    const Blib3dWithTrace::Ordinate_t &ord,
+    const Blib3dWithTrace::Time_t &t,
+    const Origin o) : Blib3d(ord, t), origin_(o) {};
 
   inline
-  bool operator==(const Blib3dWithTrace& rhs) const {
+  bool operator==(const Blib3dWithTrace &rhs) const {
     return this->origin_ == rhs.origin_ && static_cast<Blib3d>(*this) == static_cast<Blib3d>(rhs);
   };
 
 public:
   friend
-  std::ostream& operator<< ( std::ostream& outs, const Blib3dWithTrace & st);
+  std::ostream &operator<<(std::ostream &outs, const Blib3dWithTrace &st);
 };
 
 
 /// custom ostream output; nicely formats the class as a string
 inline
-std::ostream& operator<< ( std::ostream& os, const Blib3dWithTrace & sblib_trace) {
+std::ostream &operator<<(std::ostream &os, const Blib3dWithTrace &sblib_trace) {
   return os <<
-    Blib3dWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
-      static_cast<tdbscan::Blib3d>(sblib_trace);
+         Blib3dWithTrace::origin_tostr(sblib_trace.origin_) << "::" <<
+         static_cast<tdbscan::Blib3d>(sblib_trace);
 };
-
 } //namespace ex3d
 
 /// custom formatter for Blib3dWithTrace. Used in conjunction with `std::format` or `fmt::format`
-template <>
+template<>
 struct std::formatter<ex3d::Blib3dWithTrace> {
-  constexpr auto parse(std::format_parse_context & ctx) {return ctx.begin();}
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const ex3d::Blib3dWithTrace& sb, std::format_context &ctx) const {
+  auto format(const ex3d::Blib3dWithTrace &sb, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "[ord:{}, time:{}]::{}",
-      sb.getOrdinate(),
-      static_cast<double>(sb.getTime()),
-      ex3d::Blib3dWithTrace::origin_tostr(sb.origin_));
+                          sb.getOrdinate(),
+                          static_cast<double>(sb.getTime()),
+                          ex3d::Blib3dWithTrace::origin_tostr(sb.origin_));
   };
 };
-
 
 
 #endif //TDBSCAN__EXAMPLE_3D__BLIB_H
