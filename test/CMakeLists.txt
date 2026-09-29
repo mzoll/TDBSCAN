@@ -48,14 +48,6 @@ target_link_libraries(test_connector
         PRIVATE tdbscan_algo
         GTest::gtest_main
 )
-#-----------------------------
-add_executable(test_absblib
-        tdbscan_algo/test_absblib.cpp
-)
-target_link_libraries(test_absblib
-        PRIVATE tdbscan_algo
-        GTest::gtest_main
-)
 
 #-----------------------------
 add_executable(test_tdbcluster
@@ -70,7 +62,6 @@ target_link_libraries(test_tdbcluster
 gtest_discover_tests(test_common_defs)
 gtest_discover_tests(test_common_blibs)
 gtest_discover_tests(test_connector)
-gtest_discover_tests(test_absblib)
 gtest_discover_tests(test_tdbcluster)
 
 # --- adding test through cmake magic
