@@ -5,8 +5,8 @@
 #include <gtest/gtest.h>
 #include "tdbscan_algo/common_defs.h"
 
+using namespace tdbscan;
 
-// Demonstrate some basic assertions.
 TEST(CommonDefs, TimeAdheres) {
   EXPECT_EQ(static_cast<double>(ScalarTime_t(42)), 42);
 
@@ -44,20 +44,4 @@ TEST(CommonDefs, ScalarTimeAdheres) {
   const ScalarTime_t t42(42.);
   EXPECT_EQ(t0 - t42, -42.);
   EXPECT_EQ(t42 - t0, 42.);
-}
-
-
-TEST(CommonDefs, ScalarBlibAdheres) {
-  const ScalarBlib b0({0.},  {0. }  );
-  const ScalarBlib b1({42.},  {1.  }  );
-
-  EXPECT_EQ(b0.timeTo(b0), 0.);
-  EXPECT_EQ(b1.timeTo(b1), 0.);
-  EXPECT_EQ(b0.timeTo(b1), 1.);
-  EXPECT_EQ(b1.timeTo(b0), -1.);
-
-  EXPECT_EQ(b0.distanceTo(b0), 0.);
-  EXPECT_EQ(b1.distanceTo(b1), 0.);
-  EXPECT_EQ(b0.distanceTo(b1), 42.);
-  EXPECT_EQ(b1.distanceTo(b0), -42.);
 }
