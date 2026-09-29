@@ -69,6 +69,11 @@ actual signal by a factor 1000 <span style="color: red;"> (from the top of my he
 * Link Licenciate thesis: [Improved methods for solar Dark Matter searches with the IceCube neutrino telescope](http://www.diva-portal.org/smash/record.jsf?pid=diva2%3A891768) 
 * Link PhD thesis: [A search for solar dark matter with the IceCube neutrino detector: Advances in data treatment and analysis technique](http://www.diva-portal.org/smash/record.jsf?pid=diva2%3A892438)
 * The algorithm  used to derive result for the following paper: [Search for annihilating dark matter in the Sun with 3 years of IceCube data](https://arxiv.org/abs/1612.05949)
+* Check out these videos about the algorithms performance on real-world data:
+  * [Raw detector readout - no treatment](https://youtu.be/Kxfi-zDacxI)
+  * [Raw detector readout, visually emph. clusters](https://youtu.be/8dxrlA95h_4)
+  * [Clusters isolated, reconstruction applied](https://youtu.be/HGEuLnkxe3s)
+    (NOTE: the particle-trajectory reconstruction 'line-objects' is not part of the here discussed algorithm)
 
 ## Performance now
 
