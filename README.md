@@ -1,6 +1,8 @@
 TDBSCAN: Temporal-Density-Based Spatial Clustering for Applications with Noise
 ===
 
+![image](./docs/drawing.svg)
+
 # Introduction
 TDBScan is an portable algorithm that allows the identification of clusters of causally connected blibs, commonly referred 
 to as Signal, in a sea of other quasi-randomly occurring blibs, commonly referred to as noise, which do not share a common
