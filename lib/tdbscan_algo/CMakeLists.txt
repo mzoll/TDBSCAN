@@ -29,10 +29,6 @@ set( header_files
         #include/tdbscan_algo/tdbscan_algo.hh
 )
 
-
 target_sources(tdbscan_algo
        PUBLIC ${header_files}
-
 )
-
-
