@@ -10,33 +10,33 @@ using namespace tdbscan;
 TEST(CommonDefs, TimeAdheres) {
   EXPECT_EQ(static_cast<double>(ScalarTime_t(42)), 42);
 
-  EXPECT_EQ(ScalarTime_t(42.), ScalarTime_t(42.) );
+  EXPECT_EQ(ScalarTime_t(42.), ScalarTime_t(42.));
 
-  EXPECT_TRUE(ScalarTime_t::min() <= ScalarTime_t::max() );
+  EXPECT_TRUE(ScalarTime_t::min() <= ScalarTime_t::max());
 
-  EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(42.),0. );
-  EXPECT_EQ(ScalarTime_t(42.)- ScalarTime_t(0.),42. );
+  EXPECT_EQ(ScalarTime_t(42.) - ScalarTime_t(42.), 0.);
+  EXPECT_EQ(ScalarTime_t(42.) - ScalarTime_t(0.), 42.);
 
-  ASSERT_FALSE(ScalarTime_t(0.) < ScalarTime_t(0.) );
-  ASSERT_TRUE(ScalarTime_t(0.) < ScalarTime_t(0.1) );
-  ASSERT_FALSE(ScalarTime_t(0.1) < ScalarTime_t(0.) );
+  ASSERT_FALSE(ScalarTime_t(0.) < ScalarTime_t(0.));
+  ASSERT_TRUE(ScalarTime_t(0.) < ScalarTime_t(0.1));
+  ASSERT_FALSE(ScalarTime_t(0.1) < ScalarTime_t(0.));
 }
 
 TEST(CommonDefs, Position3dAdheres) {
-  EXPECT_EQ(Position3d(42,42,42), Position3d(42,42,42));
+  EXPECT_EQ(Position3d(42, 42, 42), Position3d(42, 42, 42));
 
-  EXPECT_EQ(Position3d(0,0,0).magnitude(), 0);
-  EXPECT_EQ(Position3d(1,1,1).magnitude(), sqrt(3) );
+  EXPECT_EQ(Position3d(0, 0, 0).magnitude(), 0);
+  EXPECT_EQ(Position3d(1, 1, 1).magnitude(), sqrt(3));
 
-  EXPECT_EQ(Position3d(0,0,0).distance(Position3d(1,1,1)), sqrt(3) );
+  EXPECT_EQ(Position3d(0, 0, 0).distance(Position3d(1, 1, 1)), sqrt(3));
 
-  EXPECT_TRUE(Position3d(0,0,0) == Position3d(0,0,0));
-  EXPECT_TRUE(Position3d(1,2,3) == Position3d(1,2,3));
-  EXPECT_FALSE(Position3d(42,2,1) == Position3d(1,2,3));
+  EXPECT_TRUE(Position3d(0, 0, 0) == Position3d(0, 0, 0));
+  EXPECT_TRUE(Position3d(1, 2, 3) == Position3d(1, 2, 3));
+  EXPECT_FALSE(Position3d(42, 2, 1) == Position3d(1, 2, 3));
 
-  EXPECT_FALSE(Position3d(0,0,0) < Position3d(0,0,0));
-  EXPECT_TRUE(Position3d(0,0,0) < Position3d(1,0,0));
-  EXPECT_FALSE(Position3d(1,0,0) < Position3d(0,0,0));
+  EXPECT_FALSE(Position3d(0, 0, 0) < Position3d(0, 0, 0));
+  EXPECT_TRUE(Position3d(0, 0, 0) < Position3d(1, 0, 0));
+  EXPECT_FALSE(Position3d(1, 0, 0) < Position3d(0, 0, 0));
 }
 
 TEST(CommonDefs, ScalarTimeAdheres) {

@@ -20,7 +20,7 @@ project (TDBSCAN
 #    CXX_STANDARD_REQUIRED ON
 )
 
-include(cmake/make_available_fmt.cmake)  # when using the make_available file :: FetchMakeAvailable(git-repo)
+#include(cmake/make_available_fmt.cmake)
 #find_package(fmt CONFIG REQUIRED)
 
 include(FetchContent)

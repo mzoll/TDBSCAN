@@ -37,12 +37,12 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: Format C++ code
-      uses: pachadotdev/clang-format@main
-      with:
-        version: '18'
-        auto-commit: true
-        commit-message: 'style: auto-format C++ code with clang-format-18'
+#    - name: Format C++ code
+#      uses: pachadotdev/clang-format@main
+#      with:
+#        version: '18'
+#        auto-commit: true
+#        commit-message: 'style: auto-format C++ code with clang-format-18'
 
 
 
