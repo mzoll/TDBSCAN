@@ -2,19 +2,17 @@
 // Created by mzoll on 23/09/2026.
 //
 
-
-
 #include <gtest/gtest.h>
 
-#include "tdbscan_algo/common_defs.h"
-#include "tdbscan_algo/connector.h"
-
 #include "tdbscan_algo/tdbcluster.h"
+
+#include "tdbscan_algo/common_defs.h"
+#include "tdbscan_algo/common_blibs.h"
+
 
 using namespace tdbscan;
 
 TEST(ClusterTest, SetOperations) {
-
   CausalCluster<ScalarBlib> c1;
   CausalCluster<ScalarBlib> c2;
 
@@ -58,31 +56,30 @@ TEST(ClusterTest, SetOperations) {
   EXPECT_EQ(c1.nOverlap(c2), 1);
   EXPECT_EQ(c2.nOverlap(c1), 1);
 
-   c1.insertBlib(b1);
+  c1.insertBlib(b1);
 
-   EXPECT_FALSE(c1.isConcruent(c2));
-   EXPECT_FALSE(c2.isConcruent(c1));
-   EXPECT_TRUE(c1.isSupersetOf(c2));
-   EXPECT_FALSE(c2.isSupersetOf(c1));
-   EXPECT_FALSE(c1.isSubsetOf(c2));
-   EXPECT_TRUE(c2.isSubsetOf(c1));
+  EXPECT_FALSE(c1.isConcruent(c2));
+  EXPECT_FALSE(c2.isConcruent(c1));
+  EXPECT_TRUE(c1.isSupersetOf(c2));
+  EXPECT_FALSE(c2.isSupersetOf(c1));
+  EXPECT_FALSE(c1.isSubsetOf(c2));
+  EXPECT_TRUE(c2.isSubsetOf(c1));
 
-   EXPECT_EQ(c1.nOverlap(c2), 1);
-   EXPECT_EQ(c2.nOverlap(c1), 1);
+  EXPECT_EQ(c1.nOverlap(c2), 1);
+  EXPECT_EQ(c2.nOverlap(c1), 1);
 
-   c2.insertBlib(b2);
+  c2.insertBlib(b2);
 
-   EXPECT_FALSE(c1.isConcruent(c2));
-   EXPECT_FALSE(c2.isConcruent(c1));
-   EXPECT_FALSE(c1.isSupersetOf(c2));
-   EXPECT_FALSE(c2.isSupersetOf(c1));
-   EXPECT_FALSE(c1.isSubsetOf(c2));
-   EXPECT_FALSE(c2.isSubsetOf(c1));
+  EXPECT_FALSE(c1.isConcruent(c2));
+  EXPECT_FALSE(c2.isConcruent(c1));
+  EXPECT_FALSE(c1.isSupersetOf(c2));
+  EXPECT_FALSE(c2.isSupersetOf(c1));
+  EXPECT_FALSE(c1.isSubsetOf(c2));
+  EXPECT_FALSE(c2.isSubsetOf(c1));
 
-   EXPECT_EQ(c1.nOverlap(c2), 1);
-   EXPECT_EQ(c2.nOverlap(c1), 1);
+  EXPECT_EQ(c1.nOverlap(c2), 1);
+  EXPECT_EQ(c2.nOverlap(c1), 1);
 }
-
 
 
 TEST(ClusterTest, TimeWindow) {
@@ -97,7 +94,9 @@ TEST(ClusterTest, TimeWindow) {
   //with defaults
   EXPECT_EQ(c1.nHitsWithinTimeWindow(), 0);
   //with explicit defaults
-  EXPECT_EQ(c1.nHitsWithinTimeWindow({-std::numeric_limits<double>::infinity()},{std::numeric_limits<double>::infinity()}), 0);
+  EXPECT_EQ(
+    c1.nHitsWithinTimeWindow( {-std::numeric_limits<double>::infinity()}, {std::numeric_limits<double>::infinity()}),
+    0);
 
   EXPECT_EQ(c1.nHitsWithinTimeWindow({-1}, {1}), 0); //with value
   // violating time order in arguments
