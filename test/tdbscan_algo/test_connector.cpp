@@ -12,29 +12,27 @@
 using namespace tdbscan;
 
 
-
 class Connector_TRUE : public ConnectorSingle<Blib3d> {
 public:
-  bool eval(const Blib3d &h1, const Blib3d &h2) const override {return true;};
+  bool eval(const Blib3d &h1, const Blib3d &h2) const override { return true; };
   Connector_TRUE() : ConnectorSingle<Blib3d>("True") {};
 };
 
-class Connector_FALSE : public  ConnectorSingle<Blib3d> {
+class Connector_FALSE : public ConnectorSingle<Blib3d> {
 public:
-  bool eval(const Blib3d &h1, const Blib3d &h2) const override {return false;};
+  bool eval(const Blib3d &h1, const Blib3d &h2) const override { return false; };
   Connector_FALSE() : ConnectorSingle<Blib3d>("False") {};
-
 };
 
 
 TEST(ConnectorTest, Connector_Logic) {
-  Blib3d b({0,0,0},0);
+  Blib3d b({0, 0, 0}, 0);
 
   auto con_true = new Connector_TRUE();
   auto con_false = new Connector_FALSE();
 
-  EXPECT_TRUE(con_true->eval(b, b) );
-  EXPECT_FALSE(con_false->eval(b, b) );
+  EXPECT_TRUE(con_true->eval(b, b));
+  EXPECT_FALSE(con_false->eval(b, b));
 
   auto t0 = new ConnectorAssembly_AND<Blib3d>();
   t0->addConnector(con_true);
@@ -49,10 +47,10 @@ TEST(ConnectorTest, Connector_Logic) {
   t3->addConnector(con_false);
   t3->addConnector(con_false);
 
-  EXPECT_TRUE(t0->eval(b,b));
-  EXPECT_FALSE(t1->eval(b,b));
-  EXPECT_FALSE(t2->eval(b,b));
-  EXPECT_FALSE(t3->eval(b,b));
+  EXPECT_TRUE(t0->eval(b, b));
+  EXPECT_FALSE(t1->eval(b, b));
+  EXPECT_FALSE(t2->eval(b, b));
+  EXPECT_FALSE(t3->eval(b, b));
 
   auto f0 = new ConnectorAssembly_OR<Blib3d>();
   f0->addConnector(con_true);
@@ -67,10 +65,10 @@ TEST(ConnectorTest, Connector_Logic) {
   f3->addConnector(con_false);
   f3->addConnector(con_false);
 
-  EXPECT_TRUE(f0->eval(b,b));
-  EXPECT_TRUE(f1->eval(b,b));
-  EXPECT_TRUE(f2->eval(b,b));
-  EXPECT_FALSE(f3->eval(b,b));
+  EXPECT_TRUE(f0->eval(b, b));
+  EXPECT_TRUE(f1->eval(b, b));
+  EXPECT_TRUE(f2->eval(b, b));
+  EXPECT_FALSE(f3->eval(b, b));
 }
 
 

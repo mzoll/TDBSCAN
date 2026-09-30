@@ -8,8 +8,8 @@
 using namespace tdbscan;
 
 TEST(CommonBlibs, ScalarBlibAdheres) {
-  const ScalarBlib b0({0.},  {0. }  );
-  const ScalarBlib b1({42.},  {1.  }  );
+  const ScalarBlib b0({0.}, {0.});
+  const ScalarBlib b1({42.}, {1.});
 
   EXPECT_EQ(b0.timeTo(b0), 0.);
   EXPECT_EQ(b1.timeTo(b1), 0.);
@@ -23,8 +23,8 @@ TEST(CommonBlibs, ScalarBlibAdheres) {
 }
 
 TEST(CommonBlibs, Blib3dAdheres) {
-  const Blib3d b0({0., 0., 0.}, {0.}    );
-  const Blib3d b1({1., 1., 1.} , {42.} );
+  const Blib3d b0({0., 0., 0.}, {0.});
+  const Blib3d b1({1., 1., 1.}, {42.});
 
   EXPECT_EQ(b0.timeTo(b0), 0.);
   EXPECT_EQ(b1.timeTo(b1), 0.);
