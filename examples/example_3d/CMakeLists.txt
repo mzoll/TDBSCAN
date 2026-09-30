@@ -8,7 +8,6 @@ target_sources(exec_tdbscan_3d
 
 target_link_libraries(exec_tdbscan_3d
         tdbscan_algo
-        fmt::fmt
 )
 
 target_compile_features(exec_tdbscan_3d PUBLIC cxx_std_17)
