@@ -46,6 +46,7 @@ include(FetchContent)
 
 if(BOOST_FOUND)
 add_compile_definitions(
+    #https://www.boost.org/doc/libs/latest/libs/log/doc/html/log/installation/config.html
     message(STATUS "Boost found: Using Boost::logging for logging")
     set(USE_BOOST_LOGGING 1)
 )
