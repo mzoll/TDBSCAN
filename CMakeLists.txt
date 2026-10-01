@@ -25,6 +25,7 @@ project (TDBSCAN
 
 include(FetchContent)
 
+
 #
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
@@ -43,6 +44,13 @@ include(FetchContent)
 #        "${PROJECT_SOURCE_DIR}/include"
 #)
 
+if(BOOST_FOUND)
+add_compile_definitions(
+    #https://www.boost.org/doc/libs/latest/libs/log/doc/html/log/installation/config.html
+    message(STATUS "Boost found: Using Boost::logging for logging")
+    set(USE_BOOST_LOGGING 1)
+)
+endif()
 
 add_subdirectory(lib)
 add_subdirectory(test)

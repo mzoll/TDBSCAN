@@ -1,0 +1,6 @@
+{
+  "dependencies" : [ "boost", {
+    "name" : "boost-log",
+    "version>=" : "1.92.0"
+  } ]
+}

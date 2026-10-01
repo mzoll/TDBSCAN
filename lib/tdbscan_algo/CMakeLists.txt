@@ -7,14 +7,13 @@ target_include_directories(tdbscan_algo
         PRIVATE src
 )
 
-
 # /// IDEA ///
-# https://dev.to/pigeoncodeur/cmake-for-complex-projects-part-1-building-a-c-game-engine-from-scratch-for-desktop-and-ied
 # Modern CMake magic - precompiled headers for faster builds
-# target_precompile_headers(ColumbaEngine PUBLIC src/Engine/stdafx.h)
+# target_precompile_headers(<target> PUBLIC <header-files>)
 
-set( header_files
-        include/tdbscan_algo/auxilary/dummy_logging.h
+list(APPEND header_files
+        include/tdbscan_algo/auxilary/auxil.h
+        include/tdbscan_algo/auxilary/trivial_logging.h
         include/tdbscan_algo/base_defs.h
         include/tdbscan_algo/absblib.h
         include/tdbscan_algo/common_defs.h
@@ -29,10 +28,21 @@ set( header_files
         #include/tdbscan_algo/tdbscan_algo.hh
 )
 
-
 target_sources(tdbscan_algo
        PUBLIC ${header_files}
-
+       #src/include_all.cpp
 )
 
+# Figure out logging: if available use boost logging
+if(USE_BOOST_LOGGING)
+    target_compile_definitions(
+        tdbscan_algo
+        INTERFACE
+            USE_BOOST_LOGGING=1
+    )
 
+    target_link_libraries(tdbscan_algo
+        PUBLIC
+        Boost::logging
+    )
+endif()
