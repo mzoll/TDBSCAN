@@ -27,8 +27,8 @@ TEST(stopwatch, functionality) {
 
 TEST(stopwatch, reports) {
   Stopwatch swatch("MyReportWatch", Stopwatch<>::policy::start);
-  EXPECT_NO_THROW(swatch.lap_report("First Lap"));
-  EXPECT_NO_THROW(swatch.lap_report("Second Lap"));
-  EXPECT_NO_THROW(swatch.time_report("Time Report"));
-  EXPECT_NO_THROW(swatch.stop_report("Stoppoint"));
+  EXPECT_NO_THROW(swatch.lap_report_elapsed("First Lap"));
+  EXPECT_NO_THROW(swatch.lap_report_elapsed("Second Lap"));
+  EXPECT_NO_THROW(swatch.report_elapsed("Time Report"));
+  EXPECT_NO_THROW(swatch.stop_report_elapsed("Stoppoint"));
 }
