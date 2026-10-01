@@ -15,9 +15,25 @@ target_link_libraries(exec_tdbscan_1d
         tdbscan_algo
 )
 
-target_compile_features(exec_tdbscan_1d PUBLIC cxx_std_17)
+target_compile_features(exec_tdbscan_1d
+    PUBLIC cxx_std_17)
 
-set_target_properties(exec_tdbscan_1d PROPERTIES
+set_target_properties(exec_tdbscan_1d
+    PROPERTIES
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
 )
+
+# Figure out logging: if available use boost logging
+if(USE_BOOST_LOGGING)
+    target_compile_definitions(
+            exec_tdbscan_1d
+            PRIVATE
+            USE_BOOST_LOGGING=1
+    )
+
+    target_link_libraries(exec_tdbscan_1d
+            PRIVATE
+            Boost::logging
+    )
+endif()

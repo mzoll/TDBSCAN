@@ -44,11 +44,12 @@ include(FetchContent)
 #        "${PROJECT_SOURCE_DIR}/include"
 #)
 
-#if(BOOST_FOUND)
-#add_compile_definitions(
-#        USE_BOOST_LOGGING=1
-#)
-#endif()
+if(BOOST_FOUND)
+add_compile_definitions(
+    message(STATUS "Boost found: Using Boost::logging for logging")
+    set(USE_BOOST_LOGGING 1)
+)
+endif()
 
 add_subdirectory(lib)
 add_subdirectory(test)
