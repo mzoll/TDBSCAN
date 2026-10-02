@@ -51,8 +51,7 @@ int main(int argc, char **argv) {
     ++iter;
   }
 
-  Stopwatch<std::chrono::microseconds> swatch("Process", Stopwatch<std::chrono::microseconds>::policy::defer);
-  swatch.start();
+  Stopwatch<std::chrono::microseconds> swatch("Process", Stopwatch<std::chrono::microseconds>::policy::start);
   const auto result = my_algo.Process(_blibs);
   swatch.stop();
   LOG_INFO("Processing of {} took {} {} : {} {} per blib", _blibs.size(), swatch.time(), swatch.timeunitString(), (double)swatch.time()/_blibs.size(), swatch.timeunitString());
