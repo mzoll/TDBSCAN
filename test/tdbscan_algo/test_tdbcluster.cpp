@@ -16,11 +16,11 @@ TEST(ClusterTest, SetOperations) {
   CausalCluster<ScalarBlib> c1;
   CausalCluster<ScalarBlib> c2;
 
-  ScalarBlib b0(Position1d{0}, {1});
-  ScalarBlib b1(Position1d{1}, {1});
-  ScalarBlib b2(Position1d{2}, {1});
-  ScalarBlib b3(Position1d{3}, {1});
-  ScalarBlib b4(Position1d{4}, {1});
+  ScalarBlib b0(ContPos1d{0}, {1});
+  ScalarBlib b1(ContPos1d{1}, {1});
+  ScalarBlib b2(ContPos1d{2}, {1});
+  ScalarBlib b3(ContPos1d{3}, {1});
+  ScalarBlib b4(ContPos1d{4}, {1});
 
   EXPECT_TRUE(c1.isConcruent(c2));
   EXPECT_TRUE(c2.isConcruent(c1));
@@ -85,11 +85,11 @@ TEST(ClusterTest, SetOperations) {
 TEST(ClusterTest, TimeWindow) {
   CausalCluster<ScalarBlib> c1;
 
-  ScalarBlib b0(Position1d{0}, {0.});
-  ScalarBlib b1(Position1d{1}, {0.});
-  ScalarBlib b2(Position1d{2}, {1.});
-  ScalarBlib b3(Position1d{3}, {1});
-  ScalarBlib b4(Position1d{4}, {1});
+  ScalarBlib b0(ContPos1d{0}, {0.});
+  ScalarBlib b1(ContPos1d{1}, {0.});
+  ScalarBlib b2(ContPos1d{2}, {1.});
+  ScalarBlib b3(ContPos1d{3}, {1});
+  ScalarBlib b4(ContPos1d{4}, {1});
 
   //with defaults
   EXPECT_EQ(c1.nHitsWithinTimeWindow(), 0);

@@ -34,7 +34,7 @@ TDBScan_Algo<Blib3dWithTrace> construct_algo(const double distance_lim, const do
 
 
 double rand_ord() { return rand() * 100 - 50.; };
-Position3d rand_pos() { return Position3d(rand_ord(), rand_ord(), rand_ord()); };
+ContPos3d rand_pos() { return ContPos3d(rand_ord(), rand_ord(), rand_ord()); };
 ScalarTime_t rand_time() { return ScalarTime_t(rand() % 10000); };
 
 // std::set<Blib4d, Blib4d::TimeOrder> construct_blibs() {
