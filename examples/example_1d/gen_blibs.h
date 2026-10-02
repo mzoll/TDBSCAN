@@ -118,7 +118,7 @@ gernerate_blibs(const double time_duration = 50, const double width_fields = 100
 
   const auto _noise_blibs = generate_noise(noise_contamination * brightness, width_fields, time_duration);
   LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
-  //blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+  blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
   return blibs;
 }
 } //namespace ex1d

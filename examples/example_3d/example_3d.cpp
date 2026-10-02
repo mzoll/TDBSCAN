@@ -8,11 +8,14 @@
 
 #include "blib.h"
 #include "connectors.h"
+#include "external/common_clib/stopwatch.h"
 
 #include "tdbscan_algo/tdbscan_algo.h"
 
+
 using namespace std;
 using namespace tdbscan;
+using namespace common_clib;
 using namespace ex3d;
 
 TDBScan_Algo<Blib3dWithTrace> construct_algo(const double distance_lim, const double time_lim) {
@@ -46,15 +49,17 @@ std::set<Blib3dWithTrace> construct_blibs() {
   return blibs;
 }
 
-using namespace std;
-using namespace tdbscan;
 
 int main(int argc, char **argv) {
   auto my_algo = construct_algo({4.}, {4});
 
   auto blibs = construct_blibs();
 
+  Stopwatch<std::chrono::microseconds> swatch("Process", Stopwatch<std::chrono::microseconds>::policy::start);
   auto result = my_algo.Process(blibs);
+  swatch.stop();
+  LOG_INFO("Processing of {} took {} {} : {} {} per blib", blibs.size(), swatch.time(), swatch.timeunitString(), (double)swatch.time()/blibs.size(), swatch.timeunitString());
+
 
   return 0;
 }

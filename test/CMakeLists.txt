@@ -64,42 +64,4 @@ gtest_discover_tests(test_common_blibs)
 gtest_discover_tests(test_connector)
 gtest_discover_tests(test_tdbcluster)
 
-# --- adding test through cmake magic
-## define tests
-#add_test(
-#        NAME test_basedefs
-#        COMMAND $<TARGET_FILE:test_basedefs>
-#)
-
-
-# ======================================================
-#
-#
-#set(UNIT_TEST ${PROJECT_NAME}_tests)  #local alias
-#
-#add_executable(${UNIT_TEST} "test_${PROJECT_NAME}.cpp")
-#
-#target_compile_features(${UNIT_TEST} PRIVATE cxx_std_20)
-#
-#target_link_libraries(${UNIT_TEST} PRIVATE gtest_main)
-#
-#add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
-#
-#include_directories("${gtest_SOURCE_DIR}/include")
-#
-#set(TEST_COMMAND_LINE_OPTIONS ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures)
-#
-
-# ======================================================
-
-#
-#add_test(
-#        NAME MyAppWithTestFlag
-#        COMMAND MyApp --test
-#)
-#
-#
-#target_sources(Testsuite
-#    PRIVATE
-#    test/tdbscan_algo/test_absblib.cpp
-#)
+add_subdirectory(common_clib)

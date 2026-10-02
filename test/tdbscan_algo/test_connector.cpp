@@ -8,9 +8,7 @@
 
 #include "tdbscan_algo/common_blibs.h"
 
-
 using namespace tdbscan;
-
 
 class Connector_TRUE : public ConnectorSingle<Blib3d> {
 public:
