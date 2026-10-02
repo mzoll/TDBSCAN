@@ -55,21 +55,25 @@ private:
 };
 
 
-// ========================= ORDINATE =======================
+// ========================= ORDINATE1d =======================
 
-/** make a typedef for what is the notion of Time;
-* On first principles time is a continuous monotonic increasing variable
+/** make a typedef for an Ordinate that has ONE component
+* @tparam t_base the type of the component
+* @tparam t_dist the type of the distance measure
 */
-class Position1d final : public tdbscan::Ordinate_t {
+template<class t_base, class t_dist>
+class Position1d : public Ordinate_t {
 public:
-  typedef double Distance_t;
+  using Distance_t = t_dist;
 
-private:
-  double value_{0.};
+protected:
+  t_base value_{0.};
 
 public:
   /// constructor
-  Position1d(const double value) : value_(value) {};
+  Position1d(const t_base value) : value_(value) {};
+
+  [[nodiscard]] t_base getValue() const {return value_;};
 
   /// the distance to another position
   [[nodiscard]]
@@ -96,22 +100,45 @@ public: //convenience
   Position1d &operator=(double rhs);
 
 private:
+  template<class _t_base, class _t_dist>
   friend
-  std::ostream &operator<<(std::ostream &os, const Position1d &p1d);
+  std::ostream &operator<<(std::ostream &os, const Position1d<_t_base, _t_dist> &p1d);
 };
 
 
-/// make a definition of a Point in 3d space
-class Position3d final : public tdbscan::Ordinate_t {
+/**
+* An Ordinate with a single continuous component
+*/
+class ContPos1d final : public Position1d<double, double> {
+  friend
+  std::ostream &operator<<(std::ostream &os, const ContPos1d &p1d);
 public:
-  typedef double Distance_t;
+  ContPos1d(const double value) : Position1d(value) {};
+};
 
+// =================== Ordinate3d =====================
+
+/** make a typedef for an Ordinate that has THREE component
+ *
+ * This class is evidently very much similar to a 3vector in math and physics
+ * @tparam t_base the type of the components
+ * @tparam t_dist the type of the distance measure
+ */
+template<class t_base, class t_dist>
+class Position3d : public Ordinate_t {
 public:
-  double xord, yord, zord;
+  using Distance_t = t_dist;
+
+protected:
+  t_base xord, yord, zord;
 
 public:
   /// constructor
-  Position3d(const double x, const double y, const double z) : xord(x), yord(y), zord(z) {};
+  Position3d(const t_base x, const t_base y, const t_base z) : xord(x), yord(y), zord(z) {};
+
+  [[nodiscard]] t_base getXord() const {return xord;}
+  [[nodiscard]] t_base getYord() const {return yord;}
+  [[nodiscard]] t_base getZord() const {return zord;}
 
   /// get the distance with a partner object
   [[nodiscard]]
@@ -131,8 +158,19 @@ public:
   bool operator==(const Position3d &rhs) const;
 
 private:
+  template<class _t_base, class _t_dist>
   friend
-  std::ostream &operator<<(std::ostream &os, const Position3d &p3d);
+  std::ostream &operator<<(std::ostream &os, const Position3d<_t_base, _t_dist> &p3d);
+};
+
+/**
+* An Ordinate with three continuous components
+*/
+class ContPos3d final : public Position3d<double, double> {
+  friend
+  std::ostream &operator<<(std::ostream &os, const ContPos3d &p3d);
+public:
+  ContPos3d(const double xord, const double yord, const double zord) : Position3d(xord, yord, zord) {};
 };
 } //namespace tdbscan
 
