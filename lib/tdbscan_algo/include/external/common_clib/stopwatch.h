@@ -9,7 +9,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <algorithm>
 #include <numeric>
 
 // based on post of Francis Cugler on stackoverflow:
@@ -28,7 +27,7 @@ namespace common_clib {
  */
 template <class Resolution = std::chrono::milliseconds>
 class Stopwatch {
-  using timeunit_t = int;
+  
 
  public:
   enum class policy {
@@ -37,6 +36,7 @@ class Stopwatch {
   };
 
  public:
+  using timeunit_t = int;  // the type of `operator-(time - time).count()`
   using Clock =
       std::conditional_t<std::chrono::high_resolution_clock::is_steady,
                          std::chrono::high_resolution_clock,
@@ -101,12 +101,12 @@ class Stopwatch {
   void restart();
 
   ///obtain the lap-time, aka the time since the last time the lap funktion had been used or since start
-  [[maybe_unused]] int lap();
+  [[maybe_unused]] timeunit_t lap();
   ///obtain the time since start and stop the stopwatch and
-  [[maybe_unused]] int stop();
+  [[maybe_unused]] timeunit_t stop();
 
   ///obtain the elapsed time since start (without stopping the stopwatch)
-  [[nodiscard]] int time();
+  [[nodiscard]] timeunit_t time();
 
   /**
    * take the lap time and make a formatted printout of the elapsed time.
@@ -203,7 +203,7 @@ void Stopwatch<Resolution>::restart() {
 }
 
 template <class Resolution>
-int Stopwatch<Resolution>::lap() {
+Stopwatch<Resolution>::timeunit_t Stopwatch<Resolution>::lap() {
   if (! started_)
     throw std::runtime_error("Stopwatch was never started");
   if (stopped_)
@@ -220,9 +220,14 @@ int Stopwatch<Resolution>::lap() {
 
 
 template <class Resolution>
-int Stopwatch<Resolution>::stop() {
+Stopwatch<Resolution>::timeunit_t Stopwatch<Resolution>::stop() {
   if (! started_)
     throw std::runtime_error("Cannot stop the Stopwatch before it has been started");
+  if (stopped_ or paused_) {
+    stopped_ = true;
+    return elapsed_total_;
+  }
+
   const auto end_time = Clock::now();
   stopped_ = true;
 
@@ -235,7 +240,7 @@ int Stopwatch<Resolution>::stop() {
 }
 
 template <class Resolution>
-int Stopwatch<Resolution>::time() {
+Stopwatch<Resolution>::timeunit_t Stopwatch<Resolution>::time() {
   if (! started_)
     throw std::runtime_error("Cannot obtain a time reading before the Stopwatch has been started");
   if (stopped_)

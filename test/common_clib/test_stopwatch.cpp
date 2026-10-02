@@ -16,13 +16,21 @@ TEST(stopwatch, functionality) {
   EXPECT_NO_THROW(swatch.start());
   EXPECT_NO_THROW(swatch.lap());
   EXPECT_NO_THROW(swatch.lap());
-  EXPECT_NO_THROW(swatch.time());
+  EXPECT_NO_THROW(auto _ = swatch.time());
   EXPECT_NO_THROW(swatch.stop());
 
+  EXPECT_NO_THROW(swatch.reset());
+
   EXPECT_NO_THROW(swatch.start());
+  EXPECT_NO_THROW(auto _ = swatch.time());
+  EXPECT_NO_THROW(swatch.pause());
+  EXPECT_NO_THROW(auto _ = swatch.time());
   EXPECT_NO_THROW(swatch.restart());
-  EXPECT_NO_THROW(swatch.time());
+  EXPECT_NO_THROW(auto _ = swatch.time());
   EXPECT_NO_THROW(swatch.stop());
+
+  EXPECT_ANY_THROW(swatch.stop());  // twice stop
+  EXPECT_ANY_THROW(swatch.start());  // start after stop without calling reset()
 }
 
 TEST(stopwatch, reports) {
@@ -31,4 +39,5 @@ TEST(stopwatch, reports) {
   EXPECT_NO_THROW(swatch.lap_report_elapsed("Second Lap"));
   EXPECT_NO_THROW(swatch.report_elapsed("Time Report"));
   EXPECT_NO_THROW(swatch.stop_report_elapsed("Stoppoint"));
+  EXPECT_NO_THROW(swatch.report_elapsed("Stoppoint"));
 }
