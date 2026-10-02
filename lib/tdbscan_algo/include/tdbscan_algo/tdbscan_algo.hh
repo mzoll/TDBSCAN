@@ -165,8 +165,9 @@ TDBScan_Algo<tBlib>::Process(const std::set<tBlib> &blibs) {
 
   //prepare output
   BlibSetSequence bss;
-  for (const auto &c: concluded_clusters_)
-    bss.insert(BlibSet(c.blibs_.begin(), c.blibs_.end()));
+  for (const auto &c: concluded_clusters_) {
+    bss.insert(c.getBlibs());
+  }
 
   last_now_time_ = Time_t::max();
   sync_time = Time_t::max();
@@ -179,6 +180,10 @@ template<class tBlib>
 bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib &b1, const tBlib &b2) const {
   return detail::CausallyConnected(*connector_, b1, b2);
 };
+
+
+
+
 
 
 template<class tBlib>
@@ -290,31 +295,40 @@ void TDBScan_Algo<tBlib>::NextBlib(const tBlib &b) {
     ++ac_iter;
   }
 
-  LOG_DEBUG("Early merge: iterating _newly_established_clusters: {}", _newly_established_clusters.size());
-  LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(),
-            concluded_clusters_.size());
-  // 50. traverse the newly established list and try to merge clusters with the active clusters
-  auto nec_citer = _newly_established_clusters.cbegin();
-  ac_iter = active_clusters_.begin();
-  while (nec_citer != _newly_established_clusters.cend()) {
-    while (ac_iter != active_clusters_.end() && nec_citer != _newly_established_clusters.cend()) {
-      //TODO implement the early merge criteria
 
-      // if there is overlap except in one blib, the one holdout blib might be noise hit that was just , but the
-      const auto overlap = nec_citer->nOverlap(*ac_iter);
-      if (overlap >= params_.multiplicity * params_.earlyMergeMultiplicityRatio) {
-        LOG_TRACE("this is a subset;");
-        nec_citer = _newly_established_clusters.erase(nec_citer);
-        ac_iter = active_clusters_.begin();
-        continue;
+  if (!_newly_established_clusters.empty() && !active_clusters_.empty()) {
+    LOG_DEBUG("Early merge: iterating _newly_established_clusters: {}", _newly_established_clusters.size());
+    LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(),
+              concluded_clusters_.size());
+
+    // 50. traverse the newly established list and try to merge clusters with the active clusters
+    auto nec_citer = _newly_established_clusters.cbegin();
+    while (nec_citer != _newly_established_clusters.cend()) {
+      auto ac_iter = active_clusters_.rbegin();
+      bool to_discard = false;
+      while (ac_iter != active_clusters_.rend() && nec_citer != _newly_established_clusters.cend()) {
+        // clusters which do not share the latest Blib are never to be considered
+        if (ac_iter->getLatestBlib() != nec_citer->getLatestBlib()) {  // == b
+          ++ac_iter;
+          continue;
+        }
+
+        const auto overlap = nec_citer->nOverlap(*ac_iter);
+
+        // cluster might me a merging root
+        if (overlap >= params_.multiplicity * params_.earlyMergeMultiplicityRatio) {
+          if (overlap != params_.multiplicity)
+            ac_iter->copyBlibs(*nec_citer);
+          to_discard = true;
+        }
+        ++ac_iter;
       }
-      LOG_TRACE("this is NOT a subset;");
-      ++ac_iter;
+      nec_citer = to_discard ? _newly_established_clusters.erase(nec_citer) : std::next(nec_citer, 1); //nec_citer++
     }
-    //established cluster is a genuinely new cluster
-    ++nec_citer;
-    ac_iter = active_clusters_.begin();
   }
+
+
+  //transfer any remaining newly_established clusters
   if (!_newly_established_clusters.empty()) {
     LOG_DEBUG("Inserting {} genuine new active clusters", _newly_established_clusters.size());
     active_clusters_.insert(active_clusters_.end(), _newly_established_clusters.begin(),
