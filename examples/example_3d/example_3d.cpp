@@ -8,6 +8,7 @@
 
 #include "blib.h"
 #include "connectors.h"
+#include "gen_blibs.h"
 #include "external/common_clib/stopwatch.h"
 
 #include "tdbscan_algo/tdbscan_algo.h"
