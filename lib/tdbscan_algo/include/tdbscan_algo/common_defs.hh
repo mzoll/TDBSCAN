@@ -8,7 +8,7 @@
 #include <format>
 #include "common_defs.h"
 
-// ========================= TIME =======================
+// ========================= ScalarTime =======================
 namespace tdbscan {
 bool
 ScalarTime_t::operator<(const ScalarTime_t &rhs) const { return value_ < rhs.value_; };
@@ -28,7 +28,7 @@ ScalarTime_t::operator=(const double rhs) {
   value_ = rhs;
   return *this;
 };
-};
+};  // namespace tdbscan
 
 std::ostream &operator<<(std::ostream &os, const tdbscan::ScalarTime_t &st) {
   return os << std::format("ScalarTime({})", double(st));
@@ -45,82 +45,127 @@ struct std::formatter<tdbscan::ScalarTime_t> {
 };
 
 
+// ========================= Ordinate1d =======================
+
+
 namespace tdbscan {
-/// the distance to another position
-Position1d::Distance_t
-Position1d::distance(const Position1d &rhs) const { return rhs.value_ - value_; };
 
-Position1d::Distance_t
-Position1d::magnitude() const { return value_; };
+template<class t_base, class t_dist>
+Position1d<t_base, t_dist>::Distance_t
+Position1d<t_base, t_dist>::distance(const Position1d &rhs) const { return rhs.value_ - value_; };
 
-Position1d::Distance_t
-Position1d::abs() const { return this->magnitude(); };
+template<class t_base, class t_dist>
+Position1d<t_base, t_dist>::Distance_t
+Position1d<t_base, t_dist>::magnitude() const { return value_; };
 
+template<class t_base, class t_dist>
+Position1d<t_base, t_dist>::Distance_t
+Position1d<t_base, t_dist>::abs() const { return this->magnitude(); };
+
+template<class t_base, class t_dist>
 bool
-Position1d::operator<(const Position1d &rhs) const { return value_ < rhs.value_; };
+Position1d<t_base, t_dist>::operator<(const Position1d &rhs) const { return value_ < rhs.value_; };
 
+template<class t_base, class t_dist>
 bool
-Position1d::operator==(const Position1d &rhs) const { return value_ == rhs.value_; };
+Position1d<t_base, t_dist>::operator==(const Position1d &rhs) const { return value_ == rhs.value_; };
 
+template<class t_base, class t_dist>
+Position1d<t_base, t_dist>::operator double() const { return value_; }
 
-Position1d::operator double() const { return value_; }
-
-Position1d &
-Position1d::operator=(const double rhs) {
+template<class t_base, class t_dist>
+Position1d<t_base, t_dist> &
+Position1d<t_base, t_dist>::operator=(const double rhs) {
   value_ = rhs;
   return *this;
 };
 
-inline
-std::ostream &operator<<(std::ostream &os, const tdbscan::Position1d &p1d) {
-  return os << std::format("Position1d({})", p1d.value_);
+template<class t_base, class t_dist>
+std::ostream &operator<<(std::ostream &os, const tdbscan::Position1d<t_base, t_dist> &p1d) {
+  return os << std::format("Position1d({})", p1d.getValue());
 };
 } //namespace tdbscan
 
-template<>
-struct std::formatter<tdbscan::Position1d> {
+template<class t_base, class t_dist>
+struct std::formatter<tdbscan::Position1d<t_base, t_dist> > {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const tdbscan::Position1d &p1d, std::format_context &ctx) const {
-    return std::format_to(ctx.out(), "[x:{}]", static_cast<double>(p1d));
+  auto format(const tdbscan::Position1d<t_base, t_dist> &p1d, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[x:{}]", p1d.getValue());
   };
 };
 
 
+// --- ContPos1d
+namespace tdbscan{
+std::ostream &operator<<(std::ostream &os, const tdbscan::ContPos1d &p1d) {
+  return os << std::format("ContPos1d({})", p1d.value_);
+};
+} //namespace tdbscan
+
+template<>
+struct std::formatter<tdbscan::ContPos1d> : public std::formatter<tdbscan::Position1d<double, double> > {
+//  auto format(const tdbscan::ContPos1d &p1d, std::format_context &ctx) const {
+//    return std::formatter<tdbscan::Position1d<double, double> >::format(p1d, ctx);
+//  };
+};
+
+
+// ========================= Ordinate3d =======================
+
 namespace tdbscan {
-/// get the distance with a partner object
-Position3d::Distance_t
-Position3d::distance(const Position3d &rhs) const {
+
+template<class t_base, class t_dist>
+Position3d<t_base, t_dist>::Distance_t
+Position3d<t_base, t_dist>::distance(const Position3d &rhs) const {
   return sqrt(pow(xord - rhs.xord, 2) + pow(yord - rhs.yord, 2) + pow(zord - rhs.zord, 2));
 };
 
-Position3d::Distance_t
-Position3d::magnitude() const { return sqrt(pow(xord, 2) + pow(yord, 2) + pow(zord, 2)); };
+template<class t_base, class t_dist>
+Position3d<t_base, t_dist>::Distance_t
+Position3d<t_base, t_dist>::magnitude() const { return sqrt(pow(xord, 2) + pow(yord, 2) + pow(zord, 2)); };
 
-Position3d::Distance_t Position3d::abs() const { return this->magnitude(); };
+template<class t_base, class t_dist>
+Position3d<t_base, t_dist>::Distance_t Position3d<t_base, t_dist>::abs() const { return this->magnitude(); };
 
-bool Position3d::operator<(const Position3d &rhs) const {
+template<class t_base, class t_dist>
+bool Position3d<t_base, t_dist>::operator<(const Position3d &rhs) const {
   return magnitude() < rhs.magnitude() || xord < rhs.xord || yord < rhs.yord || zord < rhs.zord;
 };
 
-bool Position3d::operator==(const Position3d &rhs) const {
+template<class t_base, class t_dist>
+bool Position3d<t_base, t_dist>::operator==(const Position3d &rhs) const {
   return xord == rhs.xord && yord == rhs.yord && zord == rhs.zord;
 };
 
-
-inline std::ostream &operator<<(std::ostream &os, const Position3d &p3d) {
+template<class t_base, class t_dist>
+std::ostream &operator<<(std::ostream &os, const Position3d<t_base, t_dist> &p3d) {
   return os << std::format("Position3d(x:{}, y:{}, z:{})", p3d.xord, p3d.yord, p3d.zord);
 };
 }; //namespace tdbscan
 
 
-template<>
-struct std::formatter<tdbscan::Position3d> {
+template<class t_base, class t_dist>
+struct std::formatter<tdbscan::Position3d<t_base, t_dist> > {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const tdbscan::Position3d &p3d, std::format_context &ctx) const {
-    return std::format_to(ctx.out(), "[x:{}, y:{}, z:{}]", p3d.xord, p3d.yord, p3d.zord);
+  auto format(const tdbscan::Position3d<t_base, t_dist> &p3d, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "[x:{}, y:{}, z:{}]", p3d.getXord(), p3d.getYord(), p3d.getZord());
   };
+};
+
+// --- ContPos3d
+namespace tdbscan{
+std::ostream &operator<<(std::ostream &os, const tdbscan::ContPos3d &p3d) {
+  return os << std::format("ContPos1d(x:{}, y:{}, z:{})", p3d.xord, p3d.yord, p3d.zord);
+};
+} //namespace tdbscan
+
+template<>
+struct std::formatter<tdbscan::ContPos3d>  : public std::formatter<tdbscan::Position3d<double, double> > {
+  //  auto format(const tdbscan::ContPos3d &p3d, std::format_context &ctx) const {
+  //    return std::formatter<tdbscan::Position3d<double, double> >::format(p3d, ctx);
+  //  };
 };
 
 
