@@ -182,10 +182,6 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib &b1, const tBlib &b2) co
 };
 
 
-
-
-
-
 template<class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib(const tBlib &b) {
   LOG_DEBUG("Entering NextBlib()");
