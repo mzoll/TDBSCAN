@@ -13,14 +13,15 @@
 using namespace tdbscan;
 
 TEST(ClusterTest, SetOperations) {
-  CausalCluster<ScalarBlib> c1;
-  CausalCluster<ScalarBlib> c2;
-
   ScalarBlib b0(Position1d{0}, {1});
   ScalarBlib b1(Position1d{1}, {1});
   ScalarBlib b2(Position1d{2}, {1});
   ScalarBlib b3(Position1d{3}, {1});
   ScalarBlib b4(Position1d{4}, {1});
+
+  CausalCluster<ScalarBlib> c1;
+  CausalCluster<ScalarBlib> c2;
+
 
   EXPECT_TRUE(c1.isConcruent(c2));
   EXPECT_TRUE(c2.isConcruent(c1));
