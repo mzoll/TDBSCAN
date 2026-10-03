@@ -5,6 +5,8 @@
 #ifndef TDBSCAN_TDBCLUSTER_HH
 #define TDBSCAN_TDBCLUSTER_HH
 
+#include <cassert>
+
 #include "tdbscan_algo/tdbcluster.h"
 
 namespace tdbscan {
@@ -23,19 +25,23 @@ CausalCluster<tBlib>::CausalCluster(const CausalCluster &cc) { blibs_.insert(cc.
 template<class tBlib>
 typename tBlib::Time_t
 CausalCluster<tBlib>::getEarliestTime() const {
-  if (!blibs_.empty())
-    return (blibs_.begin()->GetTime());
-  return (Time_t::min());
+  assert(!blibs_.empty());
+  return (blibs_.cbegin()->GetTime());
 }
 
 template<class tBlib>
-typename tBlib::Time_t
+tBlib::Time_t
 CausalCluster<tBlib>::getLatestTime() const {
-  if (!blibs_.empty())
-    return (blibs_.rbegin()->GetTime());
-  return (Time_t::max());
+  assert(!blibs_.empty());
+  return (blibs_.crbegin()->GetTime());
 }
 
+template<class tBlib>
+tBlib
+CausalCluster<tBlib>::getLatestBlib() const {
+  assert(!blibs_.empty());
+  return *blibs_.rbegin();
+}
 
 template<class tBlib>
 uint64_t CausalCluster<tBlib>::nHitsWithinTimeWindow(
@@ -65,7 +71,7 @@ void CausalCluster<tBlib>::copyBlibs(const CausalCluster<tBlib> &c) {
 }
 
 template<class tBlib>
-const typename CausalCluster<tBlib>::BlibSet &CausalCluster<tBlib>::getHits() const {
+const typename CausalCluster<tBlib>::BlibSet &CausalCluster<tBlib>::getBlibs() const {
   return blibs_;
 }
 

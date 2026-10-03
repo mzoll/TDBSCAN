@@ -45,7 +45,7 @@ public: //properties
   BlibSet blibs_;
 
 public:
-  // Constructor
+  ///adhoc constructor for an empty cluster
   CausalCluster();
 
   ///adhoc constructor from single blib
@@ -69,7 +69,7 @@ public: //methods (altering)
 
 public: //methods (inert)
   /// get hits of this cluster
-  [[nodiscard]] const BlibSet &getHits() const;
+  [[nodiscard]] const BlibSet &getBlibs() const;
 
   ///Finds the time of the earliest hit in this cluster
     /// @return The earliest hit time or minus infinity if the cluster is empty
@@ -77,9 +77,14 @@ public: //methods (inert)
   getEarliestTime() const;
 
   ///Finds the time of the latest hit in this cluster
-    /// @return The latest hit time or infinity if the cluster is empty
+  /// @return The latest blib time or infinity if the cluster is empty
   [[nodiscard]] tTime
   getLatestTime() const;
+
+  /// Get the latest (/youngest) blib in the cluster
+  /// @return The latest blib
+  [[nodiscard]] tBlib
+  getLatestBlib() const;
 
   [[nodiscard]] uint64_t
   nHitsWithinTimeWindow(tTime earliest = tTime::min(), tTime latest = tTime::max()) const;
