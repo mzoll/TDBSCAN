@@ -11,6 +11,9 @@
 
 namespace tdbscan {
 template<class tBlib>
+CausalCluster<tBlib>::CausalCluster() {};
+
+template<class tBlib>
 CausalCluster<tBlib>::CausalCluster(const tBlib &b) { blibs_.insert(b); };
 
 template<class tBlib>

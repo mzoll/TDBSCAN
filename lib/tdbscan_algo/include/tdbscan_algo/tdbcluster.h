@@ -45,6 +45,9 @@ public: //properties
   BlibSet blibs_;
 
 public:
+  ///adhoc constructor for an empty cluster
+  CausalCluster();
+
   ///adhoc constructor from single blib
   CausalCluster(const tBlib &h);
 
