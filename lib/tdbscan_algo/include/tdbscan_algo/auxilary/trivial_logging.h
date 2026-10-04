@@ -32,6 +32,7 @@
 #else
   #include <iostream>
 
+  inline
   std::string runtime_fallback(const std::string& x) { return x; };
   constexpr std::string _to_logstr(const std::string& llevel) {
     if (llevel == "trace")
@@ -52,6 +53,7 @@
     std::cout << _to_logstr(#log_level) << ": " << std::format(__VA_ARGS__) << std::endl;
 #endif
 
+#define RELEASE_OPT
 
 // System Log macros.
 // TRACE < DEBUG < INFO < WARN < ERROR < FATAL
