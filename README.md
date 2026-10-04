@@ -165,7 +165,7 @@ The algorithm object holds a registry for each: emerging clusters, active cluste
 
 ### Implementation details
 
-The code has been written, so that there is no fixed definition of a Blib, so that the user can customize it to his disgression.
+The code has been written, so that there is no fixed definition of a Blib, so that the user can customize it to his digression.
 Any Object can act as a Blib as long as it can provide the following traits:
 * It needs a Time defined, that is retrievable: ``::getTime()``
 * In comparison to another Blib, their difference in time needs to be defined: ``::timeTo(other)``
