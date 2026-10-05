@@ -2,9 +2,9 @@
 // Created by marcel on 16.04.21.
 //
 
-#include "common_clib/threading/threadsafe/Semaphore.h"
+#include "external/common_clib/Semaphore.h"
 
-#include <cassert>
+#include <mutex>
 
 using namespace std;
 
@@ -69,25 +69,25 @@ int Semaphore::consume_all() {
 // namespace common_clib::threadsafe
 
 void Semaphore::set_interrupt() {
-  std::unique_lock<std::mutex> lock(mutex);
+  std::lock_guard lock(mutex);
   internal_interrupt_set_.store(true);
   cond.notify_all();
 };
 
 void Semaphore::reset_interrupt() {
-  std::unique_lock<std::mutex> lock(mutex);
+  std::lock_guard lock(mutex);
   internal_interrupt_set_.store(false);
 };
 
 void Semaphore::set_one_external_interrupt() {
-  std::unique_lock<std::mutex> lock(mutex);
-  external_interrupt_set_counter_++;
+  std::lock_guard lock(mutex);
+  ++external_interrupt_set_counter_;
   cond.notify_all();
 };
 
 void Semaphore::reset_one_external_interrupt() {
-  std::unique_lock<std::mutex> lock(mutex);
-  external_interrupt_set_counter_--;
+  std::lock_guard lock(mutex);
+  --external_interrupt_set_counter_;
 };
 
 }  // namespace common_clib::threadsafe
