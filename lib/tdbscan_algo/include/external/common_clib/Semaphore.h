@@ -96,7 +96,7 @@ class Semaphore {
   std::atomic<bool> internal_interrupt_set_;
 
  public:  // ctor
-  Semaphore();
+  Semaphore() noexcept;
 
  public:  // dtor
   ~Semaphore() noexcept;
