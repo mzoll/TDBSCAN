@@ -21,11 +21,11 @@
 namespace common_clib::threading {
 
 /// an Error that can be thrown when the Interrupt has been triggered
-struct InterruptIsSetError : std::exception {
+struct InterruptIsSet : std::exception {
   [[nodiscard]] char const* what() const noexcept override {
     return "The Queue was interrupted";
   }
-  ~InterruptIsSetError() override = default;
+  ~InterruptIsSet() override = default;
 };
 
 /// an Error to be thrown when an item should have been popped from the queue, but it was empty
@@ -122,7 +122,7 @@ InterruptableQueue<Tvalue>::InterruptableQueue() noexcept : queue_() {}
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(value_type&& element) {
   if (semaphore_.is_blocked())
-    throw InterruptIsSetError();
+    throw InterruptIsSet();
   queue_.push(std::move(element));
   semaphore_.post_one();
 }
@@ -130,7 +130,7 @@ void InterruptableQueue<Tvalue>::push(value_type&& element) {
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(const value_type& element) {
   if (semaphore_.is_blocked())
-    throw InterruptIsSetError();
+    throw InterruptIsSet();
   queue_.push(element);
   semaphore_.post_one();
 }
@@ -139,7 +139,7 @@ template <class Tvalue>
 typename InterruptableQueue<Tvalue>::value_type
 InterruptableQueue<Tvalue>::pop() {
   if (semaphore_.is_blocked())
-    throw InterruptIsSetError();
+    throw InterruptIsSet();
   semaphore_.consume_one();  // this will block if there is currently nothing to consume
   std::lock_guard pop_front_lock(pop_front_mutex_);
   auto element(std::move(queue_.front()));

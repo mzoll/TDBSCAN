@@ -12,7 +12,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <exception>
 #include <mutex>
 
 #include "interrupt.h"
@@ -85,7 +84,7 @@ namespace common_clib::threadsafe {
  *    consumer.join();
  *    breaker.join();
  */
-class Semaphore {
+class Semaphore : protected Interruptable {
  private:
   mutable std::mutex mutex;
   std::condition_variable cond;
