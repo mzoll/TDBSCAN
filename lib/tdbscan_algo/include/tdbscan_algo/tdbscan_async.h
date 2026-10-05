@@ -60,10 +60,18 @@ public: // --- THE REAL MACHINERY ---
  * Obtain one output cluster as it becomes available
  * @return a set of blibs which is a cluster
  */
-  BlibSet ObtainOutput();
+  BlibSet ObtainCluster();
 
+  /**
+   *
+   * @param consume_inputs optionally consume the remainder of inputs; this will block in inputs
+   */
+  void Finalize(bool consume_inputs = true);
 
-  void Finalize();
+  // is there more inputs to be had
+  bool more_input() const {return !input_queue_.empty();};
+  // is there more outputs to be had
+  bool more_output() const {return !output_queue_.empty();};
 
 public:
   //machine control

@@ -68,23 +68,24 @@ void TDBScan_AsyncMachine<tBlib>::Crank() {
 
 template<class tBlib>
 TDBScan_Algo<tBlib>::BlibSet
-TDBScan_AsyncMachine<tBlib>::ObtainOutput() {
+TDBScan_AsyncMachine<tBlib>::ObtainCluster() {
   return output_queue_.consume_one().getBlibs();
 }
 
 template<class tBlib>
 void
-TDBScan_AsyncMachine<tBlib>::Finalize() {
+TDBScan_AsyncMachine<tBlib>::Finalize(const bool consume_inputs) {
   finalize_requested_ = true;
-
   //bleed the input-queue dry
-  input_queue_.block(); //makes all consumers and
 
-  for (auto& b : input_queue_.exhaust()) {
-    NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
-    ++telemetry_.n_blibs_;
+  input_queue_.block(); //makes the driving thread resurface and stop
+
+  if (consume_inputs) {
+    for (auto& b : input_queue_.exhaust()) {
+      NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
+      ++telemetry_.n_blibs_;
+    }
   }
-
   TDBScan_Algo<tBlib>::Finalize();
 
   while (!concluded_clusters_.empty()) {
