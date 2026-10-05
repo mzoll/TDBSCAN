@@ -4,6 +4,8 @@ add_subdirectory(example_1d)
 #---------------------------------------
 add_subdirectory(example_3d)
 
+add_subdirectory(example_async)
+
 #---------------------------------------
 add_executable(sandbox)
 
