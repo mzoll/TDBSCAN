@@ -61,7 +61,7 @@ TDBScan_Algo<tBlib>::TDBScan_Algo(
   //    LOG_FATAL("RejectTimeWindow needs to be greater than AcceptTimeWindow");
 
   if (!connector_)
-    LOG_ERROR("No Connector defined!");
+    LOG_ERROR("No ConnectionBlock defined!");
 
   LOG_INFO("This is TDBScan!");
   LOG_DEBUG("Leaving Init()");
@@ -98,32 +98,10 @@ TDBScan_Algo<tBlib>::Process(const tBlibContainer &blibs) {
   return bss;
 };
 
-template<class tBlib>
-void
-TDBScan_Algo<tBlib>::FeedBlib(const tBlib &b) {
-  if (finalize_requested_)
-    throw std::logic_error("::FeedBlib() requested after ::Finalize() has been called;");
-
-  mtx_input_access_.lock();
-  input_queue_.push(b);
-  mtx_input_access_.unlock();
-  sig_input_available_.notify_all();
-}
-
-
-
 
 template<class tBlib>
 void
 TDBScan_Algo<tBlib>::Finalize() {
-  finalize_requested_ = true;
-
-
-  //needs to close the input queue
-  //wait: let the rest of input blibs be processed
-  //
-  sig_ready_for_finalize_.wait(glob_seqaccess_lock_);
-
   sync_time = Time_t::max();
 
   emerging_clusters_.clear();
@@ -164,16 +142,6 @@ TDBScan_Algo<tBlib>::Finalize() {
     ac_iter = active_clusters_.erase(ac_iter);
   }
 
-  if (!concluded_clusters_.empty) {
-    //transfer all concluded clusters to the output queue
-    output_access_lock_.lock();
-    while (!concluded_clusters_.empty()) {
-      output_queue_.push(concluded_clusters_.pop_front());
-    }
-    output_access_lock_.unlock();
-    sig_output_available_.notify_all();
-  }
-
   assert(active_clusters_.empty());
 };
 
@@ -188,8 +156,9 @@ TDBScan_Algo<tBlib>::Process(const std::set<tBlib> &blibs) {
   concluded_clusters_.clear();
 
   //process through machinery
-  for (const auto &b: blibs)
-    FeedBlib(b);
+  for (const auto &b: blibs) {
+    NextBlib(b);
+  }
 
   LOG_DEBUG("Finalize");
   Finalize();
@@ -213,31 +182,8 @@ bool TDBScan_Algo<tBlib>::CausallyConnected(const tBlib &b1, const tBlib &b2) co
 };
 
 
-
-template<class tBlib>
-void TDBScan_Algo<tBlib>::NextBlib_Driver(const tBlib &b) {
-  glob_seqaccess_lock_.lock();
-  while (! finalize_requested_) {
-
-    while (! input_queue_.empty()) {
-      NextBlib(input_queue_.pop());
-    }
-
-  }
-
-
-  glob_seqaccess_lock_.unlock();
-}
-
-
-
 template<class tBlib>
 void TDBScan_Algo<tBlib>::NextBlib(const tBlib &b) {
-
-  in
-
-
-  lock_guard fkt_entry_lock(mtx_glob_seqaccess_);
   LOG_DEBUG("Entering NextBlib()");
   LOG_DEBUG(">>> NEXT BLIB : {}", b);
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(),
@@ -389,29 +335,8 @@ void TDBScan_Algo<tBlib>::NextBlib(const tBlib &b) {
   LOG_TRACE("current:: emerging: {} ; active: {} ; concluded: {}", emerging_clusters_.size(), active_clusters_.size(),
             concluded_clusters_.size());
   last_now_time_ = now;
-
-  if (!concluded_clusters_.empty) {
-    //transfer all concluded clusters to the output queue
-    output_access_lock_.lock();
-    while (!concluded_clusters_.empty()) {
-      output_queue_.push(concluded_clusters_.pop_front());
-    }
-    output_access_lock_.unlock();
-    sig_output_available_.notify_all();
-  }
-
   LOG_DEBUG("Leaving NextHit()");
 }
-
-template<class tBlib>
-TDBScan_Algo<tBlib>::BlibSet
-TDBScan_Algo<tBlib>::ObtainOutput() {
-  sig_output_available_.wait(output_access_lock_);
-  const auto output= output_queue_.pop();
-  output_access_lock_.unlock();
-  return output.getBlibs();
-}
-
 
 
 template<class tBlib>

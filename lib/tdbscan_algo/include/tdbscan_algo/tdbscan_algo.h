@@ -5,13 +5,11 @@
 #ifndef TDBSCAN_TDBSCAN_ALGO_H
 #define TDBSCAN_TDBSCAN_ALGO_H
 
-#include <mutex>
-#include <condition_variable>
-#include <queue>
+#include <vector>
 
 #include "auxilary/auxil.h"
+#include "base_defs.h"
 #include "tdbcluster.h"
-
 
 namespace tdbscan {
 namespace detail {
@@ -38,9 +36,11 @@ public: //shorthands for types
   using Time_t = typename tBlib::Time_t;
   using TimeDiff_t = typename tBlib::Time_t::TimeDiff_t;
   using Distance_t = typename tBlib::Ordinate_t::Distance_t;
+
+
   /// A set of hits, time-order is enforced automatically
   using BlibSet = std::set<tBlib>;
-  ///helper struct to enforce time order, for example in std::set
+
   struct BlibSetTimeOrder {
     /// implement the order principle for sets of blibs; order them by the earliest time blib they contain
     bool operator()(const BlibSet &lhs, const BlibSet &rhs) const;
@@ -96,36 +96,6 @@ private: // internal state
   /// all concluded clusters
   std::list<CausalCluster_t> concluded_clusters_;
 
-  ///an FIFO for putting blibs on
-  std::queue<CausalCluster_t> input_queue_;
-  ///an FIFO for laying the output on
-  std::queue<CausalCluster_t> output_queue_;
-
-private: //asynchronous machinery
-  //effectively notifies about the request to finalize
-  std::atomic<bool> finalize_requested_;
-  /// guards the whole ::NextBlib method and makes it process sequentially
-  std::mutex mtx_glob_seqaccess_;
-  std::unique_lock<std::mutex> glob_seqaccess_lock_{mtx_output_access_};
-
-  std::mutex mtx_input_access_;
-  /// coordinates access to the `output_queue_`
-  std::unique_lock<std::mutex> input_access_lock_{mtx_input_access_};
-
-
-
-  std::mutex mtx_output_access_;
-  /// coordinates access to the `output_queue_`
-  std::unique_lock<std::mutex> output_access_lock_{mtx_output_access_};
-
-  /// signals the availability of at least one available output
-  std::condition_variable sig_input_available_;
-  std::condition_variable sig_output_available_;
-  std::condition_variable sig_ready_for_finalize_;
-
-  //need a thread for the inner driver
-
-
 private: //parameters
   //========================
   // Configurable Parameters
@@ -153,7 +123,7 @@ public: //interface
    * Push everything back into te pipeline.
    * Clean-up the memory.
    * @tparam tBlibContainer any type of iterable object containing tBlibs
-   * @param blibs the hits to process
+   * @param inhits the hits to process
    * @return a series of hits, which are the subevents (time-order in sequence and in hit-order)
    */
   template<class tBlibContainer>
@@ -169,28 +139,11 @@ public: // probe of internal state
   //probe into the algorithm
   bool CausallyConnected(const tBlib &b1, const tBlib &b2) const;
 
-public: // --- THE REAL MACHINERY ---
+protected: // --- THE REAL MACHINERY ---
   //===================
   // Internal Methods
   //===================
 
-  /** Asynchronously put one blib on the input queue
-   * @param b the blib to feed
-   */
-  void FeedBlib(const tBlib &b);
-
-  void Finalize();
-
-  /**
-   * Obtain one output cluster as it becomes available
-   * @return a set of blibs which is a cluster
-   */
-  BlibSet ObtainOutput();
-
-public: // --- THE REAL MACHINERY ---
-  //===================
-  // Internal Methods
-  //===================
   /**The main driver for the entire algorithm:
    * Adds a new hit to all clusters with which it is connected (including subsets of existing clusters).
    * By 'advancing' the clusters this function also causes subevents to be built when possible.
@@ -198,7 +151,7 @@ public: // --- THE REAL MACHINERY ---
    */
   void NextBlib(const tBlib &b);
 
-
+  void Finalize();
 
 private: //work on *clusters*
   /** Attempt to add Hit h to existing cluster c, or to the subset of c with which it is connected by enough hits in c
