@@ -37,13 +37,16 @@ list(APPEND header_files
 
 
 list(APPEND src_files
+        src/include_all.cpp
         src/external/common_clib/Semaphore.cpp
 )
 
 
 target_sources(tdbscan_algo
-       PUBLIC ${header_files}
-       #src/include_all.cpp
+       PUBLIC
+        ${header_files}
+       PRIVATE
+        ${src_files}
 )
 
 # Figure out logging: if available use boost logging
