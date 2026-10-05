@@ -73,6 +73,16 @@ public: // --- THE REAL MACHINERY ---
   // is there more outputs to be had
   bool more_output() const {return !output_queue_.empty();};
 
+  void close_inlet();
+  void close_outlet() {return output_queue_.block();}
+
+  void open_inlet();
+  void open_outlet() {return output_queue_.unblock();}
+
+
+  bool inlet_closed() const;
+  bool outlet_closed() const {return output_queue_.blocked();};
+
 public:
   //machine control
   ///start the machine, aka the internal thread
