@@ -114,7 +114,7 @@ class InterruptableQueue {
   [[nodiscard]] bool empty() const noexcept;
 
   /// block the queue, all waiting calls will surface by throwing
-  void block() const noexcept;
+  void block() noexcept;
   /// block the queue, all waiting calls will surface by throwing
   void block_inlet() noexcept;
   /// block the queue, all waiting calls will surface by throwing
@@ -128,26 +128,23 @@ class InterruptableQueue {
   bool outlet_blocked() const noexcept;
 
   /// reset the block
-  void release_block() const noexcept;
+  void release_block() noexcept;
 /// reset the block
-  void release_inlet_block() const noexcept;
+  void release_inlet_block() noexcept;
 /// reset the block
-  void release_outlet_block() const noexcept;
+  void release_outlet_block() noexcept;
 
   /// purge all elements from the queue; this is done by blocking and unblocking the queue for purge
   void purge();
 
   /// get the block as an reference [that can be copied and proliferated]
-  threadsafe::Interrupt<threadsafe::Semaphore>
-  get_interrupt() const;
-  /// get the block as an reference [that can be copied and proliferated]
-  threadsafe::Interrupt<threadsafe::Semaphore>
+  threadsafe::Interrupt<InterruptableQueue<Tvalue>>
   get_inlet_interrupt() const;
   /// get the block as an reference [that can be copied and proliferated]
-  threadsafe::Interrupt<threadsafe::Semaphore>
+  threadsafe::Interrupt<InterruptableQueue<Tvalue>>
   get_outlet_interrupt() const;
 
-  friend Interrupt<InterruptableQueue>;
+  friend common_clib::threadsafe::Interrupt<InterruptableQueue>;
 };
 
 }  // namespace common_clib::threading
@@ -242,7 +239,7 @@ bool InterruptableQueue<Tvalue>::empty() const noexcept {
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::block() const noexcept {
+void InterruptableQueue<Tvalue>::block() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   inlet_.block();
   outlet_.block();
@@ -297,14 +294,6 @@ void InterruptableQueue<Tvalue>::release_outlet_block() noexcept {
   std::lock_guard lock(mutex_);
   outlet_.release();
   semaphore_.reset_interrupt();
-}
-
-
-/// get the block as an reference [that can be copied and proliferated]
-template <class Tvalue>
-common_clib::threadsafe::Interrupt<threadsafe::Semaphore>
-InterruptableQueue<Tvalue>::get_interrupt() const {
-  return semaphore_.get_interrupt();
 }
 
 /// get the block as an reference [that can be copied and proliferated]

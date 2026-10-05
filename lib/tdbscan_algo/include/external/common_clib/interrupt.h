@@ -53,7 +53,7 @@ class Interruptable {
   std::atomic<long> external_interrupt_set_counter_{0L};
   std::atomic<bool> internal_interrupt_set_{false};
 public:
-  virtual ~Interruptable() = default;
+  virtual ~Interruptable() noexcept;
   std::condition_variable cond;  //make stuff wait on this cond-var
 protected:
   virtual void when_setting_interrupt() noexcept {};
@@ -103,6 +103,11 @@ void Interrupt<Tclass>::trigger() noexcept {
   referencing_->set_one_external_interrupt();
   triggered_.store(true);
 }
+
+inline Interruptable::~Interruptable() noexcept {
+  std::lock_guard lock(mtx_);
+  cond.notify_all();
+};
 
 inline
 void Interruptable::set_internal_interrupt() noexcept {
