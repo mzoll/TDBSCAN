@@ -32,7 +32,7 @@ int Semaphore::consume_one() {
   if (is_blocked())
     throw interrupt_exception();
   std::unique_lock lock(mutex);
-  lock.lock();
+
   if (counter.load() == 0) {
     cond.wait(lock, [&] {
       if (is_blocked())

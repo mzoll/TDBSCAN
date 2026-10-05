@@ -18,7 +18,7 @@
 #include <mutex>
 #include <queue>
 
-#include "external/common_clib/Semaphore.h"
+#include "external/common_clib/SemaphoreX.h"
 
 namespace common_clib::threading {
 
@@ -162,9 +162,8 @@ template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(value_type&& element) {
   if (inlet_.is_blocked())
     throw InterruptIsSet();
-  std::unique_lock lock(push_mutex_);
+  std::lock_guard lock(push_mutex_);
   queue_.push(std::move(element));
-  lock.unlock();
   semaphore_.post_one();
 }
 
@@ -172,18 +171,19 @@ template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(const value_type& element) {
   if (inlet_.is_blocked())
     throw InterruptIsSet();
+  std::lock_guard lock(push_mutex_);
   queue_.push(element);
   semaphore_.post_one();
 }
 
 template <class Tvalue>
-typename InterruptableQueue<Tvalue>::value_type
+InterruptableQueue<Tvalue>::value_type
 InterruptableQueue<Tvalue>::pop() {
   if (outlet_.is_blocked())
     throw InterruptIsSet();
   try {
     semaphore_.consume_one();  // this will block if there is currently nothing to consume
-  } catch (threadsafe::interrupt_exception) {
+  } catch (threadsafe::interrupt_exception& e) {
     throw InterruptIsSet();
   }
   std::lock_guard pop_front_lock(pop_front_mutex_);
@@ -200,8 +200,8 @@ InterruptableQueue<Tvalue>::exhaust() {
     throw InterruptIsSet();
   unsigned int n_many;
   try {
-    n_many = semaphore_.consume_all(); // blockin
-  } catch (threadsafe::interrupt_exception) {
+    n_many = semaphore_.consume_all(); // blocking
+  } catch (threadsafe::interrupt_exception& e) {
     throw InterruptIsSet();
   }
 
@@ -214,8 +214,6 @@ InterruptableQueue<Tvalue>::exhaust() {
   }
   return rslt_vec;
 }
-
-
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::purge() {
@@ -257,7 +255,7 @@ void InterruptableQueue<Tvalue>::block_outlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
   outlet_.block();
-  semaphore_.set_interrupt();  //FIXME, do we need to absorb this in into outlet?
+  semaphore_.set_interrupt();  //TODO, do we need to absorb this in into outlet?
   semaphore_.reset_interrupt();
 }
 
