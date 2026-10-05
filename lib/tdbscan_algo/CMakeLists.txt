@@ -12,6 +12,11 @@ target_include_directories(tdbscan_algo
 # target_precompile_headers(<target> PUBLIC <header-files>)
 
 list(APPEND header_files
+        include/external/common_clib/interrupt.h
+        include/external/common_clib/InterruptableQueue.hpp
+        include/external/common_clib/Semaphore.h
+        include/external/common_clib/stopwatch.h
+        include/external/common_clib/trivial_logging.h
         include/tdbscan_algo/auxilary/auxil.h
         include/tdbscan_algo/auxilary/trivial_logging.h
         include/tdbscan_algo/base_defs.h
@@ -26,7 +31,15 @@ list(APPEND header_files
         #include/tdbscan_algo/tdbcluster.hh
         include/tdbscan_algo/tdbscan_algo.h
         #include/tdbscan_algo/tdbscan_algo.hh
+        include/tdbscan_algo/tdbscan_async.h
+        #include/tdbscan_algo/tdbscan_async.hh
 )
+
+
+list(APPEND src_files
+        src/external/common_clib/Semaphore.cpp
+)
+
 
 target_sources(tdbscan_algo
        PUBLIC ${header_files}
