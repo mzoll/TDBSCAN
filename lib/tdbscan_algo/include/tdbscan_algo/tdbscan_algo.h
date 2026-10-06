@@ -79,7 +79,7 @@ public: //typedefs: some internal definitions and shorthands
     TDBScan_ParameterSet();
   };
 
-private: // internal state
+protected: // internal state
   //==================
   // Properties
   //==================

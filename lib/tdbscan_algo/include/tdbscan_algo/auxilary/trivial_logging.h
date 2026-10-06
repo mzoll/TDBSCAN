@@ -31,7 +31,7 @@
     BOOST_LOG_TRIVIAL(log_level) << std::format(__VA_ARGS__);
 #else
   #include <iostream>
-
+  inline
   std::string runtime_fallback(const std::string& x) { return x; };
   constexpr std::string _to_logstr(const std::string& llevel) {
     if (llevel == "trace")
