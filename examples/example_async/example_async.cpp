@@ -122,8 +122,11 @@ public:
 
   void stop() {
     should_run_ = false;
-    thread_->join();
-    delete thread_;
+    if (thread_) {
+      thread_->join();
+      delete thread_;
+      thread_=nullptr;
+    }
   };
 
 };
@@ -213,19 +216,22 @@ int main(int argc, char **argv) {
   } _feeder_task(&gen, &machine);
 
 
-  Feeder feeder(_feeder_task);
-
-  auto consumer_task = [&machine]() {
-    machine.ObtainCluster();
-  };
-
-  Consumer consumerA(consumer_task), consumerB(consumer_task);
+  // Feeder feeder(_feeder_task);
+  //
+  // auto consumer_task = [&machine]() {
+  //   machine.ObtainCluster();
+  // };
+  //
+  // Consumer consumerA(consumer_task), consumerB(consumer_task);
 
   //starting all parts of the machine
   machine.start();
-  consumerA.start();
-  consumerB.start();
-  feeder.start();
+  // consumerA.start();
+  // consumerB.start();
+  // feeder.start();
+
+  std::this_thread::sleep_for(1s);
+  machine.stop();
 
   //shutdown of all parts
 }

@@ -66,6 +66,14 @@ class InterruptableQueue {
   /// the type of the stored elements
   using value_type = Tvalue;
 
+  /// an Error that can be thrown when the Interrupt has been triggered
+  struct InterruptIsSet : std::exception {
+    [[nodiscard]] char const* what() const noexcept override {
+      return "The Queue was interrupted";
+    }
+    ~InterruptIsSet() override = default;
+  };
+
  private:
   /// the most elemental queue-container
   std::queue<value_type> queue_;
@@ -87,8 +95,18 @@ class InterruptableQueue {
   class _IOlet : public threadsafe::Interruptable {
     bool closed_{false};
   public:
-    void block(const std::function<void ()> &cb ={}) {closed_=true; set_internal_interrupt(); cb();};
-    void release(const std::function<void ()> &cb={}) {closed_=false; reset_internal_interrupt(); cb();};
+    void block(const std::function<void ()>* cb = nullptr) {
+      closed_=true;
+      set_internal_interrupt();
+      if (cb)
+        (*cb)();
+    };
+    void release(const std::function<void ()>* cb=nullptr) {
+      closed_=false;
+      reset_internal_interrupt();
+      if (cb)
+        (*cb)();
+    };
     bool is_blocked() const noexcept {return closed_;};
   } inlet_, outlet_;
 
@@ -183,9 +201,15 @@ InterruptableQueue<Tvalue>::pop() {
     throw InterruptIsSet();
   try {
     semaphore_.consume_one();  // this will block if there is currently nothing to consume
+
   } catch (threadsafe::interrupt_exception& e) {
+    LOG_ERROR("::Inters exc");
+    throw InterruptIsSet();
+  } catch (...) {
+    LOG_ERROR("::ANON exc");
     throw InterruptIsSet();
   }
+
   std::lock_guard pop_front_lock(pop_front_mutex_);
   auto element(std::move(queue_.front()));
   queue_.pop();
@@ -239,8 +263,12 @@ bool InterruptableQueue<Tvalue>::empty() const noexcept {
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::block() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
-  inlet_.block();
-  outlet_.block();
+  LOG_DEBUG("REQ Blocking Input");
+  block_inlet();
+  LOG_DEBUG("REQ Blocking output");
+  block_outlet();
+  LOG_DEBUG("Done");
+
 }
 
 template <class Tvalue>
@@ -256,7 +284,6 @@ void InterruptableQueue<Tvalue>::block_outlet() noexcept {
   std::lock_guard lock(mutex_);
   outlet_.block();
   semaphore_.set_interrupt();  //TODO, do we need to absorb this in into outlet?
-  semaphore_.reset_interrupt();
 }
 
 
@@ -267,12 +294,12 @@ bool InterruptableQueue<Tvalue>::is_blocked() const noexcept {
 
 template <class Tvalue>
 bool InterruptableQueue<Tvalue>::inlet_blocked() const noexcept {
-  return inlet_.blocked();
+  return inlet_.is_blocked();
 }
 
 template <class Tvalue>
 bool InterruptableQueue<Tvalue>::outlet_blocked() const noexcept {
-  return outlet_.blocked();
+  return outlet_.is_blocked();
 }
 
 template <class Tvalue>

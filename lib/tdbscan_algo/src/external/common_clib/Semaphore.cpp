@@ -6,6 +6,8 @@
 
 #include <mutex>
 
+#include "tdbscan_algo/auxilary/trivial_logging.h"
+
 using namespace std;
 
 namespace common_clib::threadsafe {
@@ -26,7 +28,6 @@ void Semaphore::post_many(const int n_many) {
     cond.notify_one();
   }
 }
-
 
 int Semaphore::consume_one() {
   if (is_blocked())
@@ -53,5 +54,23 @@ int Semaphore::consume_all() {
   counter = 0;
   return rslt;
 }
+
+unsigned long Semaphore::load() const noexcept {
+  return counter.load();
+}
+
+bool Semaphore::is_blocked() const noexcept{
+  return is_interrupted();
+}
+
+void Semaphore::set_interrupt() noexcept {
+  set_internal_interrupt();
+};
+
+void Semaphore::reset_interrupt() noexcept {
+  reset_internal_interrupt();
+};
+
+
 
 }  // namespace common_clib::threadsafe

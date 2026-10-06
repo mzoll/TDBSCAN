@@ -121,12 +121,10 @@ class Semaphore : protected Interruptable {
 
   // convenience access
   /// get the number of consumable elements [volatile]
-  unsigned long load() const { return counter.load(); }
+  unsigned long load() const noexcept;
 
   /// get the current status
-  bool is_blocked() const {
-    return is_interrupted();
-  }
+  bool is_blocked() const noexcept;
 
   /// toggle to blocked state, raising an exception on all waiting parties; no
   /// further consume operations are allowed until the reset_interrupt is

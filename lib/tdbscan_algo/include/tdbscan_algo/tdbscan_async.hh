@@ -21,6 +21,8 @@ TDBScan_AsyncMachine<tBlib>::~TDBScan_AsyncMachine() {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::start() noexcept {
+  if (input_queue_.is_blocked());
+    input_queue_.release_block();
   if (!driving_tread_)
     driving_tread_ = new thread(&TDBScan_AsyncMachine::Crank, this);
 }
@@ -28,6 +30,7 @@ TDBScan_AsyncMachine<tBlib>::start() noexcept {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::stop() noexcept {
+  LOG_DEBUG("Stop called for TDBSCAN Machine");
   if (driving_tread_) {
     input_queue_.block();
     driving_tread_->join();
@@ -59,11 +62,16 @@ void TDBScan_AsyncMachine<tBlib>::Crank() {
         ++telemetry_.n_output_clusters_;
       }
 
-    } catch (common_clib::threadsafe::interrupt_exception& e) {
+    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::InterruptIsSet& i) {
       // consumption has been interrupted
+      LOG_ERROR("Input queue is blocked");
       break;
+    } catch (...) {
+      // consumption has been interrupted by something unforseen
+      throw;
     }
   }
+  LOG_ERROR("Ending driving thread execution");
 }
 
 
