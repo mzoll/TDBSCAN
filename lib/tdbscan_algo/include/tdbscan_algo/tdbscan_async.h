@@ -17,8 +17,16 @@ namespace tdbscan {
  * Needs to be configured with a connector and a parameter set then can be fed with a sequence of hits
  */
 template<class tBlib>
-class TDBScan_AsyncMachine : protected TDBScan_Algo<tBlib> {
+class TDBScan_AsyncMachine {
 
+  /// the main algorithm
+  mutable class Local_Algo : protected TDBScan_Algo<tBlib> {
+    friend TDBScan_AsyncMachine;
+  public:
+    Local_Algo(
+    const TDBScan_Algo<tBlib>::TDBScan_ParameterSet &params,
+    const TDBScan_Algo<tBlib>::Connector_t *connector) : TDBScan_Algo<tBlib>(params, connector) {};
+  } algo_;
 
   ///an FIFO for putting blibs on
   common_clib::threading::InterruptableQueue<tBlib> input_queue_;
@@ -57,10 +65,10 @@ public: // --- THE REAL MACHINERY ---
   void Crank();
 
   /**
- * Obtain one output cluster as it becomes available
- * @return a set of blibs which is a cluster
- */
-  BlibSet ObtainCluster();
+   * Obtain one output cluster as it becomes available
+   * @return a set of blibs which is a cluster
+   */
+  TDBScan_Algo<tBlib>::BlibSet ObtainCluster();
 
   /**
    *
@@ -73,14 +81,14 @@ public: // --- THE REAL MACHINERY ---
   // is there more outputs to be had
   bool more_output() const {return !output_queue_.empty();};
 
-  void close_inlet();
-  void close_outlet() {return output_queue_.block();}
+  void close_inlet() {input_queue_.block();};
+  void close_outlet() {output_queue_.block();}
 
-  void open_inlet();
-  void open_outlet() {return output_queue_.unblock();}
+  void open_inlet() {input_queue_.unblock();};
+  void open_outlet() {output_queue_.unblock();}
 
 
-  bool inlet_closed() const;
+  bool inlet_closed() const {return input_queue_.blocked();};
   bool outlet_closed() const {return output_queue_.blocked();};
 
 public:
@@ -97,8 +105,8 @@ public:
  * @param connector Pointer to a Connector, which facilítates the comparison of hits
  */
   TDBScan_AsyncMachine(
-    const TDBScan_ParameterSet &params,
-    const Connector_t *connector);
+    const TDBScan_Algo<tBlib>::TDBScan_ParameterSet &params,
+    const TDBScan_Algo<tBlib>::Connector_t *connector);
 
   /**
    * Destructor

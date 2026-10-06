@@ -87,18 +87,11 @@ namespace common_clib::threadsafe {
 class Semaphore : protected Interruptable {
  private:
   mutable std::mutex mutex;
-  std::condition_variable cond;
   // the central counting unit
   std::atomic<long> counter;
-  // the interrupt mechanism
-  std::atomic<long> external_interrupt_set_counter_;
-  std::atomic<bool> internal_interrupt_set_;
 
  public:  // ctor
   Semaphore() noexcept;
-
- public:  // dtor
-  ~Semaphore() noexcept;
 
  public:
   /**
@@ -132,7 +125,7 @@ class Semaphore : protected Interruptable {
 
   /// get the current status
   bool is_blocked() const {
-    return (external_interrupt_set_counter_.load() + static_cast<long>(internal_interrupt_set_.load()) != 0);
+    return is_interrupted();
   }
 
   /// toggle to blocked state, raising an exception on all waiting parties; no
@@ -142,19 +135,6 @@ class Semaphore : protected Interruptable {
 
   /// toggle from blocked state to free running,
   void reset_interrupt() noexcept;
-
- protected:
-  //these toggles are switched through distributed interrupt handles
-  void set_one_external_interrupt() noexcept;
-
-  void reset_one_external_interrupt() noexcept;
-
- public:
-  /// obtain the Interrupt handle, that, when triggered throws the `interrupt_exception` resurfacing all threads from
-  /// any waiting.
-  Interrupt<Semaphore> get_interrupt() {
-    return Interrupt(*this);
-  };
 
   // friend
   friend Interrupt<Semaphore>;

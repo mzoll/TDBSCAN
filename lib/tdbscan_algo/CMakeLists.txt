@@ -13,8 +13,8 @@ target_include_directories(tdbscan_algo
 
 list(APPEND header_files
         include/external/common_clib/interrupt.h
-        include/external/common_clib/InterruptableQueueX.hpp
-        include/external/common_clib/SemaphoreX.h
+        include/external/common_clib/InterruptableQueue.hpp
+        include/external/common_clib/Semaphore.h
         include/external/common_clib/stopwatch.h
         include/external/common_clib/trivial_logging.h
         include/tdbscan_algo/auxilary/auxil.h
@@ -38,7 +38,7 @@ list(APPEND header_files
 
 list(APPEND src_files
         #src/include_all.cpp
-        src/external/common_clib/SemaphoreX.cpp
+        src/external/common_clib/Semaphore.cpp
 )
 
 
