@@ -23,7 +23,7 @@ TEST(InterruptableQueue, serial_access) {
 
   InterruptableQueue<int> queue;
 
-  EXPECT_FALSE(queue.is_blocked());
+  EXPECT_FALSE(queue.is_closed());
 
   EXPECT_EQ(queue.size(), 0);
   EXPECT_TRUE(queue.empty());
@@ -67,36 +67,36 @@ TEST(InterruptableQueue, serial_access_blocking) {
 
   InterruptableQueue<int> queue;
 
-  EXPECT_FALSE(queue.is_blocked());
+  EXPECT_FALSE(queue.is_closed());
 
   EXPECT_NO_THROW(queue.push(42));
   EXPECT_EQ(queue.size(), 1);
 
   // block the outlet,
-  EXPECT_NO_THROW(queue.block_outlet());
-  EXPECT_TRUE(queue.is_blocked());
+  EXPECT_NO_THROW(queue.close_outlet());
+  EXPECT_TRUE(queue.is_closed());
   EXPECT_NO_THROW(queue.push(42));
   EXPECT_EQ(queue.size(), 2);
   EXPECT_ANY_THROW(_= queue.pop());
 
   // block the inlet too
-  EXPECT_NO_THROW(queue.block_inlet());
-  EXPECT_TRUE(queue.is_blocked());
+  EXPECT_NO_THROW(queue.close_inlet());
+  EXPECT_TRUE(queue.is_closed());
   EXPECT_ANY_THROW(queue.push(42));
   EXPECT_EQ(queue.size(), 2);
   EXPECT_ANY_THROW(_= queue.pop());
 
   //release the outlet
-  EXPECT_NO_THROW(queue.release_outlet_block());
-  EXPECT_TRUE(queue.is_blocked());
+  EXPECT_NO_THROW(queue.reopen_outlet());
+  EXPECT_TRUE(queue.is_closed());
   EXPECT_ANY_THROW(queue.push(42));
   EXPECT_EQ(queue.size(), 2);
   EXPECT_NO_THROW(_= queue.pop());
   EXPECT_EQ(queue.size(), 1);
 
   //release the inlet
-  EXPECT_NO_THROW(queue.release_inlet_block());
-  EXPECT_FALSE(queue.is_blocked());
+  EXPECT_NO_THROW(queue.reopen_inlet());
+  EXPECT_FALSE(queue.is_closed());
   EXPECT_NO_THROW(queue.push(42));
   EXPECT_EQ(queue.size(), 2);
   EXPECT_NO_THROW(_= queue.pop());
@@ -147,7 +147,7 @@ TEST(InterruptableQueue, parallel_access) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     auto f1 = p1.get_future();
 
-    q.block_outlet();  // the outlet is now blocked
+    q.close_outlet();  // the outlet is now blocked
     q.push(42);  // push a value; if everything works correctly, it is never retrieved
     t1.join();  // by blocking the outlet, the waiting of t1 was interrupted
     EXPECT_THROW(f1.get(), InterruptableQueue<int>::InterruptIsSet);

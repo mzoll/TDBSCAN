@@ -124,25 +124,25 @@ class InterruptableQueue {
   [[nodiscard]] bool empty() const noexcept;
 
   /// block the queue, all waiting calls will surface by throwing
-  void block() noexcept;
+  void close() noexcept;
   /// block the queue, all waiting calls will surface by throwing
-  void block_inlet() noexcept;
+  void close_inlet() noexcept;
   /// block the queue, all waiting calls will surface by throwing
-  void block_outlet() noexcept;
+  void close_outlet() noexcept;
 
   /// probe if queue is blocked
-  bool is_blocked() const noexcept;
+  bool is_closed() const noexcept;
   /// probe if queue is blocked
-  bool inlet_blocked() const noexcept;
+  bool inlet_closed() const noexcept;
   /// probe if queue is blocked
-  bool outlet_blocked() const noexcept;
+  bool outlet_closed() const noexcept;
 
   /// reset the block
-  void release_block() noexcept;
+  void reopen() noexcept;
 /// reset the block
-  void release_inlet_block() noexcept;
+  void reopen_inlet() noexcept;
 /// reset the block
-  void release_outlet_block() noexcept;
+  void reopen_outlet() noexcept;
 
   /// purge all elements from the queue; this is done by blocking and unblocking the queue for purge
   void purge();
@@ -231,12 +231,12 @@ InterruptableQueue<Tvalue>::exhaust() {
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::purge() {
-  block();
+  close();
   const auto n_many = semaphore_.consume_all();
   while (!queue_.empty()) {
     queue_.pop();
   }
-  release_block();
+  reopen();
 }
 
 
@@ -251,21 +251,21 @@ bool InterruptableQueue<Tvalue>::empty() const noexcept {
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::block() noexcept {
+void InterruptableQueue<Tvalue>::close() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
-  block_inlet();
-  block_outlet();
+  close_inlet();
+  close_outlet();
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::block_inlet() noexcept {
+void InterruptableQueue<Tvalue>::close_inlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
   inlet_.block();
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::block_outlet() noexcept {
+void InterruptableQueue<Tvalue>::close_outlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
   outlet_.block();
@@ -274,34 +274,34 @@ void InterruptableQueue<Tvalue>::block_outlet() noexcept {
 
 
 template <class Tvalue>
-bool InterruptableQueue<Tvalue>::is_blocked() const noexcept {
-  return inlet_blocked() || outlet_blocked();
+bool InterruptableQueue<Tvalue>::is_closed() const noexcept {
+  return inlet_closed() || outlet_closed();
 }
 
 template <class Tvalue>
-bool InterruptableQueue<Tvalue>::inlet_blocked() const noexcept {
+bool InterruptableQueue<Tvalue>::inlet_closed() const noexcept {
   return inlet_.is_blocked();
 }
 
 template <class Tvalue>
-bool InterruptableQueue<Tvalue>::outlet_blocked() const noexcept {
+bool InterruptableQueue<Tvalue>::outlet_closed() const noexcept {
   return outlet_.is_blocked();
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::release_block() noexcept {
+void InterruptableQueue<Tvalue>::reopen() noexcept {
   inlet_.release();
   outlet_.release();
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::release_inlet_block() noexcept {
+void InterruptableQueue<Tvalue>::reopen_inlet() noexcept {
   std::lock_guard lock(mutex_);
   inlet_.release();
 }
 
 template <class Tvalue>
-void InterruptableQueue<Tvalue>::release_outlet_block() noexcept {
+void InterruptableQueue<Tvalue>::reopen_outlet() noexcept {
   std::lock_guard lock(mutex_);
   outlet_.release();
   semaphore_.reset_interrupt();

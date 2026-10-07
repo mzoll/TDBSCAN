@@ -21,8 +21,8 @@ TDBScan_AsyncMachine<tBlib>::~TDBScan_AsyncMachine() {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::start() noexcept {
-  if (input_queue_.is_blocked());
-    input_queue_.release_block();
+  if (input_queue_.is_closed())
+    input_queue_.reopen();
   if (!driving_tread_)
     driving_tread_ = new thread(&TDBScan_AsyncMachine::Crank, this);
 }
@@ -32,9 +32,9 @@ void
 TDBScan_AsyncMachine<tBlib>::stop() noexcept {
   LOG_DEBUG("Stop called for TDBSCAN Machine");
   if (driving_tread_) {
-    input_queue_.block();
+    input_queue_.close();
     driving_tread_->join();
-    input_queue_.release_block();
+    input_queue_.reopen();
     delete driving_tread_;
     driving_tread_ = nullptr;
   }
