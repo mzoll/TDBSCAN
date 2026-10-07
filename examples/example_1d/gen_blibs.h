@@ -12,9 +12,7 @@
 
 // create a random double on
 double rand_double() {
-  double lower_bound = 0.;
-  double upper_bound = 1.;
-  static std::uniform_real_distribution<double> unif(lower_bound, upper_bound);
+  static std::uniform_real_distribution<double> unif(0., 1.);
   static std::default_random_engine re;
   return unif(re);
 }
@@ -56,12 +54,12 @@ generate_noise(const double noise_freq, const double width_fields, const double 
  * The box will be reflected on the right and left side
  *
  * @param box_size
- * @param inerta
+ * @param inertia
  * @param start_pos,
  * @param brightness a measure of the signal frequency in one unit-volume of the box
  * @param field_size,
  * @param time_duration
- * @return
+ * @return blibs generated
  */
 std::set<SBlibWithTrace>
 generate_moving_box(
@@ -98,6 +96,64 @@ generate_moving_box(
 
 
 /**
+ * generate blibs from a box that makes random appears at random positions
+ * @note number of realised appearances might not be the number requested. But is guarantied in the limit of great numbers.
+ *
+ * example: box_size: 4, brightness: 0.5, time_duration 5, field_size 20
+ * --xxoo-------------------
+ * --oxox-------------------
+ * ---------xoox------------
+ * ---------oxxo------------
+ * ----------------ooxx-----
+ *
+ * The box will be reflected on the right and left side
+ *
+ * @param box_size
+ * @param brightness a measure of the signal frequency in one unit-volume of the box
+ * @param appearances number of appearances to make
+ * @param field_size,
+ * @param time_duration
+ * @return blibs generated
+ */
+std::set<SBlibWithTrace>
+generate_appearing_box(
+  const double box_size,
+  const double brightness, // =1.,
+  const int appearances,
+  const double field_size,
+  const double time_duration) {
+  std::set<SBlibWithTrace> blibs;
+
+  static std::default_random_engine re;
+  const double mu = appearances/time_duration;
+  std::normal_distribution<double> gauss(mu, sqrt(mu));
+
+  double t_idx = 0.;
+  while (t_idx < time_duration) {
+    const auto a_duration = gauss(re);
+    const auto a_center_pos = rand_double() * field_size;
+
+    const int n_blibs = static_cast<int>(a_duration * box_size * brightness);
+    for (int i=0; i<n_blibs; i++) {
+      const auto t = rand_double() * a_duration + t_idx;
+      if (t > time_duration)
+        continue;
+
+      const double blib_pos_inbox = box_size * (rand_double() - 1 / 2.);
+      const auto blib_pos = a_center_pos + blib_pos_inbox;
+
+      if (blib_pos < 0. || blib_pos > field_size)
+        continue;
+
+      blibs.insert(SBlibWithTrace({blib_pos}, t, SBlibWithTrace::SIGNAL));
+    }
+    t_idx += a_duration;
+  }
+  return blibs;
+};
+
+
+/**
  * Generate Blibs for our scenario
  *
  * A bright box moves left to right in
@@ -118,7 +174,7 @@ gernerate_blibs(const double time_duration = 50, const double width_fields = 100
 
   const auto _noise_blibs = generate_noise(noise_contamination * brightness, width_fields, time_duration);
   LOG_INFO("Generated {} NOISE blibs", _noise_blibs.size());
-  //blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
+  blibs.insert(_noise_blibs.cbegin(), _noise_blibs.cend());
   return blibs;
 }
 } //namespace ex1d

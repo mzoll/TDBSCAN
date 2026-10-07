@@ -14,9 +14,9 @@
 namespace tdbscan {
 // ========================= BLIB =======================
 //make a declaration of the Blib
-class Blib3d : public AbsBlib<Position3d, ScalarTime_t> {
+class Blib3d : public AbsBlib<ContPos3d, ScalarTime_t> {
 public: //type shorthands
-  using Ordinate_t = Position3d;
+  using Ordinate_t = ContPos3d;
   using Time_t = ScalarTime_t;
 
 protected:
@@ -24,7 +24,7 @@ protected:
   Time_t time;
 
 public:
-  [[nodiscard]] Position3d
+  [[nodiscard]] ContPos3d
   getOrdinate() const { return pos; };
 
   [[nodiscard]] Time_t
@@ -46,7 +46,7 @@ public: //comparators
   operator==(const Blib3d &other) const { return time == other.time && pos == other.pos; };
 
   ///constructor
-  Blib3d(const Position3d pos, const Time_t time) : pos(pos), time(time) {};
+  Blib3d(const ContPos3d pos, const Time_t time) : pos(pos), time(time) {};
 
 private:
   friend
@@ -57,9 +57,9 @@ private:
 /**
  * A Blib that has a scalar Ordinate
  */
-class ScalarBlib : public AbsBlib<Position1d, ScalarTime_t> {
+class ScalarBlib : public AbsBlib<ContPos1d, ScalarTime_t> {
 public: //type shorthands
-  using Ordinate_t = Position1d;
+  using Ordinate_t = ContPos1d;
   using Time_t = ScalarTime_t;
 
 protected:
@@ -67,7 +67,7 @@ protected:
   Time_t time;
 
 public:
-  [[nodiscard]] Position1d
+  [[nodiscard]] ContPos1d
   getOrdinate() const { return pos; };
 
   [[nodiscard]] Time_t
@@ -90,7 +90,7 @@ public: //comparators
   operator==(const ScalarBlib &other) const { return time == other.time && pos == other.pos; };
 
   ///constructor
-  ScalarBlib(const Position1d pos, const Time_t time) : pos(pos), time(time) {};
+  ScalarBlib(const ContPos1d pos, const Time_t time) : pos(pos), time(time) {};
 
   struct TimeOrder {
     bool operator()(const ScalarBlib &lhs, const ScalarBlib &rhs) const {

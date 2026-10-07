@@ -8,9 +8,11 @@
 #include "helpers.h"
 
 #include "tdbscan_algo/tdbscan_algo.h"
+#include "external/common_clib/stopwatch.h"
 
 using namespace std;
 using namespace tdbscan;
+using namespace common_clib;
 using namespace ex1d;
 
 
@@ -37,20 +39,23 @@ int main(int argc, char **argv) {
   auto my_algo = construct_algo(2., 0.5);
 
   LOG_INFO("Generate blibs");
-  const auto blibs = gernerate_blibs(50, 100, 3, 0.1);
+  const auto blibs = gernerate_blibs(5000, 100, 3, 0.1);
 
   LOG_INFO("Processing nBlibs: {} (purity {:.3f})", blibs.size(), calculate_signal_purity(blibs));
   //take first 3
   std::set<SBlibWithTrace> _blibs;
   auto iter = blibs.begin();
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100000; i++) {
     _blibs.insert(*iter);
     LOG_TRACE("Sample : {}", *iter);
     ++iter;
   }
 
-
+  Stopwatch<std::chrono::microseconds> swatch("Process", Stopwatch<std::chrono::microseconds>::policy::start);
   const auto result = my_algo.Process(_blibs);
+  swatch.stop();
+  LOG_INFO("Processing of {} took {} {} : {} {} per blib", _blibs.size(), swatch.time(), swatch.timeunitString(), (double)swatch.time()/_blibs.size(), swatch.timeunitString());
+
 
   LOG_INFO("Generated nClusters: {}", result.size());
 
