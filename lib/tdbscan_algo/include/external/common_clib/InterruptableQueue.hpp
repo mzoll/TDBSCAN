@@ -22,14 +22,6 @@
 
 namespace common_clib::threading {
 
-/// an Error that can be thrown when the Interrupt has been triggered
-struct InterruptIsSet : std::exception {
-  [[nodiscard]] char const* what() const noexcept override {
-    return "The Queue was interrupted";
-  }
-  ~InterruptIsSet() override = default;
-};
-
 /// an Error to be thrown when an item should have been popped from the queue, but it was empty
 struct QueueEmptyError : std::exception {
   [[nodiscard]] char const* what() const noexcept override {
@@ -203,10 +195,8 @@ InterruptableQueue<Tvalue>::pop() {
     semaphore_.consume_one();  // this will block if there is currently nothing to consume
 
   } catch (threadsafe::interrupt_exception& e) {
-    LOG_ERROR("::Inters exc");
     throw InterruptIsSet();
   } catch (...) {
-    LOG_ERROR("::ANON exc");
     throw InterruptIsSet();
   }
 
@@ -263,12 +253,8 @@ bool InterruptableQueue<Tvalue>::empty() const noexcept {
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::block() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
-  LOG_DEBUG("REQ Blocking Input");
   block_inlet();
-  LOG_DEBUG("REQ Blocking output");
   block_outlet();
-  LOG_DEBUG("Done");
-
 }
 
 template <class Tvalue>

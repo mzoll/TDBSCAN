@@ -39,6 +39,7 @@ target_sources(test_common_clib
         PRIVATE
         ./test_stopwatch.cpp
         ./test_semaphore.cpp
+        ./test_interruptable_queue.cpp
 )
 
 gtest_discover_tests(test_common_clib)

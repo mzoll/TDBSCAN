@@ -58,51 +58,54 @@ TEST(Semaphore, serial_access) {
 
 TEST(Semaphore, parallel_access) {
   Semaphore s;
+  {
+    std::promise<bool> p0;
 
-  std::promise<bool> p0;
+    const auto task0 = [&s, &p0]() {
+      try {
+        s.consume_one();
+      } catch (const interrupt_exception& e) {
+        p0.set_exception(std::current_exception());
+        return;
+      }
+      p0.set_value_at_thread_exit(true);
+    };
 
-  const auto task0 = [&s, &p0]() {
-    try {
-      s.consume_one();
-    } catch (const interrupt_exception& e) {
-      p0.set_exception(std::current_exception());
-      return;
-    }
-    p0.set_value_at_thread_exit(true);
-  };
+    std::thread t0(task0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    auto f0 = p0.get_future();
 
-  std::thread t0(task0);
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  auto f0 = p0.get_future();
+    f0.wait_for(std::chrono::milliseconds(100));
 
-  f0.wait_for(std::chrono::milliseconds(100));
+    s.post_one();
+    t0.join();
+    EXPECT_EQ(f0.get(), true);
+    EXPECT_EQ(s.load(), 0);
+  }
 
-  s.post_one();
-  t0.join();
-  EXPECT_TRUE(f0.get() == true);
-  EXPECT_TRUE(s.load() == 0);
+  {
+    // now lets, see if we can set an interrupt on the waiting
+    std::promise<bool> p1;
+    const auto task1 = [&s, &p1]() {
+      try {
+        s.consume_one();
+      } catch (const interrupt_exception& e) {
+        p1.set_exception(std::current_exception());
+        return;
+      }
+      p1.set_value_at_thread_exit(true);
+    };
 
-  // now lets, see if we can set an interrupt on the waiting
-  std::promise<bool> p1;
-  const auto task1 = [&s, &p1]() {
-    try {
-      s.consume_one();
-    } catch (const interrupt_exception& e) {
-      p1.set_exception(std::current_exception());
-      return;
-    }
-    p1.set_value_at_thread_exit(true);
-  };
+    std::thread t1(task1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    auto f1 = p1.get_future();
 
-  std::thread t1(task1);
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  auto f1 = p1.get_future();
-
-  s.set_interrupt();
-  s.post_one();
-  t1.join();
-  EXPECT_ANY_THROW(f1.get());
-  EXPECT_TRUE(s.load() == 1);
+    s.set_interrupt();
+    s.post_one();
+    t1.join();
+    EXPECT_ANY_THROW(f1.get());
+    EXPECT_TRUE(s.load() == 1);
+  }
 }
 
 TEST(Semaphore, interrupts) {
