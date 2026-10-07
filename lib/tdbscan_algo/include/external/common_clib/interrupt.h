@@ -8,12 +8,28 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <string>
 #include <exception>
 
 namespace common_clib::threadsafe {
 
 /// we need something that behaves like an exception
-struct interrupt_exception : std::exception {};
+struct interrupt_exception : std::exception {
+private:
+  const std::string message_;
+public:
+
+  // Constructor accepting const char*
+  interrupt_exception(const char* msg) :
+  message_(msg) {}
+
+
+  const char* what() const noexcept {
+    return message_.c_str();
+  }
+
+
+};
 
 /**
  * A materialized handle that can be copied and everything

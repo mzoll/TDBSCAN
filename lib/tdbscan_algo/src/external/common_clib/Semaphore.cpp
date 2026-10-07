@@ -31,13 +31,13 @@ void Semaphore::post_many(const int n_many) {
 
 int Semaphore::consume_one() {
   if (is_blocked())
-    throw interrupt_exception();
+    throw interrupt_exception("consumption is interrupted");
   std::unique_lock lock(mutex);
 
   if (counter.load() == 0) {
     cond.wait(lock, [&] {
       if (is_blocked())
-        throw interrupt_exception();
+        throw interrupt_exception("consumption is interrupted");
       return counter > 0;
     });
   }
@@ -48,7 +48,7 @@ int Semaphore::consume_one() {
 
 int Semaphore::consume_all() {
   if (is_blocked())
-    throw interrupt_exception();
+    throw interrupt_exception("consumption is interrupted");
   std::lock_guard lock(mutex);
   auto rslt = counter.load();
   counter = 0;

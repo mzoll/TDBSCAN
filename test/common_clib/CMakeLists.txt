@@ -38,6 +38,7 @@ target_link_libraries(test_common_clib
 target_sources(test_common_clib
         PRIVATE
         ./test_stopwatch.cpp
+        ./test_semaphore.cpp
 )
 
 gtest_discover_tests(test_common_clib)

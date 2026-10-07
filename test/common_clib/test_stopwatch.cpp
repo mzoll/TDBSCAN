@@ -4,8 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../../lib/tdbscan_algo/include/external/common_clib/stopwatch.h"
-//#include "external/common_clib/stopwatch.h"
+#include "external/common_clib/stopwatch.h"
 
 using namespace std;
 using namespace common_clib;

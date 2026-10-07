@@ -11,7 +11,6 @@
 #define COMMONCLIB__THREADSAFE__SEMAPHORE_H
 
 #include <atomic>
-#include <condition_variable>
 #include <mutex>
 
 #include "interrupt.h"
@@ -84,7 +83,7 @@ namespace common_clib::threadsafe {
  *    consumer.join();
  *    breaker.join();
  */
-class Semaphore : protected Interruptable {
+class Semaphore : public Interruptable {
  private:
   mutable std::mutex mutex;
   // the central counting unit
