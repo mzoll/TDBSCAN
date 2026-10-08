@@ -5,9 +5,9 @@
 // https://stackoverflow.com/questions/27341029/what-is-the-best-way-to-wait-on-multiple-condition-variables-in-c11
 
 /*
- * Defines an Interruptable Queue that can be used as an out of the box solution for access within a asynchronous context.
- * Guards and rails are pu in place internally, so no need to manage this outside
- *
+ * Defines an Interruptable Queue that can be used as an out-of-the-box solution
+ * for access within a asynchronous context.
+ * Guards and rails are put in place internally, so no need to manage critical sections of acces from the outside.
  */
 
 
@@ -31,9 +31,8 @@ struct QueueEmptyError : std::exception {
 };
 
 /**
- * Asynchronous Queue class that works with a semaphore in order to allow an externally
- triggered interrupt-signal to block
- * lazy waits with an surfacing exception
+ * Asynchronous Queue class that works with a semaphore in order to allow an externally triggered interrupt-signal
+ * to block. Lazy waits with an surfacing exception if either inlet or Outlet is closed
  * @tparam Tvalue the value-type held in the queue
  *
  * @example
@@ -57,15 +56,6 @@ class InterruptableQueue {
  public:
   /// the type of the stored elements
   using value_type = Tvalue;
-
-  /// an Error that can be thrown when the Interrupt has been triggered
-  struct InterruptIsSet : std::exception {
-    [[nodiscard]] char const* what() const noexcept override {
-      return "The Queue was interrupted";
-    }
-    ~InterruptIsSet() override = default;
-  };
-
  private:
   /// the most elemental queue-container
   std::queue<value_type> queue_;
@@ -76,41 +66,60 @@ class InterruptableQueue {
   std::mutex push_mutex_;
   ///needed to lock access on the queue at the from together
   std::mutex pop_front_mutex_;
-
   /// coordinates access external interrupts
   std::mutex io_interrupt_mutex_;
 
   /// an atomic counter, that more or less represents the size of the queue and
   /// lets poping-threads wait
-  mutable common_clib::threadsafe::Semaphore semaphore_;  // <- coordinates access by representing the queue's size
+  mutable common_clib::threadsafe::Semaphore semaphore_;  // <- coordinates 'post_one/consume_one' access by representing the queue's size
 
-  class _IOlet : public threadsafe::Interruptable {
+  /// represents the inlet and the outlet of the Queue
+  class IOlet : public threadsafe::Interruptable {
+
+    //state if the iolet is closed or open for push or retrieval
     bool closed_{false};
+
   public:
-    void block(const std::function<void ()>* cb = nullptr) {
+    /// an Error that can be thrown when the Interrupt has been triggered
+    struct IOletClosed : std::exception {
+    private:
+      const std::string message_;
+    public:
+      // Constructor accepting const char*
+      IOletClosed(const char* msg) :
+      message_(msg) {};
+
+      [[nodiscard]] char const* what() const noexcept override {
+        return message_.c_str();
+      }
+      ~IOletClosed() override = default;
+    };
+
+  public:
+    void close(const std::function<void ()>* cb = nullptr) {
       closed_=true;
       set_internal_interrupt();
       if (cb)
         (*cb)();
     };
-    void release(const std::function<void ()>* cb=nullptr) {
+    void open(const std::function<void ()>* cb=nullptr) {
       closed_=false;
       reset_internal_interrupt();
       if (cb)
         (*cb)();
     };
-    bool is_blocked() const noexcept {return closed_;};
+    bool is_closed() const noexcept {return closed_;};
   } inlet_, outlet_;
+public:
+  using IOletClosed = IOlet::IOletClosed;
 
-
- public:
+public:
   /// constructor
   InterruptableQueue() noexcept;
   /// put a new entry on the queue; use move semantics
   void push(value_type&& element);
   /// put a new entry on the queue
   void push(const value_type& element);
-
   /**
    * get a the oldest (first) entry from the queue and pop it, wait if not available intermediately
    * @return the oldest element of the queue
@@ -130,18 +139,20 @@ class InterruptableQueue {
   /// block the queue, all waiting calls will surface by throwing
   void close_outlet() noexcept;
 
-  /// probe if queue is blocked
+  /** probe if queue has closed inlet or outlet
+   * @return true if closed
+   */
   bool is_closed() const noexcept;
-  /// probe if queue is blocked
+  /// probe if queue's inlet is closed
   bool inlet_closed() const noexcept;
-  /// probe if queue is blocked
+  /// probe if queue's outlet is closed
   bool outlet_closed() const noexcept;
 
-  /// reset the block
+  /// reopen any closed inlet or outlet
   void reopen() noexcept;
-/// reset the block
+  /// reopen a closed inlet
   void reopen_inlet() noexcept;
-/// reset the block
+  /// reopen a closed outlet
   void reopen_outlet() noexcept;
 
   /// purge all elements from the queue; this is done by blocking and unblocking the queue for purge
@@ -170,8 +181,8 @@ InterruptableQueue<Tvalue>::InterruptableQueue() noexcept : queue_() {}
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(value_type&& element) {
-  if (inlet_.is_blocked())
-    throw InterruptIsSet();
+  if (inlet_.is_closed())
+    throw IOletClosed("Inlet closed");
   std::lock_guard lock(push_mutex_);
   queue_.push(std::move(element));
   semaphore_.post_one();
@@ -179,8 +190,8 @@ void InterruptableQueue<Tvalue>::push(value_type&& element) {
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::push(const value_type& element) {
-  if (inlet_.is_blocked())
-    throw InterruptIsSet();
+  if (inlet_.is_closed())
+    throw IOletClosed("Inlet closed");
   std::lock_guard lock(push_mutex_);
   queue_.push(element);
   semaphore_.post_one();
@@ -189,17 +200,13 @@ void InterruptableQueue<Tvalue>::push(const value_type& element) {
 template <class Tvalue>
 InterruptableQueue<Tvalue>::value_type
 InterruptableQueue<Tvalue>::pop() {
-  if (outlet_.is_blocked())
-    throw InterruptIsSet();
+  if (outlet_.is_closed())
+    throw IOletClosed("Outlet is closed");
   try {
-    semaphore_.consume_one();  // this will block if there is currently nothing to consume
-
+    semaphore_.consume_one();  // this will block until there is something to consume
   } catch (threadsafe::interrupt_exception& e) {
-    throw InterruptIsSet();
-  } catch (...) {
-    throw InterruptIsSet();
+    throw IOletClosed("Outlet is just closed");
   }
-
   std::lock_guard pop_front_lock(pop_front_mutex_);
   auto element(std::move(queue_.front()));
   queue_.pop();
@@ -210,18 +217,20 @@ InterruptableQueue<Tvalue>::pop() {
 template <class Tvalue>
 std::vector<typename InterruptableQueue<Tvalue>::value_type>
 InterruptableQueue<Tvalue>::exhaust() {
-  if (outlet_.is_blocked())
-    throw InterruptIsSet();
+  std::vector<value_type> rslt_vec;
+  if (outlet_.is_closed())
+    throw IOletClosed("Outlet closed");
   unsigned int n_many;
   try {
     n_many = semaphore_.consume_all(); // blocking
   } catch (threadsafe::interrupt_exception& e) {
-    throw InterruptIsSet();
+    throw IOletClosed("Outlet just closed");
   }
 
-  std::vector<value_type> rslt_vec;
-  rslt_vec.reserve(n_many);
+  // NOTE this might not work as expected, because consume and pop must be within one critical section, otherwise
+  // another thread might steal the elements from the front of the queue, as new elements are pushed at the end
   std::lock_guard pop_front_lock(pop_front_mutex_);
+  rslt_vec.reserve(n_many);
   for (unsigned long int i = 0; i < n_many; i++) {
     rslt_vec.emplace_back(std::move(queue_.front()));
     queue_.pop();
@@ -261,14 +270,14 @@ template <class Tvalue>
 void InterruptableQueue<Tvalue>::close_inlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
-  inlet_.block();
+  inlet_.close();
 }
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::close_outlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
-  outlet_.block();
+  outlet_.close();
   semaphore_.set_interrupt();  //TODO, do we need to absorb this in into outlet?
 }
 
@@ -280,30 +289,30 @@ bool InterruptableQueue<Tvalue>::is_closed() const noexcept {
 
 template <class Tvalue>
 bool InterruptableQueue<Tvalue>::inlet_closed() const noexcept {
-  return inlet_.is_blocked();
+  return inlet_.is_closed();
 }
 
 template <class Tvalue>
 bool InterruptableQueue<Tvalue>::outlet_closed() const noexcept {
-  return outlet_.is_blocked();
+  return outlet_.is_closed();
 }
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::reopen() noexcept {
-  inlet_.release();
-  outlet_.release();
+  inlet_.open();
+  outlet_.open();
 }
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::reopen_inlet() noexcept {
   std::lock_guard lock(mutex_);
-  inlet_.release();
+  inlet_.open();
 }
 
 template <class Tvalue>
 void InterruptableQueue<Tvalue>::reopen_outlet() noexcept {
   std::lock_guard lock(mutex_);
-  outlet_.release();
+  outlet_.open();
   semaphore_.reset_interrupt();
 }
 

@@ -32,7 +32,7 @@ void
 TDBScan_AsyncMachine<tBlib>::stop() noexcept {
   LOG_DEBUG("Stop called for TDBSCAN Machine");
   if (driving_tread_) {
-    input_queue_.close();
+    input_queue_.close();  // causes interrupt on input_queue_'s outlet, consumers should resurface by catching IOletClosed
     driving_tread_->join();
     input_queue_.reopen();
     delete driving_tread_;
@@ -50,24 +50,35 @@ TDBScan_AsyncMachine<tBlib>::FeedBlib(const tBlib &b) {
 
 template<class tBlib>
 void TDBScan_AsyncMachine<tBlib>::Crank() {
-  while (true) {
+  while (!finalize_requested_) {
     try {
       //within here there is serialized access
       algo_.NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
       ++telemetry_.n_blibs_;
+    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::IOletClosed& i) {
+      // consumption has been interrupted
+      if (finalize_requested_) {
+        LOG_INFO("Resurfacing as finalize has been requested");
+      } else {
+        LOG_INFO("Unexpected closure of Inlet queue's outlet");
+      }
+      break;
+    }
 
+    try {
+      //within here there is serialized access
       while (!algo_.concluded_clusters_.empty()) {
         output_queue_.push(algo_.concluded_clusters_.front());
         algo_.concluded_clusters_.pop_front();
         ++telemetry_.n_output_clusters_;
       }
-
-    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::InterruptIsSet& i) {
+    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::IOletClosed& i) {
       // consumption has been interrupted
-      LOG_ERROR("Input queue is blocked");
+      if (finalize_requested_)
+        LOG_INFO("Input queue's outlet has closed");
       break;
     } catch (...) {
-      // consumption has been interrupted by something unforseen
+      // consumption has been interrupted by something unforeseen
       throw;
     }
   }
@@ -84,10 +95,11 @@ TDBScan_AsyncMachine<tBlib>::ObtainCluster() {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::Finalize(const bool consume_inputs) {
-  finalize_requested_ = true;
-  //bleed the input-queue dry
+  finalize_requested_ = true;  //this will also make the `driving_thread` halt
+  stop(); //sends an active stopping sign to the driving thread;
 
-  input_queue_.block(); //makes the driving thread resurface and stop
+  //bleed the input-queue dry
+  input_queue_.close(); //makes the driving thread resurface and stop
 
   if (consume_inputs) {
     for (auto& b : input_queue_.exhaust()) {
