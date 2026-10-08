@@ -2,6 +2,7 @@
 // Created by mzoll on 01/08/2026.
 //
 
+#include <chrono>
 
 #include "connector.h"
 #include "generator.h"
@@ -63,16 +64,27 @@ int main(int argc, char **argv) {
 
   //starting all parts of the machine
   machine.start();
-  //consumerA.start();
-  //consumerB.start();
-  feeder.start();
-
-  std::this_thread::sleep_for(1s);
+  // consumerA.start();
+  // consumerB.start();
+  // feeder.start();
+  //
+  // std::this_thread::sleep_for(1s);
+  // LOG_INFO("Feeder stopping");
+  // feeder.stop();
+  // std::this_thread::sleep_for(1s);
+  // LOG_INFO("Machine stopping");
   machine.stop();
-  std::this_thread::sleep_for(1s);
-  feeder.stop();
-  //consumerA.stop(); //does not surface!
-  //consumerB.stop(); //does not surface!
+  // LOG_INFO("Finalizing Machine");
+  // machine.Finalize();
+  //
+  // consumerA.stop(); //does not surface!
+  // consumerB.stop(); //does not surface!
+
+  machine.close_inlet();
+  machine.close_outlet();  //<<< dies here
 
   //shutdown of all parts by destructor
+  // destruction is in inverse order of creation
+
+
 }

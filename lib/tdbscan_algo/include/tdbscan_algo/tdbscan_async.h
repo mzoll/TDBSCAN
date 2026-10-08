@@ -81,8 +81,8 @@ public: // --- THE REAL MACHINERY ---
   // is there more outputs to be had
   bool more_output() const {return !output_queue_.empty();};
 
-  void close_inlet() {input_queue_.block();};
-  void close_outlet() {output_queue_.block();}
+  void close_inlet() {input_queue_.close_inlet();};
+  void close_outlet() {output_queue_.close_outlet();}
 
   void open_inlet() {input_queue_.unblock();};
   void open_outlet() {output_queue_.unblock();}

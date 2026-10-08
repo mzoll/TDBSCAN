@@ -11,6 +11,7 @@
 #define COMMONCLIB__THREADSAFE__SEMAPHORE_H
 
 #include <atomic>
+#include <functional>
 #include <mutex>
 
 #include "interrupt.h"
@@ -87,7 +88,7 @@ class Semaphore : public Interruptable {
  private:
   mutable std::mutex mutex;
   // the central counting unit
-  std::atomic<long> counter;
+  std::atomic<unsigned long> counter;
 
  public:  // ctor
   Semaphore() noexcept;
@@ -110,7 +111,7 @@ class Semaphore : public Interruptable {
   /** consume *One* element if immediately available, or wait [block] until it becomes available.
    * @throws interrupt_exception if the semaphore has been blocked
    */
-  [[maybe_unused]] int consume_one();
+  [[maybe_unused]] int consume_one(std::function<void()> fkt);
 
   /** consume *All* elements possible
    * @throws interrupt_exception if the semaphore has been blocked
@@ -121,9 +122,6 @@ class Semaphore : public Interruptable {
   // convenience access
   /// get the number of consumable elements [volatile]
   unsigned long load() const noexcept;
-
-  /// get the current status
-  bool is_blocked() const noexcept;
 
   /// toggle to blocked state, raising an exception on all waiting parties; no
   /// further consume operations are allowed until the reset_interrupt is

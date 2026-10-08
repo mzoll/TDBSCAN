@@ -99,18 +99,20 @@ TDBScan_AsyncMachine<tBlib>::Finalize(const bool consume_inputs) {
   stop(); //sends an active stopping sign to the driving thread;
 
   //bleed the input-queue dry
-  input_queue_.close(); //makes the driving thread resurface and stop
+  close_inlet(); //makes the driving thread resurface and stop
 
   if (consume_inputs) {
     for (auto& b : input_queue_.exhaust()) {
-      NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
+      algo_.NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
       ++telemetry_.n_blibs_;
     }
   }
-  TDBScan_Algo<tBlib>::Finalize();
+  algo_.Finalize();
 
   while (!algo_.concluded_clusters_.empty()) {
-    output_queue_.push(algo_.concluded_clusters_.pop_front());
+
+    output_queue_.push(algo_.concluded_clusters_.front());
+    algo_.concluded_clusters_.pop_front();
     ++telemetry_.n_output_clusters_;
   }
 }

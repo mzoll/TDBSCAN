@@ -27,8 +27,6 @@ public:
   const char* what() const noexcept {
     return message_.c_str();
   }
-
-
 };
 
 /**
@@ -45,45 +43,53 @@ class Interrupt {
   explicit Interrupt(Tclass& reference);
 
  public:  // methods
-  /// block the waiting on the callers to the semaphore
+  /// trigger an interrupt, which is a wake on the conditional-variable
   void trigger() noexcept;
+
+
+  /// block the waiting on the callers to the semaphore
+  void block() noexcept;
+
 
   /// check the toggle, is the block has already been triggered
   [[nodiscard]] bool is_triggered() const noexcept {
-    return triggered_.load();
+    return blocking_.load();
   }
 
   /// reset the toggle, so that the Interrupt can be reused
-  void reset() noexcept;
+  void unblock() noexcept;
 
  private:  // state
   /// the target of this blocking Interrupt
   Tclass* referencing_;
   /// a toggle
-  std::atomic<bool> triggered_;
+  std::atomic<bool> blocking_;
 };
 
 /// a protoclass for something that is interruptable
 class Interruptable {
   mutable std::mutex mtx_;
-  std::atomic<long> external_interrupt_set_counter_{0L};
-  std::atomic<bool> internal_interrupt_set_{false};
+  std::atomic<unsigned long> external_block_set_counter_{0L};
+  std::atomic<bool> internal_block_set_{false};
 public:
   virtual ~Interruptable() noexcept;
+protected:
   std::condition_variable cond;  //make stuff wait on this cond-var
 protected:
-  virtual void when_setting_interrupt() noexcept {};
-  virtual void when_resetting_interrupt() noexcept {};
+  virtual void when_setting_block() noexcept {};
+  virtual void when_resetting_block() noexcept {};
 protected:
-  void set_internal_interrupt() noexcept;
-  void reset_internal_interrupt() noexcept;
+  void interrupt() noexcept;
+protected:
+  void set_internal_block() noexcept;
+  void reset_internal_block() noexcept;
 private:
-  void set_one_external_interrupt() noexcept;
-  void reset_one_external_interrupt() noexcept;
+  void set_one_external_block() noexcept;
+  void reset_one_external_block() noexcept;
 
   friend Interrupt<Interruptable>;
 public:
-  bool is_interrupted() const noexcept;
+  bool is_blocked() const noexcept;
 
   /// obtain the Interrupt handle, that when triggered throws the `interrupt_exception` resurfacing all threads from
   /// any waiting.
@@ -102,62 +108,81 @@ namespace common_clib::threadsafe {
 
 template <class Tclass>
 Interrupt<Tclass>::Interrupt(Tclass& reference)
-  : referencing_(&reference), triggered_(false){};
+  : referencing_(&reference), blocking_(false){};
 
-template <class Tclass>
-void Interrupt<Tclass>::reset() noexcept {
-  if (!triggered_.load())  // this interrupt was never triggered to begin with
-    return;
-  referencing_->reset_one_external_interrupt();
-  triggered_.store(false);
-}
 
 template <class Tclass>
 void Interrupt<Tclass>::trigger() noexcept {
   assert(referencing_);
-  if (triggered_.load()) return;
-  referencing_->set_one_external_interrupt();
-  triggered_.store(true);
+  if (blocking_.load())
+    return;
+  referencing_->interrupt();
+  blocking_.store(true);
 }
 
-inline Interruptable::~Interruptable() noexcept {
+template <class Tclass>
+void Interrupt<Tclass>::block() noexcept {
+  assert(referencing_);
+  if (blocking_.load())
+    return;
+  referencing_->set_one_external_block();
+  blocking_.store(true);
+}
+
+template <class Tclass>
+void Interrupt<Tclass>::unblock() noexcept {
+  if (!blocking_.load())  // this interrupt was never triggered to begin with
+    return;
+  referencing_->reset_one_external_block();
+  blocking_.store(false);
+}
+
+inline
+Interruptable::~Interruptable() noexcept {
   std::lock_guard lock(mtx_);
   cond.notify_all();
 };
 
 inline
-void Interruptable::set_internal_interrupt() noexcept {
+void
+Interruptable::interrupt() noexcept {
+  cond.notify_all();
+};
+
+
+inline
+void Interruptable::set_internal_block() noexcept {
   std::lock_guard lock(mtx_);
-  internal_interrupt_set_.store(true);
-  when_setting_interrupt();
+  internal_block_set_.store(true);
+  when_setting_block();
+  interrupt();
+};
+
+inline
+void Interruptable::reset_internal_block() noexcept {
+  std::lock_guard lock(mtx_);
+  internal_block_set_.store(false);
+  when_resetting_block();
+};
+
+inline
+void Interruptable::set_one_external_block() noexcept {
+  std::lock_guard lock(mtx_);
+  ++external_block_set_counter_;
+  when_setting_block();
   cond.notify_all();
 };
 
 inline
-void Interruptable::reset_internal_interrupt() noexcept {
+void Interruptable::reset_one_external_block() noexcept {
   std::lock_guard lock(mtx_);
-  internal_interrupt_set_.store(false);
-  when_resetting_interrupt();
+  when_resetting_block();
+  --external_block_set_counter_;
 };
 
 inline
-void Interruptable::set_one_external_interrupt() noexcept {
-  std::lock_guard lock(mtx_);
-  ++external_interrupt_set_counter_;
-  when_setting_interrupt();
-  cond.notify_all();
-};
-
-inline
-void Interruptable::reset_one_external_interrupt() noexcept {
-  std::lock_guard lock(mtx_);
-  when_resetting_interrupt();
-  --external_interrupt_set_counter_;
-};
-
-inline
-bool Interruptable::is_interrupted() const noexcept {
-  return (external_interrupt_set_counter_.load() + static_cast<long>(internal_interrupt_set_.load()) != 0);
+bool Interruptable::is_blocked() const noexcept {
+  return (external_block_set_counter_.load() + static_cast<long>(internal_block_set_.load()) != 0);
 }
 
 }  // namespace common_clib::threadsafe

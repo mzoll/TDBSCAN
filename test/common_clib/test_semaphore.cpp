@@ -40,19 +40,19 @@ TEST(Semaphore, serial_access) {
   EXPECT_EQ(s.load(), 3);
 
   // consume from here
-  EXPECT_NO_THROW(s.consume_one());
+  EXPECT_NO_THROW(s.consume_one({}));
   EXPECT_EQ(s.load(), 2);
 
   // set the interrupt
   EXPECT_NO_THROW(s.set_interrupt());
   EXPECT_TRUE(s.is_blocked());
-  EXPECT_ANY_THROW(s.consume_one());
+  EXPECT_ANY_THROW(s.consume_one({}));
   EXPECT_EQ(s.load(), 2);
 
   // reset the interrupt
   EXPECT_NO_THROW(s.reset_interrupt());
   EXPECT_FALSE(s.is_blocked());
-  EXPECT_NO_THROW(s.consume_one());
+  EXPECT_NO_THROW(s.consume_one({}));
   EXPECT_EQ(s.load(), 1);
 }
 
@@ -63,7 +63,7 @@ TEST(Semaphore, parallel_access) {
 
     const auto task0 = [&s, &p0]() {
       try {
-        s.consume_one();
+        s.consume_one({});
       } catch (const interrupt_exception& e) {
         p0.set_exception(std::current_exception());
         return;
@@ -88,7 +88,7 @@ TEST(Semaphore, parallel_access) {
     std::promise<bool> p1;
     const auto task1 = [&s, &p1]() {
       try {
-        s.consume_one();
+        s.consume_one({});
       } catch (const interrupt_exception& e) {
         p1.set_exception(std::current_exception());
         return;
@@ -120,25 +120,25 @@ TEST(Semaphore, interrupts) {
 
   // set the trigger on i0
   EXPECT_FALSE(i0.is_triggered());
-  i0.trigger();
+  i0.block();
   EXPECT_TRUE(i0.is_triggered());
   EXPECT_TRUE(s.is_blocked());
-  i0.trigger();  // triggering an already triggered Interrupt is inert
+  i0.block();  // triggering an already triggered Interrupt is inert
 
   // reset the i0 trigger
-  i0.reset();
+  i0.unblock();
   EXPECT_FALSE(i0.is_triggered());
   EXPECT_FALSE(s.is_blocked());
 
-  i0.reset();  // resetting an already reset Interrupt is inert
+  i0.unblock();  // resetting an already reset Interrupt is inert
 
   // trigger interrupt from multiple sites
   EXPECT_FALSE(s.is_blocked());
-  i0.trigger();
-  i1.trigger();
+  i0.block();
+  i1.block();
   EXPECT_TRUE(s.is_blocked());
-  i0.reset();
+  i0.unblock();
   EXPECT_TRUE(s.is_blocked());
-  i1.reset();
+  i1.unblock();
   EXPECT_FALSE(s.is_blocked());
 }

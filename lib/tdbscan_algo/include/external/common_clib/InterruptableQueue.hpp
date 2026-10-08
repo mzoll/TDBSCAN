@@ -22,14 +22,6 @@
 
 namespace common_clib::threading {
 
-/// an Error to be thrown when an item should have been popped from the queue, but it was empty
-struct QueueEmptyError : std::exception {
-  [[nodiscard]] char const* what() const noexcept override {
-    return "The Queue was queried for an item, when there wasn't one available";
-  }
-  ~QueueEmptyError() override = default;
-};
-
 /**
  * Asynchronous Queue class that works with a semaphore in order to allow an externally triggered interrupt-signal
  * to block. Lazy waits with an surfacing exception if either inlet or Outlet is closed
@@ -41,7 +33,7 @@ struct QueueEmptyError : std::exception {
  *   std::thread pushing_thread([&q](){ std::thread::sleep_for(std::chrono::seconds(1)); q.push(42);})
  *   std::thread interrupting_thread([&q](){ std::thread::sleep_for(std::chrono::seconds(2)); q.block();})
  *
- *   q.push(10); // instantaniously put element '10' on the queue
+ *   q.push(10); // instantaneously put element '10' on the queue
  *   auto element0 = q.pop(); // <- =10; [more or less instantaneous]
  *   auto element1 = q.pop_or_wait(); // <- =42; blocking until element becomes available aka. `pushing_thread` has pushed
  *   try
@@ -75,10 +67,8 @@ class InterruptableQueue {
 
   /// represents the inlet and the outlet of the Queue
   class IOlet : public threadsafe::Interruptable {
-
-    //state if the iolet is closed or open for push or retrieval
+    ///state if the iolet is closed or open for push or retrieval
     bool closed_{false};
-
   public:
     /// an Error that can be thrown when the Interrupt has been triggered
     struct IOletClosed : std::exception {
@@ -98,13 +88,13 @@ class InterruptableQueue {
   public:
     void close(const std::function<void ()>* cb = nullptr) {
       closed_=true;
-      set_internal_interrupt();
+      set_internal_block();
       if (cb)
         (*cb)();
     };
     void open(const std::function<void ()>* cb=nullptr) {
       closed_=false;
-      reset_internal_interrupt();
+      reset_internal_block();
       if (cb)
         (*cb)();
     };
@@ -203,7 +193,7 @@ InterruptableQueue<Tvalue>::pop() {
   if (outlet_.is_closed())
     throw IOletClosed("Outlet is closed");
   try {
-    semaphore_.consume_one();  // this will block until there is something to consume
+    semaphore_.consume_one({});  // this will block until there is something to consume
   } catch (threadsafe::interrupt_exception& e) {
     throw IOletClosed("Outlet is just closed");
   }

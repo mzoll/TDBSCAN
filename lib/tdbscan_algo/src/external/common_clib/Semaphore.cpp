@@ -5,6 +5,7 @@
 #include "external/common_clib/Semaphore.h"
 
 #include <mutex>
+#include <functional>
 
 #include "tdbscan_algo/auxilary/trivial_logging.h"
 
@@ -29,15 +30,15 @@ void Semaphore::post_many(const int n_many) {
   }
 }
 
-int Semaphore::consume_one() {
+int Semaphore::consume_one(std::function<void()> fkt) {
   if (is_blocked())
     throw interrupt_exception("consumption is interrupted");
   std::unique_lock lock(mutex);
-
   if (counter.load() == 0) {
     cond.wait(lock, [&] {
       if (is_blocked())
         throw interrupt_exception("consumption is interrupted");
+      fkt();
       return counter > 0;
     });
   }
@@ -59,16 +60,12 @@ unsigned long Semaphore::load() const noexcept {
   return counter.load();
 }
 
-bool Semaphore::is_blocked() const noexcept{
-  return is_interrupted();
-}
-
 void Semaphore::set_interrupt() noexcept {
-  set_internal_interrupt();
+  set_internal_block();
 };
 
 void Semaphore::reset_interrupt() noexcept {
-  reset_internal_interrupt();
+  reset_internal_block();
 };
 
 
