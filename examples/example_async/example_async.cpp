@@ -53,23 +53,26 @@ int main(int argc, char **argv) {
     void operator()() const {machine_ptr_->FeedBlib(gen_ptr_->next());}
   } _feeder_task(&gen, &machine);
 
+  Feeder feeder(_feeder_task);
 
-  // Feeder feeder(_feeder_task);
-  //
-  // auto consumer_task = [&machine]() {
-  //   machine.ObtainCluster();
-  // };
-  //
-  // Consumer consumerA(consumer_task), consumerB(consumer_task);
+  auto consumer_task = [&machine]() {
+    machine.ObtainCluster();
+  };
+
+  Consumer consumerA(consumer_task), consumerB(consumer_task);
 
   //starting all parts of the machine
   machine.start();
-  // consumerA.start();
-  // consumerB.start();
-  // feeder.start();
+  //consumerA.start();
+  //consumerB.start();
+  feeder.start();
 
   std::this_thread::sleep_for(1s);
   machine.stop();
+  std::this_thread::sleep_for(1s);
+  feeder.stop();
+  //consumerA.stop(); //does not surface!
+  //consumerB.stop(); //does not surface!
 
-  //shutdown of all parts
+  //shutdown of all parts by destructor
 }
