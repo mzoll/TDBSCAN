@@ -40,9 +40,6 @@ generate_noise(const double noise_freq, const double width_fields, const double 
 }
 
 
-
-
-
 class Connector_TRUE : public ConnectorSingle<ScalarBlib> {
 public:
   bool eval(const ScalarBlib &h1, const ScalarBlib &h2) const override { return true; };
@@ -80,7 +77,7 @@ TDBScan_Algo<ScalarBlib> construct_algo(const bool everything_connected) {
 
 
 TEST(AlgoTest, HappyTest_TRUE) {
-  const auto blibs = generate_noise(1, 10, 100);
+  const auto blibs = generate_noise(1., 10, 100);
 
   auto my_algo = construct_algo(true);
 
@@ -88,9 +85,9 @@ TEST(AlgoTest, HappyTest_TRUE) {
 }
 
 TEST(AlgoTest, HappyTest_FALSE) {
-  const auto blibs = generate_noise(1, 10, 100);
+  const auto blibs = generate_noise(1., 10, 100);
 
-  auto my_algo = construct_algo(true);
+  auto my_algo = construct_algo(false);
 
   const auto result = my_algo.Process(blibs);
 }
