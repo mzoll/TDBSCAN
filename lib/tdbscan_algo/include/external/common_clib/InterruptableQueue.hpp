@@ -107,21 +107,51 @@ public:
 public:
   /// constructor
   InterruptableQueue() noexcept;
-  /// put a new entry on the queue; use move semantics
+  /**
+   * put a new entry on the queue; use move semantics
+   * @note asynchronous call, not blocking
+   * @exception IOletClosed thrown when the inlet has been closed
+   */
   void push(value_type&& element);
-  /// put a new entry on the queue
+  /**
+   * put a new entry on the queue
+   * @note asynchronous call, not blocking
+   * @exception IOletClosed thrown when the inlet has been closed
+   */
   void push(const value_type& element);
   /**
    * get a the oldest (first) entry from the queue and pop it, wait if not available intermediately
    * @note asynchronous call, blocking until an element is available
    * @exception IOletClosed thrown when the outlet has been closed
+   * @throws common_clib::threadsafe::Interruptable::interrupt_set thrown when in wakeup fkt evaluates true
    * @return the oldest element of the queue
+   * @example 
+   *    bool end_execution{false};
+   *    InterruptableQueue q;
+   *    std::thread t([&]() {
+   *      while (true) {
+   *        try {
+   *          q.pop([&](){return end_execution})
+   *        } catch (interrupt_set) {
+   *          //resurfacing from waiting 
+   *          break;
+   *        }   
+   *      }
+   *      // reaching here, means thread ends execution;
+   *    });
+   *    
+   *    // t is thread; is blocked by waiting for consumption
+   *    std::this_thread::sleep_for(std::chrono::seconds(1));
+   *    end_execution = true; // will cause on next evaluation of _predicate_ in waiting to throw the `interrupt_set` 
+   *    q.interrupt(); // triggers the wake-up from waiting and evaluation of _predicate_
+   *    // sub-call `pop()` is interrupted and resurfaces to main thread control-loop, which is ending thread
+   *    t.join();
    */
-  [[nodiscard]] value_type pop();
+  [[nodiscard]] value_type pop(const std::function<bool()>* fkt = nullptr);
   /**
    * get all the entries that are currently on the queue
    * @exception IOletClosed thrown when the outlet has been closed
-   * @return a vector of all remaining elements on on the queue
+   * @return a vector of all remaining elements on the queue
    */
   [[nodiscard]] std::vector<value_type> exhaust();
   /// how many elements are on the ? Note that the state is highly volatile
@@ -162,6 +192,9 @@ public:
   threadsafe::Interrupt<InterruptableQueue<Tvalue>>
   get_outlet_interrupt() const;
 
+  /// trigger the interrupt on inlet and outlet
+  void interrupt() const noexcept;
+
   friend common_clib::threadsafe::Interrupt<InterruptableQueue>;
 };
 
@@ -196,16 +229,15 @@ void InterruptableQueue<Tvalue>::push(const value_type& element) {
 
 template <class Tvalue>
 InterruptableQueue<Tvalue>::value_type
-InterruptableQueue<Tvalue>::pop() {
+InterruptableQueue<Tvalue>::pop(const std::function<bool()> *fkt) {
   if (outlet_.is_closed())
     throw IOletClosed("Outlet is closed");
   try {
-    semaphore_.consume_one();  // this will block until there is something to consume
-  } catch (threadsafe::interrupt_exception& e) {
-    throw IOletClosed("Outlet has closed");
-  } catch (...) {
-    LOG_FATAL("UNEXPECTED THROW");
+    semaphore_.consume_one(fkt);  // this will block until there is something to consume
+  } catch (threadsafe::Interruptable::interrupt_set& e) {
     throw;
+  } catch (threadsafe::Interruptable::block_set& e) {
+    throw IOletClosed("Outlet has closed");
   }
   std::lock_guard pop_front_lock(pop_front_mutex_);
   auto element(std::move(queue_.front()));
@@ -223,7 +255,7 @@ InterruptableQueue<Tvalue>::exhaust() {
   unsigned int n_many;
   try {
     n_many = semaphore_.consume_all(); // blocking
-  } catch (threadsafe::interrupt_exception& e) {
+  } catch (threadsafe::Interruptable::block_set& e) {
     throw IOletClosed("Outlet just closed");
   }
 
@@ -278,7 +310,7 @@ void InterruptableQueue<Tvalue>::close_outlet() noexcept {
   // triggering the interrupt wakes up all waiting threads with an exception
   std::lock_guard lock(mutex_);
   outlet_.close();
-  semaphore_.set_interrupt();  //TODO, do we need to absorb this in into outlet?
+  semaphore_.set_block();  //TODO, do we need to absorb this in into outlet?
 }
 
 
@@ -313,7 +345,7 @@ template <class Tvalue>
 void InterruptableQueue<Tvalue>::reopen_outlet() noexcept {
   std::lock_guard lock(mutex_);
   outlet_.open();
-  semaphore_.reset_interrupt();
+  semaphore_.reset_block();
 }
 
 /// get the block as an reference [that can be copied and proliferated]
@@ -330,7 +362,10 @@ InterruptableQueue<Tvalue>::get_outlet_interrupt() const {
   return outlet_.get_interrupt();
 }
 
-
+template <class Tvalue>
+void InterruptableQueue<Tvalue>::interrupt() const noexcept {
+  semaphore_.interrupt();
+}
 
 }  // namespace common_clib::threading
 

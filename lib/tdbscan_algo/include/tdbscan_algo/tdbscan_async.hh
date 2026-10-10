@@ -21,25 +21,29 @@ TDBScan_AsyncMachine<tBlib>::~TDBScan_AsyncMachine() {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::start() noexcept {
+  if (driving_tread_) {
+    LOG_ERROR("TDBScan-machine already started");
+    return;
+  }
   LOG_INFO("Starting TDBScan-machine");
-  if (input_queue_.is_closed())
-    input_queue_.reopen();
-  if (!driving_tread_)
-    driving_tread_ = new thread(&TDBScan_AsyncMachine::Crank, this);
+  stop_execution_ = false;
+  input_queue_.reopen();
+  output_queue_.reopen();
+  driving_tread_ = new thread(&TDBScan_AsyncMachine::Crank, this);
   LOG_DEBUG("Started TDBScan-machine");
 }
 
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::stop() noexcept {
-  LOG_DEBUG("Stop called for TDBSCAN Machine");
+  LOG_DEBUG("Stop called for TDBScan-machine");
   stop_execution_ = true;
   if (driving_tread_) {
-    input_queue_.close_outlet();  // causes interrupt on input_queue_'s outlet, consumers should resurface by catching IOletClosed
+    input_queue_.interrupt();  // causes interrupt on input_queue_'s outlet, consumers should resurface by catching IOletClosed
     driving_tread_->join();
-    input_queue_.reopen_outlet();
     delete driving_tread_;
     driving_tread_ = nullptr;
+    LOG_DEBUG("TDBScan-machine stopped");
   }
 }
 
@@ -56,9 +60,11 @@ void TDBScan_AsyncMachine<tBlib>::Crank() {
   while (!finalize_requested_) {
     try {
       //within here there is serialized access
-      algo_.NextBlib(input_queue_.pop());  //this blocks until a blib actually becomes available on the queue
+      algo_.NextBlib(input_queue_.pop([this](){return this->finalize_requested_;}));  //this blocks until a blib actually becomes available on the queue
       ++telemetry_.n_blibs_;
-    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::IOletClosed& i) {
+    } catch (common_clib::threadsafe::Interruptable::interrupt_set& i) {
+      return; //resurfacing, ending thread
+    } catch (typename common_clib::threading::InterruptableQueue<tBlib>::IOletClosed& c) {
       // consumption has been interrupted
       if (finalize_requested_) {
         LOG_INFO("Resurfacing as finalize has been requested");
@@ -71,8 +77,6 @@ void TDBScan_AsyncMachine<tBlib>::Crank() {
       LOG_FATAL("some other throw")
       throw;
     }
-
-
 
     try {
       //within here there is serialized access

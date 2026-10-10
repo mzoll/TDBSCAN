@@ -37,7 +37,7 @@ namespace common_clib::threadsafe {
  *        try
    *        s.consume_one();
    *        ++counter;
-   *      } catch (interrupt_exception) {
+   *      } catch (interrupt) {
    *        std::cout << "consumption interrupted after " << counter << std::endl;
  *      }
  *    });
@@ -68,7 +68,7 @@ namespace common_clib::threadsafe {
  *        try
    *        s.consume_one();
    *        ++counter;
-   *      } catch (interrupt_exception) {
+   *      } catch (interrupt) {
    *        std::cout << "consumption interrupted after " << counter << std::endl;
  *      }
  *    });
@@ -97,24 +97,27 @@ class Semaphore : public Interruptable {
   /**
    * post *one* element, allowing the consumption of *One* element; this is semi lock-free
    * [raise the counter by one and notify one waiting party (release the block on wait())]
-   * @throws interrupt_exception if the semaphore has been blocked
+   * @throws block_set if the semaphore has been blocked
    */
   void post_one();
 
   /**
    * post that *many* elements at once;  allowing the consumption of that *many* elements; this is semi lock-free
    * @param n_many post that many
-   * @throws interrupt_exception if the semaphore has been blocked
+   * @throws block_set if the semaphore has been blocked
    */
   void post_many(int n_many);
 
   /** consume *One* element if immediately available, or wait [block] until it becomes available.
-   * @throws interrupt_exception if the semaphore has been blocked
+   * @note blocking, until there is something to consume; wake can be triggered by
+   * @param fkt a function pointer that can be evaluated as a boolean, invoked in `pred` in blocking wait for consumption
+   * @throws block_set if the semaphore has been blocked
+   * @throws interrupt_set if in a wakeup the `fkt` evaluated to true
    */
-  [[maybe_unused]] int consume_one(const std::function<void()> *fkt = nullptr);
+  [[maybe_unused]] int consume_one(const std::function<bool()> *fkt = nullptr);
 
   /** consume *All* elements possible
-   * @throws interrupt_exception if the semaphore has been blocked
+   * @throws block_set if the semaphore has been blocked
    * @return the number of consumed elements
    */
   [[maybe_unused]] int consume_all();
@@ -126,11 +129,14 @@ class Semaphore : public Interruptable {
   /// toggle to blocked state, raising an exception on all waiting parties; no
   /// further consume operations are allowed until the reset_interrupt is
   /// called
-  void set_interrupt() noexcept;
+  void set_block() noexcept;
 
   /// toggle from blocked state to free running,
-  void reset_interrupt() noexcept;
+  void reset_block() noexcept;
 
+  /// trigger an interrupt, waking all waiting threads on `consume()`
+  void interrupt() noexcept;
+  
   // friend
   friend Interrupt<Semaphore>;
 };

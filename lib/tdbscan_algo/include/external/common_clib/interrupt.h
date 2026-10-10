@@ -18,16 +18,15 @@ struct interrupt_exception : std::exception {
 private:
   const std::string message_;
 public:
-
   // Constructor accepting const char*
   interrupt_exception(const char* msg) :
   message_(msg) {}
-
 
   const char* what() const noexcept {
     return message_.c_str();
   }
 };
+
 
 /**
  * A materialized handle that can be copied and everything
@@ -68,6 +67,17 @@ class Interrupt {
 
 /// a protoclass for something that is interruptable
 class Interruptable {
+public:
+  /// we need something that behaves like an exception
+  struct interrupt_set : interrupt_exception {
+    interrupt_set(const char* msg) : interrupt_exception(msg) {};
+  };
+
+  /// we need something that behaves like an exception
+  struct block_set : interrupt_exception {
+    block_set(const char* msg) : interrupt_exception(msg) {};
+  };
+private:
   mutable std::mutex mtx_;
   std::atomic<unsigned long> external_block_set_counter_{0L};
   std::atomic<bool> internal_block_set_{false};
@@ -79,7 +89,7 @@ protected:
   virtual void when_setting_block() noexcept {};
   virtual void when_resetting_block() noexcept {};
 protected:
-  void interrupt() noexcept;
+  virtual void interrupt() noexcept;
 protected:
   void set_internal_block() noexcept;
   void reset_internal_block() noexcept;
@@ -91,7 +101,7 @@ private:
 public:
   bool is_blocked() const noexcept;
 
-  /// obtain the Interrupt handle, that when triggered throws the `interrupt_exception` resurfacing all threads from
+  /// obtain the Interrupt handle, that when triggered throws the `interrupt` resurfacing all threads from
   /// any waiting.
   Interrupt<Interruptable> get_interrupt() noexcept {
     return Interrupt(*this);
@@ -109,7 +119,6 @@ namespace common_clib::threadsafe {
 template <class Tclass>
 Interrupt<Tclass>::Interrupt(Tclass& reference)
   : referencing_(&reference), blocking_(false){};
-
 
 template <class Tclass>
 void Interrupt<Tclass>::trigger() noexcept {
@@ -149,13 +158,11 @@ Interruptable::interrupt() noexcept {
   cond.notify_all();
 };
 
-
 inline
 void Interruptable::set_internal_block() noexcept {
   std::lock_guard lock(mtx_);
   internal_block_set_.store(true);
   when_setting_block();
-  interrupt();
 };
 
 inline
@@ -170,7 +177,6 @@ void Interruptable::set_one_external_block() noexcept {
   std::lock_guard lock(mtx_);
   ++external_block_set_counter_;
   when_setting_block();
-  cond.notify_all();
 };
 
 inline

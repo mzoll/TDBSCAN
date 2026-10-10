@@ -30,17 +30,16 @@ void Semaphore::post_many(const int n_many) {
   }
 }
 
-int Semaphore::consume_one(const function<void()> *fkt) {
+int Semaphore::consume_one(const function<bool()> *fkt) {
   if (is_blocked())
-    throw interrupt_exception("consumption is interrupted");
+    throw block_set("consumption is interrupted");
   std::unique_lock lock(mutex);
   if (counter.load() == 0) {
-    LOG_FATAL("WAS here");
     cond.wait(lock, [&] {
+      if (fkt && (*fkt)())
+        throw interrupt_set("interrupt was set");
       if (is_blocked())
-        throw interrupt_exception("consumption is interrupted");
-      if (fkt)
-        (*fkt)();
+        throw block_set("consumption is interrupted");
       return counter > 0;
     });
   }
@@ -51,8 +50,10 @@ int Semaphore::consume_one(const function<void()> *fkt) {
 
 int Semaphore::consume_all() {
   if (is_blocked())
-    throw interrupt_exception("consumption is interrupted");
-  std::lock_guard lock(mutex);
+    throw block_set("consumption is interrupted");
+  std::lock_guard lock(mutex); //this is blocking until lock can be acquired
+  if (is_blocked())
+    throw block_set("consumption is interrupted");
   auto rslt = counter.load();
   counter = 0;
   return rslt;
@@ -62,12 +63,16 @@ unsigned long Semaphore::load() const noexcept {
   return counter.load();
 }
 
-void Semaphore::set_interrupt() noexcept {
+void Semaphore::set_block() noexcept {
   set_internal_block();
 };
 
-void Semaphore::reset_interrupt() noexcept {
+void Semaphore::reset_block() noexcept {
   reset_internal_block();
+};
+
+void Semaphore::interrupt() noexcept {
+  Interruptable::interrupt();
 };
 
 
