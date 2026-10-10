@@ -112,7 +112,7 @@ TEST(InterruptableQueue, parallel_access) {
       int retrieval;
       try {
         retrieval = q.pop();
-      } catch (const InterruptableQueue<int>::InterruptIsSet& e) {
+      } catch (const InterruptableQueue<int>::IOletClosed& e) {
         p0.set_exception(std::current_exception());
         return;
       }
@@ -137,7 +137,7 @@ TEST(InterruptableQueue, parallel_access) {
     const auto task1 = [&q, &p1]() {
       try {
         p1.set_value_at_thread_exit( q.pop() );
-      } catch (const InterruptableQueue<int>::InterruptIsSet& e) {
+      } catch (const InterruptableQueue<int>::IOletClosed& e) {
         p1.set_exception(std::current_exception());
         return;
       }
@@ -150,7 +150,7 @@ TEST(InterruptableQueue, parallel_access) {
     q.close_outlet();  // the outlet is now blocked
     q.push(42);  // push a value; if everything works correctly, it is never retrieved
     t1.join();  // by blocking the outlet, the waiting of t1 was interrupted
-    EXPECT_THROW(f1.get(), InterruptableQueue<int>::InterruptIsSet);
+    EXPECT_THROW(f1.get(), InterruptableQueue<int>::IOletClosed);
     EXPECT_TRUE(q.size() == 1);
   }
 }

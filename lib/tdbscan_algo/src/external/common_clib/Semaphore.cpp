@@ -7,7 +7,7 @@
 #include <mutex>
 #include <functional>
 
-#include "tdbscan_algo/auxilary/trivial_logging.h"
+#include "external/common_clib/trivial_logging.h"
 
 using namespace std;
 
@@ -30,15 +30,17 @@ void Semaphore::post_many(const int n_many) {
   }
 }
 
-int Semaphore::consume_one(std::function<void()> fkt) {
+int Semaphore::consume_one(const function<void()> *fkt) {
   if (is_blocked())
     throw interrupt_exception("consumption is interrupted");
   std::unique_lock lock(mutex);
   if (counter.load() == 0) {
+    LOG_FATAL("WAS here");
     cond.wait(lock, [&] {
       if (is_blocked())
         throw interrupt_exception("consumption is interrupted");
-      fkt();
+      if (fkt)
+        (*fkt)();
       return counter > 0;
     });
   }

@@ -111,7 +111,7 @@ class Semaphore : public Interruptable {
   /** consume *One* element if immediately available, or wait [block] until it becomes available.
    * @throws interrupt_exception if the semaphore has been blocked
    */
-  [[maybe_unused]] int consume_one(std::function<void()> fkt);
+  [[maybe_unused]] int consume_one(const std::function<void()> *fkt = nullptr);
 
   /** consume *All* elements possible
    * @throws interrupt_exception if the semaphore has been blocked

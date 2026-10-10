@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
   };
 
   Consumer consumerA(consumer_task), consumerB(consumer_task);
-
+  LOG_FATAL("Consume init");
+  std::this_thread::sleep_for(1s);
   //starting all parts of the machine
   machine.start();
   // consumerA.start();
@@ -73,18 +74,20 @@ int main(int argc, char **argv) {
   // feeder.stop();
   // std::this_thread::sleep_for(1s);
   // LOG_INFO("Machine stopping");
-  machine.stop();
+  //machine.stop();
   // LOG_INFO("Finalizing Machine");
   // machine.Finalize();
   //
   // consumerA.stop(); //does not surface!
   // consumerB.stop(); //does not surface!
 
-  machine.close_inlet();
-  machine.close_outlet();  //<<< dies here
+  std::this_thread::sleep_for(1s);
+  LOG_INFO("Closing outlet")
+  //machine.close_inlet();
+  //machine.close_outlet();  //<<< dies here
 
   //shutdown of all parts by destructor
   // destruction is in inverse order of creation
-
+  LOG_INFO("Destruction")
 
 }

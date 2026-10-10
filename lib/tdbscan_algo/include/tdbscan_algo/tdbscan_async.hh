@@ -21,20 +21,23 @@ TDBScan_AsyncMachine<tBlib>::~TDBScan_AsyncMachine() {
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::start() noexcept {
+  LOG_INFO("Starting TDBScan-machine");
   if (input_queue_.is_closed())
     input_queue_.reopen();
   if (!driving_tread_)
     driving_tread_ = new thread(&TDBScan_AsyncMachine::Crank, this);
+  LOG_DEBUG("Started TDBScan-machine");
 }
 
 template<class tBlib>
 void
 TDBScan_AsyncMachine<tBlib>::stop() noexcept {
   LOG_DEBUG("Stop called for TDBSCAN Machine");
+  stop_execution_ = true;
   if (driving_tread_) {
-    input_queue_.close();  // causes interrupt on input_queue_'s outlet, consumers should resurface by catching IOletClosed
+    input_queue_.close_outlet();  // causes interrupt on input_queue_'s outlet, consumers should resurface by catching IOletClosed
     driving_tread_->join();
-    input_queue_.reopen();
+    input_queue_.reopen_outlet();
     delete driving_tread_;
     driving_tread_ = nullptr;
   }
@@ -64,6 +67,12 @@ void TDBScan_AsyncMachine<tBlib>::Crank() {
       }
       break;
     }
+    catch (...) {
+      LOG_FATAL("some other throw")
+      throw;
+    }
+
+
 
     try {
       //within here there is serialized access

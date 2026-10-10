@@ -63,7 +63,7 @@ TEST(Semaphore, parallel_access) {
 
     const auto task0 = [&s, &p0]() {
       try {
-        s.consume_one({});
+        s.consume_one({});  // blocks if there is nothing to consume
       } catch (const interrupt_exception& e) {
         p0.set_exception(std::current_exception());
         return;
@@ -71,20 +71,20 @@ TEST(Semaphore, parallel_access) {
       p0.set_value_at_thread_exit(true);
     };
 
-    std::thread t0(task0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::thread t0(task0);  //this is executes but, as there is nothing to consume, it will hang
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     auto f0 = p0.get_future();
 
-    f0.wait_for(std::chrono::milliseconds(100));
+    f0.wait_for(std::chrono::milliseconds(10));  // waits on the arrival of the result, but it wont come, unless...
 
-    s.post_one();
+    s.post_one(); // something is actually pushed, what waking up t0,
     t0.join();
     EXPECT_EQ(f0.get(), true);
     EXPECT_EQ(s.load(), 0);
   }
 
   {
-    // now lets, see if we can set an interrupt on the waiting
+    // now lets, see if we can interrupt the waiting thread
     std::promise<bool> p1;
     const auto task1 = [&s, &p1]() {
       try {
@@ -108,10 +108,14 @@ TEST(Semaphore, parallel_access) {
   }
 }
 
+
+
+
+
 TEST(Semaphore, interrupts) {
   Semaphore s;
 
-  // interrupts that might be distributed among esternal (otherwise inaccesible)
+  // interrupts that might be distributed among external (otherwise inaccessible)
   //  tasks
   auto i0 = s.get_interrupt();
   auto i1 = s.get_interrupt();

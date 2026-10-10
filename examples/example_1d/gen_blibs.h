@@ -8,7 +8,7 @@
 #include <random>
 #include "blib.h"
 
-#include "tdbscan_algo/auxilary/trivial_logging.h"
+#include "external/common_clib/trivial_logging.h"
 
 // create a random double on
 double rand_double() {

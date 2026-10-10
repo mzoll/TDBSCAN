@@ -19,6 +19,7 @@
 #include <queue>
 
 #include "external/common_clib/Semaphore.h"
+#include "external/common_clib/trivial_logging.h"
 
 namespace common_clib::threading {
 
@@ -112,10 +113,16 @@ public:
   void push(const value_type& element);
   /**
    * get a the oldest (first) entry from the queue and pop it, wait if not available intermediately
+   * @note asynchronous call, blocking until an element is available
+   * @exception IOletClosed thrown when the outlet has been closed
    * @return the oldest element of the queue
    */
   [[nodiscard]] value_type pop();
-  /// get all the entries that are currently on the queue
+  /**
+   * get all the entries that are currently on the queue
+   * @exception IOletClosed thrown when the outlet has been closed
+   * @return a vector of all remaining elements on on the queue
+   */
   [[nodiscard]] std::vector<value_type> exhaust();
   /// how many elements are on the ? Note that the state is highly volatile
   [[nodiscard]] size_t size() const noexcept;
@@ -193,9 +200,12 @@ InterruptableQueue<Tvalue>::pop() {
   if (outlet_.is_closed())
     throw IOletClosed("Outlet is closed");
   try {
-    semaphore_.consume_one({});  // this will block until there is something to consume
+    semaphore_.consume_one();  // this will block until there is something to consume
   } catch (threadsafe::interrupt_exception& e) {
-    throw IOletClosed("Outlet is just closed");
+    throw IOletClosed("Outlet has closed");
+  } catch (...) {
+    LOG_FATAL("UNEXPECTED THROW");
+    throw;
   }
   std::lock_guard pop_front_lock(pop_front_mutex_);
   auto element(std::move(queue_.front()));

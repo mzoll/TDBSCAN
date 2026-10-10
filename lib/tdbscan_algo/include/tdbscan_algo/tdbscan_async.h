@@ -42,6 +42,7 @@ class TDBScan_AsyncMachine {
   std::condition_variable sig_output_available_;
   std::condition_variable sig_ready_for_finalize_;
 
+  bool stop_execution_{false};
   std::thread* driving_tread_{nullptr};
 
   bool finalize_requested_{false};
