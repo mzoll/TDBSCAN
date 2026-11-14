@@ -110,11 +110,11 @@ class Semaphore : public Interruptable {
 
   /** consume *One* element if immediately available, or wait [block] until it becomes available.
    * @note blocking, until there is something to consume; wake can be triggered by
-   * @param fkt a function pointer that can be evaluated as a boolean, invoked in `pred` in blocking wait for consumption
+   * @param fkt a function that can be evaluated as a boolean, invoked in `pred` in blocking wait for consumption
    * @throws block_set if the semaphore has been blocked
    * @throws interrupt_set if in a wakeup the `fkt` evaluated to true
    */
-  [[maybe_unused]] int consume_one(const std::function<bool()> *fkt = nullptr);
+  [[maybe_unused]] int consume_one(const std::function<bool()>& fkt = [](){return false;});
 
   /** consume *All* elements possible
    * @throws block_set if the semaphore has been blocked
@@ -126,6 +126,9 @@ class Semaphore : public Interruptable {
   /// get the number of consumable elements [volatile]
   unsigned long load() const noexcept;
 
+  // purge all consumables
+  void purge() noexcept;
+
   /// toggle to blocked state, raising an exception on all waiting parties; no
   /// further consume operations are allowed until the reset_interrupt is
   /// called
@@ -135,7 +138,7 @@ class Semaphore : public Interruptable {
   void reset_block() noexcept;
 
   /// trigger an interrupt, waking all waiting threads on `consume()`
-  void interrupt() noexcept;
+  void interrupt() noexcept override;
   
   // friend
   friend Interrupt<Semaphore>;

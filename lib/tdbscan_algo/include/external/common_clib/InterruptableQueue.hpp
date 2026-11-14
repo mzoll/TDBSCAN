@@ -147,7 +147,7 @@ public:
    *    // sub-call `pop()` is interrupted and resurfaces to main thread control-loop, which is ending thread
    *    t.join();
    */
-  [[nodiscard]] value_type pop(const std::function<bool()>* fkt = nullptr);
+  [[nodiscard]] value_type pop(const std::function<bool()>& fkt = [](){return false;});
   /**
    * get all the entries that are currently on the queue
    * @exception IOletClosed thrown when the outlet has been closed
@@ -229,7 +229,7 @@ void InterruptableQueue<Tvalue>::push(const value_type& element) {
 
 template <class Tvalue>
 InterruptableQueue<Tvalue>::value_type
-InterruptableQueue<Tvalue>::pop(const std::function<bool()> *fkt) {
+InterruptableQueue<Tvalue>::pop(const std::function<bool()>& fkt) {
   if (outlet_.is_closed())
     throw IOletClosed("Outlet is closed");
   try {

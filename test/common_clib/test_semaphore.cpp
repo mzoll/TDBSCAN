@@ -61,11 +61,12 @@ TEST(Semaphore, async_access) {
 
   Semaphore s;
   {
+    //nominal operation
     std::promise<bool> p0;
 
     const auto task0 = [&s, &p0]() {
       try {
-        s.consume_one({});  // blocks if there is nothing to consume
+        s.consume_one();  // blocks if there is nothing to consume
       } catch (const Interruptable::interrupt_set& e) {
         p0.set_exception(std::current_exception());
         return;
@@ -82,14 +83,14 @@ TEST(Semaphore, async_access) {
 
     f0.wait_for(std::chrono::milliseconds(10));  // waits on the arrival of the result, but it wont come, unless...
 
-    s.post_one(); // something is actually pushed, waking up t0, and consumption continues
-    t0.join();
+    s.post_one(); // something is actually pushed, waking up t0, and consuming one piece.
+    t0.join(); // t0 has reached end of control in nominal state
     EXPECT_EQ(f0.get(), true);
     EXPECT_EQ(s.load(), 0);
   }
 
   {
-    // now lets, see if we can interrupt the waiting thread by blocking
+    // now lets, see if we can interrupt the waiting thread by blocking the semaphore
     std::promise<bool> p1;
     const auto task1 = [&s, &p1]() {
       try {
@@ -107,15 +108,15 @@ TEST(Semaphore, async_access) {
     std::thread t1(task1);
     auto f1 = p1.get_future();
 
-    s.set_block(); // block-state set, next wake-up will cause a throw
-    s.post_one(); //triggers a wake-up, before actual consumption, exception is raised
-    t1.join();
+    s.set_block(); // block-state set, next wake-up will cause a throw of 'block_set' within the 'consume_one'
+    s.post_one(); //triggers a wake-up, before actual consumption happens, exception is raised to thread's main control
+    t1.join(); // t0 has reached end of control having encountered and recycled the 'block_set' condition
     EXPECT_THROW(f1.get(), Interruptable::block_set);
     EXPECT_EQ(s.load(), 1);  //element was never consumed
   }
 
-
   {
+    s.purge();
     s.reset_block();
 
     bool end_exec{false};
@@ -124,7 +125,7 @@ TEST(Semaphore, async_access) {
     std::promise<bool> p1;
     const auto task1 = [&s, &p1, &end_exec]() {
       try {
-        s.consume_one([&]->bool{return end_exec;});
+        s.consume_one([&](){return end_exec;});
       } catch (const Interruptable::interrupt_set& e) {
         p1.set_exception(std::current_exception());
         return;
@@ -146,10 +147,6 @@ TEST(Semaphore, async_access) {
     EXPECT_EQ(s.load(), 0);
   }
 }
-
-
-
-
 
 TEST(Semaphore, interrupts) {
   Semaphore s;

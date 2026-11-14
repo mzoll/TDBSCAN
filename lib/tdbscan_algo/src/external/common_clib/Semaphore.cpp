@@ -30,13 +30,14 @@ void Semaphore::post_many(const int n_many) {
   }
 }
 
-int Semaphore::consume_one(const function<bool()> *fkt) {
+int Semaphore::consume_one(const function<bool()>& fkt) {
   if (is_blocked())
     throw block_set("consumption is interrupted");
   std::unique_lock lock(mutex);
   if (counter.load() == 0) {
+    //there is nothing to consume yet, enter blocking wait until something becomes available
     cond.wait(lock, [&] {
-      if (fkt && (*fkt)())
+      if (fkt())
         throw interrupt_set("interrupt was set");
       if (is_blocked())
         throw block_set("consumption is interrupted");
@@ -61,6 +62,11 @@ int Semaphore::consume_all() {
 
 unsigned long Semaphore::load() const noexcept {
   return counter.load();
+}
+
+void Semaphore::purge() noexcept {
+  std::lock_guard lock(mutex);
+  counter = 0;
 }
 
 void Semaphore::set_block() noexcept {
