@@ -18,7 +18,6 @@ list(APPEND header_files
         include/external/common_clib/stopwatch.h
         include/external/common_clib/trivial_logging.h
         include/tdbscan_algo/auxilary/auxil.h
-        include/tdbscan_algo/auxilary/trivial_logging.h
         include/tdbscan_algo/base_defs.h
         include/tdbscan_algo/absblib.h
         include/tdbscan_algo/common_defs.h
